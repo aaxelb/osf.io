@@ -11,16 +11,16 @@ from reviews import models
 from reviews import workflow
 
 
-class ReviewLogFactory(DjangoModelFactory):
+class ActionFactory(DjangoModelFactory):
     class Meta:
-        model = models.ReviewLog
+        model = models.Action
 
-    action = FuzzyChoice(choices=workflow.Actions.values())
+    trigger = FuzzyChoice(choices=workflow.Triggers.values())
     comment = factory.Faker('text')
     from_state = FuzzyChoice(choices=workflow.States.values())
     to_state = FuzzyChoice(choices=workflow.States.values())
 
-    reviewable = factory.SubFactory(PreprintFactory)
+    target = factory.SubFactory(PreprintFactory)
     creator = factory.SubFactory(AuthUserFactory)
 
     is_deleted = False

@@ -31,7 +31,7 @@ class States(ChoiceEnum):
 
 
 @unique
-class Actions(ChoiceEnum):
+class Triggers(ChoiceEnum):
     SUBMIT = 'submit'
     ACCEPT = 'accept'
     REJECT = 'reject'
@@ -57,32 +57,32 @@ PUBLIC_STATES = {
 
 TRANSITIONS = [
     {
-        'trigger': Actions.SUBMIT.value,
+        'trigger': Triggers.SUBMIT.value,
         'source': [States.INITIAL.value],
         'dest': States.PENDING.value,
         'after': ['save_log', 'update_last_transitioned', 'save_changes', 'notify_submit'],
     },
     {
-        'trigger': Actions.SUBMIT.value,
+        'trigger': Triggers.SUBMIT.value,
         'source': [States.PENDING.value, States.REJECTED.value],
         'conditions': 'resubmission_allowed',
         'dest': States.PENDING.value,
         'after': ['save_log', 'update_last_transitioned', 'save_changes', 'notify_submit'],
     },
     {
-        'trigger': Actions.ACCEPT.value,
+        'trigger': Triggers.ACCEPT.value,
         'source': [States.PENDING.value, States.REJECTED.value],
         'dest': States.ACCEPTED.value,
         'after': ['save_log', 'update_last_transitioned', 'save_changes', 'notify_accept'],
     },
     {
-        'trigger': Actions.REJECT.value,
+        'trigger': Triggers.REJECT.value,
         'source': [States.PENDING.value, States.ACCEPTED.value],
         'dest': States.REJECTED.value,
         'after': ['save_log', 'update_last_transitioned', 'save_changes', 'notify_reject'],
     },
     {
-        'trigger': Actions.EDIT_COMMENT.value,
+        'trigger': Triggers.EDIT_COMMENT.value,
         'source': [States.PENDING.value, States.REJECTED.value, States.ACCEPTED.value],
         'dest': '=',
         'after': ['save_log', 'save_changes', 'notify_edit_comment'],

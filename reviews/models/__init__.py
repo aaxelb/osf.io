@@ -1,3 +1,3 @@
-from .log import ReviewLog  # noqa
+from .action import Action  # noqa
 from .mixins import ReviewProviderMixin  # noqa
 from .mixins import ReviewableMixin  # noqa

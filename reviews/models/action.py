@@ -8,18 +8,18 @@ from include import IncludeManager
 from osf.models.base import ObjectIDMixin
 from osf.utils.fields import NonNaiveDateTimeField
 
-from reviews.workflow import Actions
+from reviews.workflow import Triggers
 from reviews.workflow import States
 
 
-class ReviewLog(ObjectIDMixin, models.Model):
+class Action(ObjectIDMixin, models.Model):
 
     objects = IncludeManager()
 
-    reviewable = models.ForeignKey('osf.PreprintService', related_name='review_logs')
+    target = models.ForeignKey('osf.PreprintService', related_name='actions')
     creator = models.ForeignKey('osf.OSFUser', related_name='+')
 
-    action = models.CharField(max_length=31, choices=Actions.choices())
+    trigger = models.CharField(max_length=31, choices=Triggers.choices())
     from_state = models.CharField(max_length=31, choices=States.choices())
     to_state = models.CharField(max_length=31, choices=States.choices())
 

@@ -1,0 +1,165 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from guardian.shortcuts import get_objects_for_user
+from rest_framework import generics
+from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
+
+from framework.auth.oauth_scopes import CoreScopes
+from osf.models import PreprintProvider
+from reviews import permissions as reviews_permissions
+from reviews.models import Action
+
+from api.actions.serializers import ActionSerializer
+from api.base.exceptions import Conflict
+from api.base.filters import ListFilterMixin
+from api.base.parsers import (
+    JSONAPIMultipleRelationshipsParser,
+    JSONAPIMultipleRelationshipsParserForRegularJSON,
+)
+from api.base.utils import absolute_reverse
+from api.base.utils import get_user_auth
+from api.base.views import JSONAPIBaseView
+from api.base import permissions as base_permissions
+from api.preprints.views import PreprintMixin
+
+
+class ActionMixin:
+    def actions_queryset(self):
+        return Action.objects.include(
+            'creator',
+            'creator__guids',
+            'target',
+            'target__guids',
+            'target__provider',
+        ).filter(is_deleted=False)
+
+
+class ActionDetail(JSONAPIBaseView, generics.RetrieveAPIView, ActionMixin):
+    """Action Detail
+
+    Actions represent state changes and/or comments on a reviewable object (e.g. a preprint)
+
+    ##Action Attributes
+
+        name                            type                                description
+        ====================================================================================
+        date_created                    iso8601 timestamp                   timestamp that the action was created
+        date_modified                   iso8601 timestamp                   timestamp that the action was last modified
+        from_state                      string                              state of the reviewable before this action was created
+        to_state                        string                              state of the reviewable after this action was created
+        comment                         string                              comment explaining the state change
+        trigger                         string                              name of the trigger for this action
+
+    ##Relationships
+
+    ###Target
+    Link to the object (e.g. preprint) this action acts on
+
+    ###Provider
+    Link to detail for the target object's provider
+
+    ###Creator
+    Link to the user that created this action
+
+    ##Links
+    - `self` -- Detail page for the current action
+    """
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        base_permissions.TokenHasScope,
+        reviews_permissions.ActionPermission,
+    )
+
+    required_read_scopes = [CoreScopes.ACTIONS_READ]
+    required_write_scopes = [CoreScopes.ACTIONS_WRITE]
+
+    serializer_class = ActionSerializer
+    view_category = 'actions'
+    view_name = 'action-detail'
+
+    def get_object(self):
+        action = get_object_or_404(self.actions_queryset(), _id=self.kwargs['action_id'])
+        self.check_object_permissions(self.request, action)
+        return action
+
+
+class CreateAction(JSONAPIBaseView, generics.CreateAPIView):
+    """Action List *Writable*
+
+    TODO update docstring
+
+    Actions represent state changes and/or comments on a reviewable object (e.g. a preprint)
+
+    ##Action Attributes
+
+        name                            type                                description
+        ====================================================================================
+        date_created                    iso8601 timestamp                   timestamp that the action was created
+        date_modified                   iso8601 timestamp                   timestamp that the action was last modified
+        from_state                      string                              state of the reviewable before this action was created
+        to_state                        string                              state of the reviewable after this action was created
+        comment                         string                              comment explaining the state change
+        trigger                         string                              name of the trigger for this action
+
+    ##Relationships
+
+    ###Target
+    Link to the object (e.g. preprint) this action acts on
+
+    ###Provider
+    Link to detail for the target object's provider
+
+    ###Creator
+    Link to the user that created this action
+
+    ##Links
+    - `self` -- Detail page for the current action
+
+    ##Query Params
+
+    + `page=<Int>` -- page number of results to view, default 1
+
+    + `filter[<fieldname>]=<Str>` -- fields and values to filter the search results on.
+
+    Actions may be filtered by their `id`, `from_state`, `to_state`, `date_created`, `date_modified`, `creator`, `provider`, `target`
+    """
+    permission_classes = (
+        permissions.IsAuthenticated,
+        base_permissions.TokenHasScope,
+        reviews_permissions.ActionPermission,
+    )
+
+    required_read_scopes = [CoreScopes.NULL]
+    required_write_scopes = [CoreScopes.ACTIONS_WRITE]
+
+    parser_classes = (JSONAPIMultipleRelationshipsParser, JSONAPIMultipleRelationshipsParserForRegularJSON,)
+
+    serializer_class = ActionSerializer
+
+    view_category = 'actions'
+    view_name = 'create-action'
+
+    # overrides ListCreateAPIView
+    def perform_create(self, serializer):
+        target = serializer.validated_data['target']
+        self.check_object_permissions(self.request, target)
+
+        trigger = serializer.validated_data['trigger']
+        permission = reviews_permissions.TRIGGER_PERMISSIONS[trigger]
+        if permission is not None and not self.request.user.has_perm(permission, target.provider):
+            raise PermissionDenied(detail='Performing trigger "{}" requires permission "{}" on the provider.'.format(trigger, permission))
+
+        if not target.provider.is_moderated:
+            raise Conflict('{} is an unmoderated provider. If you are an admin, set up moderation by setting `reviews_workflow` at {}'.format(
+                target.provider.name,
+                absolute_reverse('preprint_providers:preprint_provider-detail', kwargs={
+                    'provider_id': target.provider._id,
+                    'version': self.request.parser_context['kwargs']['version']
+                })
+            ))
+
+        serializer.save(user=self.request.user)
