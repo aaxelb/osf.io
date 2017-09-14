@@ -81,12 +81,13 @@ class ActionDetail(JSONAPIBaseView, generics.RetrieveAPIView, ActionMixin):
         return action
 
 
-class CreateAction(JSONAPIBaseView, generics.CreateAPIView):
-    """Action List *Writable*
+class CreateAction(JSONAPIBaseView, generics.ListCreateAPIView):
+    """Create Actions *Write-only*
 
-    TODO update docstring
+    Use this endpoint to create a new Action and thereby trigger a state change on a preprint.
 
-    Actions represent state changes and/or comments on a reviewable object (e.g. a preprint)
+    GETting from this endpoint will always return an empty list.
+    Use `/user/me/actions/` or `/preprints/<guid>/actions/` to read lists of actions.
 
     ##Action Attributes
 
@@ -120,9 +121,36 @@ class CreateAction(JSONAPIBaseView, generics.CreateAPIView):
     + `filter[<fieldname>]=<Str>` -- fields and values to filter the search results on.
 
     Actions may be filtered by their `id`, `from_state`, `to_state`, `date_created`, `date_modified`, `creator`, `provider`, `target`
+
+    ###Creating New Actions
+
+    Create a new Action by POSTing to `/actions/`, including the target preprint and the action trigger.
+
+    Valid triggers are: `submit`, `accept`, `reject`, and `edit_comment`
+
+        Method:        POST
+        URL:           /actions/
+        Query Params:  <none>
+        Body (JSON):   {
+                        "data": {
+                            "attributes": {
+                                "trigger": {trigger},           # required
+                                "comment": {comment},
+                            },
+                            "relationships": {
+                                "target": {                     # required
+                                    "data": {
+                                        "type": "preprints",
+                                        "id": {preprint_id}
+                                    }
+                                },
+                            }
+                        }
+                    }
+        Success:       201 CREATED + action representation
     """
     permission_classes = (
-        permissions.IsAuthenticated,
+        permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
         reviews_permissions.ActionPermission,
     )
@@ -157,3 +185,7 @@ class CreateAction(JSONAPIBaseView, generics.CreateAPIView):
             ))
 
         serializer.save(user=self.request.user)
+
+    # overrides ListCreateAPIView
+    def get_queryset(self):
+        return Action.objects.none()
