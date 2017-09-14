@@ -790,7 +790,7 @@ class UserInstitutionsRelationship(JSONAPIBaseView, generics.RetrieveDestroyAPIV
         user.save()
 
 
-class ActionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin, ActionMixin, UserMixin):
+class UserActionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin, ActionMixin, UserMixin):
     """List of actions viewable by this user *Read-only*
 
     Actions represent state changes and/or comments on a reviewable object (e.g. a preprint)
