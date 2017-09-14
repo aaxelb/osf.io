@@ -55,7 +55,7 @@ class TestActionCreate(object):
 
     @pytest.fixture()
     def url(self):
-        return '/{}users/me/actions/'.format(API_BASE)
+        return '/{}actions/'.format(API_BASE)
 
     @pytest.fixture()
     def provider(self):

@@ -11,9 +11,10 @@ from rest_framework import permissions
 from django.contrib.auth.models import Group
 
 from api.base.utils import get_user_auth
+from osf.models.action import Action
 from website.util import permissions as osf_permissions
 
-from reviews import models
+from reviews.models import ReviewableMixin, ReviewProviderMixin
 from reviews.workflow import Triggers
 
 
@@ -98,13 +99,13 @@ class ActionPermission(permissions.BasePermission):
 
         reviewable = None
         provider = None
-        if isinstance(obj, models.Action):
+        if isinstance(obj, Action):
             reviewable = obj.target
             provider = reviewable.provider
-        elif isinstance(obj, models.ReviewableMixin):
+        elif isinstance(obj, ReviewableMixin):
             reviewable = obj
             provider = reviewable.provider
-        elif isinstance(obj, models.ReviewProviderMixin):
+        elif isinstance(obj, ReviewProviderMixin):
             provider = obj
         else:
             raise ValueError('Not a reviews-related model: {}'.format(obj))

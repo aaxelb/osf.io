@@ -155,7 +155,7 @@ class ActionSerializer(JSONAPISerializer):
         return self.get_action_url(obj)
 
     def get_action_url(self, obj):
-        return utils.absolute_reverse('reviews:action-detail', kwargs={'action_id': obj._id, 'version': self.context['request'].parser_context['kwargs']['version']})
+        return utils.absolute_reverse('actions:action-detail', kwargs={'action_id': obj._id, 'version': self.context['request'].parser_context['kwargs']['version']})
 
     def create(self, validated_data):
         trigger = validated_data.pop('trigger')
