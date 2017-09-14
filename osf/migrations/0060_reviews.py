@@ -19,7 +19,7 @@ def create_provider_auth_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0057_order_fileversion_by_date_created'),
+        ('osf', '0059_merge_20170914_1100'),
         ('guardian', '0001_initial'),
     ]
 
