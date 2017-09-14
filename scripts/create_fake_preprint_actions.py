@@ -11,8 +11,7 @@ from faker import Faker
 
 setup_django()
 from reviews import workflow
-from reviews.models import Action
-from osf.models import PreprintService, OSFUser
+from osf.models import Action, PreprintService, OSFUser
 
 def main():
     user = OSFUser.objects.first()

@@ -4,12 +4,12 @@ import pytest
 from furl import furl
 
 from osf_tests.factories import (
+    ActionFactory,
     AuthUserFactory,
     PreprintFactory,
     PreprintProviderFactory,
 )
 from reviews.permissions import GroupHelper
-from reviews_tests.factories import ActionFactory
 
 
 def get_actual(app, url, user=None, sort=None, expect_errors=False, **filters):

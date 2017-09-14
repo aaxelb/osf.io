@@ -7,9 +7,9 @@ from django.db import models
 from django.db import transaction
 from django.utils import timezone
 
+from osf.models.action import Action
 from reviews import workflow
 from reviews.exceptions import InvalidTransitionError
-from reviews.models.action import Action
 
 
 class ReviewProviderMixin(models.Model):

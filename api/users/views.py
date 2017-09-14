@@ -1,6 +1,10 @@
 from django.apps import apps
 
+from guardian.shortcuts import get_objects_for_user
+
 from api.addons.views import AddonSettingsMixin
+from api.actions.views import ActionMixin
+from api.actions.serializers import ActionSerializer
 from api.base import permissions as base_permissions
 from api.base.exceptions import Conflict, UserGone
 from api.base.filters import ListFilterMixin, PreprintFilterMixin
@@ -38,8 +42,8 @@ from osf.models import (Contributor,
                         AbstractNode,
                         PreprintService,
                         OSFUser,
-                        PreprintProvider,)
-from reviews.models import Action
+                        PreprintProvider,
+                        Action,)
 
 
 class UserMixin(object):

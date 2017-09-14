@@ -5,15 +5,14 @@ from rest_framework.exceptions import NotFound, PermissionDenied, NotAuthenticat
 from rest_framework import permissions as drf_permissions
 
 from framework.auth.oauth_scopes import CoreScopes
-from osf.models import PreprintService
+from osf.models import Action, PreprintService
 from reviews import permissions as reviews_permissions
-from reviews.models import Action
 
 from api.actions.serializers import ActionSerializer
 from api.actions.views import ActionMixin
 from api.base.exceptions import Conflict
 from api.base.views import JSONAPIBaseView, WaterButlerMixin
-from api.base.filters import PreprintFilterMixin
+from api.base.filters import ListFilterMixin, PreprintFilterMixin
 from api.base.parsers import (
     JSONAPIMultipleRelationshipsParser,
     JSONAPIMultipleRelationshipsParserForRegularJSON,
@@ -435,7 +434,7 @@ class PreprintActionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin,
     Actions may be filtered by their `id`, `from_state`, `to_state`, `date_created`, `date_modified`, `creator`, `provider`, `target`
     """
     permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly,
+        drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
         reviews_permissions.ActionPermission,
     )

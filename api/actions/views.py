@@ -1,30 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from guardian.shortcuts import get_objects_for_user
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
 
 from framework.auth.oauth_scopes import CoreScopes
-from osf.models import PreprintProvider
+from osf.models import Action
 from reviews import permissions as reviews_permissions
-from reviews.models import Action
 
 from api.actions.serializers import ActionSerializer
 from api.base.exceptions import Conflict
-from api.base.filters import ListFilterMixin
 from api.base.parsers import (
     JSONAPIMultipleRelationshipsParser,
     JSONAPIMultipleRelationshipsParserForRegularJSON,
 )
 from api.base.utils import absolute_reverse
-from api.base.utils import get_user_auth
 from api.base.views import JSONAPIBaseView
 from api.base import permissions as base_permissions
-from api.preprints.views import PreprintMixin
 
 
 class ActionMixin:
