@@ -4,20 +4,21 @@ from rest_framework import generics
 from rest_framework import permissions as drf_permissions
 from rest_framework.exceptions import NotAuthenticated
 
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from framework.auth.oauth_scopes import CoreScopes
 
 from osf.models import AbstractNode, Subject, PreprintProvider
 
 from reviews import permissions as reviews_permissions
+from reviews import workflow
 
 from api.base import permissions as base_permissions
 from api.base.exceptions import InvalidFilterValue, InvalidFilterOperator, Conflict
 from api.base.filters import PreprintFilterMixin, ListFilterMixin
 from api.base.views import JSONAPIBaseView
 from api.base.pagination import MaxSizePagination
-from api.base.utils import get_object_or_error, get_user_auth
+from api.base.utils import get_object_or_error, get_user_auth, is_truthy
 from api.licenses.views import LicenseList
 from api.taxonomies.serializers import TaxonomySerializer
 from api.preprint_providers.serializers import PreprintProviderSerializer
@@ -270,6 +271,28 @@ class PreprintProviderPreprintList(JSONAPIBaseView, generics.ListAPIView, Prepri
     # overrides ListAPIView
     def get_queryset(self):
         return self.get_queryset_from_request().distinct('id', 'date_created')
+
+    # overrides APIView
+    def get_renderer_context(self):
+        context = super(PreprintProviderPreprintList, self).get_renderer_context()
+        show_counts = is_truthy(self.request.query_params.get('meta[reviews_state_counts]', False))
+        if show_counts:
+            # TODO don't duplicate the above
+            auth = get_user_auth(self.request)
+            auth_user = getattr(auth, 'user', None)
+            provider = get_object_or_error(PreprintProvider, self.kwargs['provider_id'], self.request, display_name='PreprintProvider')
+            if not auth_user or not auth_user.has_perm('view_submissions', provider):
+                self.permission_denied(self.request, 'Must have `view_submissions` permission to request state counts')
+            context['meta'] = {
+                'reviews_state_counts': self.get_reviews_state_counts(provider)
+            }
+        return context
+
+    def get_reviews_state_counts(self, provider):
+        qs = provider.preprint_services.include(None).values('reviews_state').annotate(count=Count('*'))
+        state_counts = {state.value: 0 for state in workflow.States}
+        state_counts.update({row['reviews_state']: row['count'] for row in qs if row['reviews_state'] in state_counts})
+        return state_counts
 
 
 class PreprintProviderTaxonomies(JSONAPIBaseView, generics.ListAPIView):
