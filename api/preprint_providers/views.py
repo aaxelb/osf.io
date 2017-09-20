@@ -4,14 +4,13 @@ from rest_framework import generics
 from rest_framework import permissions as drf_permissions
 from rest_framework.exceptions import NotAuthenticated
 
-from django.db.models import Q, Count
+from django.db.models import Q
 
 from framework.auth.oauth_scopes import CoreScopes
 
 from osf.models import AbstractNode, Subject, PreprintProvider
 
 from reviews import permissions as reviews_permissions
-from reviews import workflow
 
 from api.base import permissions as base_permissions
 from api.base.exceptions import InvalidFilterValue, InvalidFilterOperator, Conflict
