@@ -284,15 +284,9 @@ class PreprintProviderPreprintList(JSONAPIBaseView, generics.ListAPIView, Prepri
             if not auth_user or not auth_user.has_perm('view_submissions', provider):
                 self.permission_denied(self.request, 'Must have `view_submissions` permission to request state counts')
             context['meta'] = {
-                'reviews_state_counts': self.get_reviews_state_counts(provider)
+                'reviews_state_counts': provider.get_reviewable_state_counts(),
             }
         return context
-
-    def get_reviews_state_counts(self, provider):
-        qs = provider.preprint_services.include(None).values('reviews_state').annotate(count=Count('*'))
-        state_counts = {state.value: 0 for state in workflow.States}
-        state_counts.update({row['reviews_state']: row['count'] for row in qs if row['reviews_state'] in state_counts})
-        return state_counts
 
 
 class PreprintProviderTaxonomies(JSONAPIBaseView, generics.ListAPIView):

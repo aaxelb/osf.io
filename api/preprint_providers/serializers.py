@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 
 from reviews.workflow import Workflows
 
+from api.actions.serializers import ReviewableCountsRelationshipField
 from api.base.utils import absolute_reverse, get_user_auth
 from api.base.serializers import JSONAPISerializer, LinksField, RelationshipField, ShowIfVersion
 
@@ -44,7 +45,7 @@ class PreprintProviderSerializer(JSONAPISerializer):
 
     permissions = ser.SerializerMethodField()
 
-    preprints = RelationshipField(
+    preprints = ReviewableCountsRelationshipField(
         related_view='preprint_providers:preprints-list',
         related_view_kwargs={'provider_id': '<_id>'}
     )
