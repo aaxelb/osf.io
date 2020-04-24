@@ -220,7 +220,12 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
                                     custom_domain=provider.domain,
                                 )
 
-                    response.data['meta']['active_flags'].append(sloan_flag_name)
+                        # modify active_flags in-place
+                        active_flags = response.data['meta']['active_flags']
+                        if active:
+                            active_flags.append(sloan_flag_name)
+                        else:
+                            active_flags.remove(sloan_flag_name)
 
         # `set_sloan_cookies` has set the cookies, make sure WaffleMiddleware doesn't try to set them again.
         if waffles:
