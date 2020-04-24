@@ -243,3 +243,35 @@ class TestSloanStudyWaffling:
     def test_get_domain(self, url, expected_domain):
         actual_domain = SloanOverrideWaffleMiddleware.get_domain(url)
         assert actual_domain == expected_domain
+
+
+@pytest.mark.enable_quickfiles_creation
+@pytest.mark.django_db
+class TestSloanStudyCookieVsTag:
+    @pytest.fixture()
+    def user(self):
+        return AuthUserFactory()
+
+    @pytest.fixture()
+    def preprint(self):
+        return PreprintFactory()
+
+    def test_sloan_study_user_tag_overrides_cookie_no(self, app, user, preprint):
+        # conflicting - system tag should win
+        user.add_system_tag(f'no_{SLOAN_COI}')
+        app.set_cookie(f'dwf_{SLOAN_COI_DISPLAY}', 'True')
+
+        headers = {'Referer': preprint.absolute_url}
+        resp = app.get('/v2/', auth=user.auth, headers=headers)
+
+        assert SLOAN_COI_DISPLAY not in resp.json['meta']['active_flags']
+
+    def test_sloan_study_user_state_overrides_cookie_yes(self, app, user, preprint):
+        # conflicting - system tag should win
+        user.add_system_tag(SLOAN_COI)
+        app.set_cookie(f'dwf_{SLOAN_COI_DISPLAY}', 'False')
+
+        headers = {'Referer': preprint.absolute_url}
+        resp = app.get('/v2/', auth=user.auth, headers=headers)
+
+        assert SLOAN_COI_DISPLAY in resp.json['meta']['active_flags']
