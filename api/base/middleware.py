@@ -57,7 +57,6 @@ SLOAN_FEATURES = {
     SLOAN_COI_DISPLAY: SLOAN_COI,
     SLOAN_PREREG_DISPLAY: SLOAN_PREREG,
     SLOAN_DATA_DISPLAY: SLOAN_DATA,
-
 }
 
 from django.db.models import Q
@@ -86,6 +85,7 @@ class DjangoGlobalMiddleware(MiddlewareMixin):
     """
     Store request object on a thread-local variable for use in database caching mechanism.
     """
+
     def process_request(self, request):
         api_globals.request = request
 
@@ -97,7 +97,7 @@ class DjangoGlobalMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
         api_globals.request = None
         if api_settings.DEBUG and len(gc.get_referents(request)) > 2:
-            raise Exception('You wrote a memory leak. Stop it')
+            raise Exception("You wrote a memory leak. Stop it")
         return response
 
 
@@ -115,15 +115,21 @@ class CorsMiddleware(corsheaders.middleware.CorsMiddleware):
         # Check if a cross-origin request using the Authorization header
         if not found:
             if not self._context.request.COOKIES:
-                if self._context.request.META.get('HTTP_AUTHORIZATION'):
+                if self._context.request.META.get("HTTP_AUTHORIZATION"):
                     return True
                 elif (
-                    self._context.request.method == 'OPTIONS' and
-                    'HTTP_ACCESS_CONTROL_REQUEST_METHOD' in self._context.request.META and
-                    'authorization' in list(map(
-                        lambda h: h.strip(),
-                        self._context.request.META.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS', '').split(','),
-                    ))
+                    self._context.request.method == "OPTIONS"
+                    and "HTTP_ACCESS_CONTROL_REQUEST_METHOD"
+                    in self._context.request.META
+                    and "authorization"
+                    in list(
+                        map(
+                            lambda h: h.strip(),
+                            self._context.request.META.get(
+                                "HTTP_ACCESS_CONTROL_REQUEST_HEADERS", ""
+                            ).split(","),
+                        )
+                    )
                 ):
                     return True
 
@@ -141,6 +147,7 @@ class PostcommitTaskMiddleware(MiddlewareMixin):
     """
     Handle postcommit tasks for django.
     """
+
     def process_request(self, request):
         postcommit_before_request()
 
@@ -162,20 +169,21 @@ class ProfileMiddleware(MiddlewareMixin):
     It's set up to only be available in django's debug mode, is available for superuser otherwise,
     but you really shouldn't add this middleware to any production configuration.
     """
+
     def process_request(self, request):
-        if (settings.DEBUG or request.user.is_superuser) and 'prof' in request.GET:
+        if (settings.DEBUG or request.user.is_superuser) and "prof" in request.GET:
             self.prof = cProfile.Profile()
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        if (settings.DEBUG or request.user.is_superuser) and 'prof' in request.GET:
+        if (settings.DEBUG or request.user.is_superuser) and "prof" in request.GET:
             self.prof.enable()
 
     def process_response(self, request, response):
-        if (settings.DEBUG or request.user.is_superuser) and 'prof' in request.GET:
+        if (settings.DEBUG or request.user.is_superuser) and "prof" in request.GET:
             self.prof.disable()
 
             s = StringIO.StringIO()
-            ps = pstats.Stats(self.prof, stream=s).sort_stats('cumtime')
+            ps = pstats.Stats(self.prof, stream=s).sort_stats("cumtime")
             ps.print_stats()
             response.content = s.getvalue()
 
@@ -189,16 +197,22 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
     """
 
     def process_response(self, request, response):
-        waffles = getattr(request, 'waffles', None)
-        if request.path == '/v2/' and not request.GET.get('format') == 'api':  # exclude browserable api
+        waffles = getattr(request, "waffles", None)
+        if (
+            request.path == "/v2/" and not request.GET.get("format") == "api"
+        ):  # exclude browserable api
             content_data = json.loads(response.content.decode())
 
             # clear flags initially
-            if content_data['meta'].get('active_flags'):
-                content_data['meta']['active_flags'] = [flag for flag in content_data['meta']['active_flags'] if flag not in SLOAN_FLAGS]
+            if content_data["meta"].get("active_flags"):
+                content_data["meta"]["active_flags"] = [
+                    flag
+                    for flag in content_data["meta"]["active_flags"]
+                    if flag not in SLOAN_FLAGS
+                ]
 
-            user = getattr(request, 'user', None)
-            referer_url = request.environ.get('HTTP_REFERER', '')
+            user = getattr(request, "user", None)
+            referer_url = request.environ.get("HTTP_REFERER", "")
             provider = self.get_provider_from_url(referer_url)
 
             if provider and provider.in_sloan_study:
@@ -208,18 +222,18 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
                     if active is not None:
                         self.set_sloan_tags(user, sloan_flag_name, active)
                         self.set_sloan_cookie(
-                            f'dwf_{sloan_flag_name}',
+                            f"dwf_{sloan_flag_name}",
                             active,
-                            request.environ['HTTP_REFERER'],
+                            request.environ["HTTP_REFERER"],
                             request,
                             response,
                         )
 
                         if provider.domain_redirect_enabled and provider.domain:
                             self.set_sloan_cookie(
-                                f'dwf_{sloan_flag_name}_custom_domain',
+                                f"dwf_{sloan_flag_name}_custom_domain",
                                 active,
-                                request.environ['HTTP_REFERER'],
+                                request.environ["HTTP_REFERER"],
                                 request,
                                 response,
                                 custom_domain=provider.domain,
@@ -229,33 +243,33 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
                                 self.set_sloan_cookie(
                                     settings.SLOAN_ID_COOKIE_NAME,
                                     str(uuid.uuid4()),
-                                    request.environ['HTTP_REFERER'],
+                                    request.environ["HTTP_REFERER"],
                                     request,
                                     response,
                                     custom_domain=provider.domain,
                                 )
 
                         if active:
-                            content_data['meta']['active_flags'].append(sloan_flag_name)
+                            content_data["meta"]["active_flags"].append(sloan_flag_name)
 
             elif user and not user.is_anonymous:
                 for sloan_flag_name in SLOAN_FLAGS:
                     tag = SLOAN_FEATURES[sloan_flag_name]
                     if user.all_tags.filter(name=tag).exists():
-                        content_data['meta']['active_flags'].append(sloan_flag_name)
+                        content_data["meta"]["active_flags"].append(sloan_flag_name)
                         self.set_sloan_cookie(
-                            f'dwf_{sloan_flag_name}',
+                            f"dwf_{sloan_flag_name}",
                             True,
-                            request.environ['SERVER_NAME'],
+                            request.environ["SERVER_NAME"],
                             request,
                             response,
                         )
 
-                    elif user.all_tags.filter(name=f'no_{tag}').exists():
+                    elif user.all_tags.filter(name=f"no_{tag}").exists():
                         self.set_sloan_cookie(
-                            f'dwf_{sloan_flag_name}',
+                            f"dwf_{sloan_flag_name}",
                             False,
-                            request.environ['SERVER_NAME'],
+                            request.environ["SERVER_NAME"],
                             request,
                             response,
                         )
@@ -273,12 +287,14 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
             self.set_sloan_cookie(
                 settings.SLOAN_ID_COOKIE_NAME,
                 str(uuid.uuid4()),
-                request.environ['SERVER_NAME'] or request.environ.get('HTTP_REFERER'),
+                request.environ["SERVER_NAME"] or request.environ.get("HTTP_REFERER"),
                 request,
                 response,
             )
 
-        return super(SloanOverrideWaffleMiddleware, self).process_response(request, response)
+        return super(SloanOverrideWaffleMiddleware, self).process_response(
+            request, response
+        )
 
     @staticmethod
     def get_domain(url: str) -> str:
@@ -292,20 +308,20 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
         :param url:
         :return:
         """
-        if url.startswith('http://localhost:'):
-            return 'localhost'
+        if url.startswith("http://localhost:"):
+            return "localhost"
         else:
             # for custom domains
-            if url.startswith('http://staging3') or url.startswith('https://staging3'):
-                return '.staging3.osf.io'
-            if url.startswith('http://staging2') or url.startswith('https://staging2'):
-                return '.staging2.osf.io'
-            if url.startswith('http://test') or url.startswith('https://test'):
-                return '.test.osf.io'
-            if url.startswith('http://staging') or url.startswith('https://staging'):
-                return '.staging.osf.io'
+            if url.startswith("http://staging3") or url.startswith("https://staging3"):
+                return ".staging3.osf.io"
+            if url.startswith("http://staging2") or url.startswith("https://staging2"):
+                return ".staging2.osf.io"
+            if url.startswith("http://test") or url.startswith("https://test"):
+                return ".test.osf.io"
+            if url.startswith("http://staging") or url.startswith("https://staging"):
+                return ".staging.osf.io"
             else:
-                return '.osf.io'
+                return ".osf.io"
 
     @staticmethod
     def get_provider_from_url(referer_url: str) -> Optional[PreprintProvider]:
@@ -318,26 +334,28 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
 
         # matches custom domains:
         provider_domains = list(
-            PreprintProvider.objects.exclude(
-                domain='',
-            ).filter(
+            PreprintProvider.objects.exclude(domain="",)
+            .filter(
                 domain_redirect_enabled=True,  # must exclude our native domains like https://staging2.osf.io/
-            ).values_list(
-                'domain',
-                flat=True,
-            ),
+            )
+            .values_list("domain", flat=True,),
         )
-        provider_domains = [domains for domains in provider_domains if referer_url.startswith(domains)]
+        provider_domains = [
+            domains for domains in provider_domains if referer_url.startswith(domains)
+        ]
 
         if provider_domains:
             return PreprintProvider.objects.get(domain=provider_domains[0])
 
-        provider_ids_regex = '|'.join(
-            [re.escape(id) for id in PreprintProvider.objects.all().values_list('_id', flat=True)],
+        provider_ids_regex = "|".join(
+            [
+                re.escape(id)
+                for id in PreprintProvider.objects.all().values_list("_id", flat=True)
+            ],
         )
         # matches:
         # /ispp0  (preprint id)
-        path = urlparse(referer_url).path.replace('/', '')
+        path = urlparse(referer_url).path.replace("/", "")
         preprint = Preprint.load(path)
         if preprint:
             return preprint.provider
@@ -349,13 +367,15 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
         # /preprints/foorxiv
         # /preprints/foorxiv/
         # /preprints/foorxiv/guid0
-        provider_regex = r'preprints($|\/$|\/(?P<provider_id>{})|)'.format(provider_ids_regex)
+        provider_regex = r"preprints($|\/$|\/(?P<provider_id>{})|)".format(
+            provider_ids_regex
+        )
         match = re.match(re.escape(DOMAIN) + provider_regex, referer_url)
         if match:
-            provider_id = match.groupdict().get('provider_id')
+            provider_id = match.groupdict().get("provider_id")
             if provider_id:
                 return PreprintProvider.objects.get(_id=provider_id)
-            return PreprintProvider.objects.get(_id='osf')
+            return PreprintProvider.objects.get(_id="osf")
 
     @staticmethod
     def override_flag_activity(sloan_flag_name, waffles_data, user):
@@ -367,7 +387,7 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
             tag_name = SLOAN_FEATURES[sloan_flag_name]
             if user.all_tags.filter(name=tag_name).exists():
                 active = True
-            elif user.all_tags.filter(name=f'no_{tag_name}').exists():
+            elif user.all_tags.filter(name=f"no_{tag_name}").exists():
                 active = False
 
         if Flag.objects.get(name=sloan_flag_name).everyone:
@@ -381,13 +401,19 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
         This sets user tags for Sloan study, it can be deleted when the study is complete.
         """
         tag_name = SLOAN_FEATURES[flag_name]
-        if user and not user.is_anonymous and not user.all_tags.filter(Q(name=tag_name) | Q(name=f'no_{tag_name}')):
+        if (
+            user
+            and not user.is_anonymous
+            and not user.all_tags.filter(Q(name=tag_name) | Q(name=f"no_{tag_name}"))
+        ):
             if flag_value:  # 50/50 chance flag is active
                 user.add_system_tag(tag_name)
             else:
-                user.add_system_tag(f'no_{tag_name}')
+                user.add_system_tag(f"no_{tag_name}")
 
-    def set_sloan_cookie(self, name: str, value, url, request, resp, custom_domain=None):
+    def set_sloan_cookie(
+        self, name: str, value, url, request, resp, custom_domain=None
+    ):
         """
         Set sloan cookies to sloan study specifications
         :param name: The name of the flag that will get a cookie
@@ -398,15 +424,15 @@ class SloanOverrideWaffleMiddleware(WaffleMiddleware):
         """
         resp.cookies[name] = value
         # ↓ This line seems terrible but is fixed in py 3.8
-        resp.cookies[name]._reserved.update({'samesite': 'samesite'})
+        resp.cookies[name]._reserved.update({"samesite": "samesite"})
 
-        resp.cookies[name]['path'] = '/'
+        resp.cookies[name]["path"] = "/"
 
-        resp.cookies[name]['domain'] = self.get_domain(url)
+        resp.cookies[name]["domain"] = self.get_domain(url)
 
         if custom_domain:
-            resp.cookies[name]['domain'] = '.' + urlparse(custom_domain).netloc
+            resp.cookies[name]["domain"] = "." + urlparse(custom_domain).netloc
 
         # Browsers won't allow use to use these cookie attributes unless you're sending the data over https.
-        resp.cookies[name]['secure'] = True
-        resp.cookies[name]['samesite'] = 'None'
+        resp.cookies[name]["secure"] = True
+        resp.cookies[name]["samesite"] = "None"

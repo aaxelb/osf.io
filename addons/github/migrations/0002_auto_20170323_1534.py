@@ -13,29 +13,52 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('osf', '0001_initial'),
-        ('addons_github', '0001_initial'),
+        ("osf", "0001_initial"),
+        ("addons_github", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='usersettings',
-            name='owner',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addons_github_user_settings', to=settings.AUTH_USER_MODEL),
+            model_name="usersettings",
+            name="owner",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addons_github_user_settings",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='external_account',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addons_github_node_settings', to='osf.ExternalAccount'),
+            model_name="nodesettings",
+            name="external_account",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addons_github_node_settings",
+                to="osf.ExternalAccount",
+            ),
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='owner',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addons_github_node_settings', to='osf.AbstractNode'),
+            model_name="nodesettings",
+            name="owner",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addons_github_node_settings",
+                to="osf.AbstractNode",
+            ),
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='user_settings',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='addons_github.UserSettings'),
+            model_name="nodesettings",
+            name="user_settings",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="addons_github.UserSettings",
+            ),
         ),
     ]

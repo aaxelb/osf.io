@@ -8,16 +8,21 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0159_merge_20190331_2301'),
+        ("osf", "0159_merge_20190331_2301"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='abstractnode',
-            options={'base_manager_name': 'objects', 'permissions': (('view_node', 'Can view node details'), ('read_node', 'Can read the node'), ('write_node', 'Can edit the node'), ('admin_node', 'Can manage the node'))},
+            name="abstractnode",
+            options={
+                "base_manager_name": "objects",
+                "permissions": (
+                    ("view_node", "Can view node details"),
+                    ("read_node", "Can read the node"),
+                    ("write_node", "Can edit the node"),
+                    ("admin_node", "Can manage the node"),
+                ),
+            },
         ),
-        migrations.AlterModelOptions(
-            name='node',
-            options={},
-        ),
+        migrations.AlterModelOptions(name="node", options={},),
     ]

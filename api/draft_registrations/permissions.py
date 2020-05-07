@@ -16,11 +16,14 @@ class IsContributorOrAdminContributor(permissions.BasePermission):
     Need to be an admin contributor on the node to create draft registration.
     """
 
-    acceptable_models = (DraftRegistration, AbstractNode, )
+    acceptable_models = (
+        DraftRegistration,
+        AbstractNode,
+    )
 
     def has_object_permission(self, request, view, obj):
         if isinstance(obj, dict):
-            obj = obj.get('self', None)
+            obj = obj.get("self", None)
         assert_resource_type(obj, self.acceptable_models)
         auth = get_user_auth(request)
         if request.method in permissions.SAFE_METHODS:
@@ -28,9 +31,14 @@ class IsContributorOrAdminContributor(permissions.BasePermission):
         else:
             return obj.is_admin_contributor(auth.user)
 
+
 class DraftContributorDetailPermissions(ContributorDetailPermissions):
 
-    acceptable_models = (DraftRegistration, OSFUser, DraftRegistrationContributor,)
+    acceptable_models = (
+        DraftRegistration,
+        OSFUser,
+        DraftRegistrationContributor,
+    )
 
     def load_resource(self, context, view):
-        return DraftRegistration.load(context['draft_id'])
+        return DraftRegistration.load(context["draft_id"])

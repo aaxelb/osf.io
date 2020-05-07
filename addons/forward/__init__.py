@@ -1,1 +1,1 @@
-default_app_config = 'addons.forward.apps.ForwardAddonAppConfig'
+default_app_config = "addons.forward.apps.ForwardAddonAppConfig"

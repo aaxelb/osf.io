@@ -8,13 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0048_merge_20170804_0910'),
+        ("osf", "0048_merge_20170804_0910"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintprovider',
-            name='preprint_word',
-            field=models.CharField(choices=[('preprint', 'Preprint'), ('paper', 'Paper'), ('thesis', 'Thesis'), ('none', 'None')], default='preprint', max_length=10),
+            model_name="preprintprovider",
+            name="preprint_word",
+            field=models.CharField(
+                choices=[
+                    ("preprint", "Preprint"),
+                    ("paper", "Paper"),
+                    ("thesis", "Thesis"),
+                    ("none", "None"),
+                ],
+                default="preprint",
+                max_length=10,
+            ),
         ),
     ]

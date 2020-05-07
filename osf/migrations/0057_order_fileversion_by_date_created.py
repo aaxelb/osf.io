@@ -8,12 +8,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0056_merge_20170831_0832'),
+        ("osf", "0056_merge_20170831_0832"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='fileversion',
-            options={'ordering': ('-date_created',)},
+            name="fileversion", options={"ordering": ("-date_created",)},
         ),
     ]

@@ -10,31 +10,33 @@ from django.db import migrations
 
 def unquote_folder_paths(state, schema):
     try:
-        NodeSettings = state.get_model('addons_googledrive', 'nodesettings')
+        NodeSettings = state.get_model("addons_googledrive", "nodesettings")
         targets = NodeSettings.objects.filter(folder_path__isnull=False)
     except LookupError:
         return
     for obj in targets:
         try:
-            obj.folder_path = unquote(obj.folder_path).decode('utf-8')
+            obj.folder_path = unquote(obj.folder_path).decode("utf-8")
         except UnicodeEncodeError:
             obj.folder_path = unquote(obj.folder_path)
-    bulk_update(targets, update_fields=['folder_path'])
+    bulk_update(targets, update_fields=["folder_path"])
+
 
 def quote_folder_paths(state, schema):
     try:
-        NodeSettings = state.get_model('addons_googledrive', 'nodesettings')
+        NodeSettings = state.get_model("addons_googledrive", "nodesettings")
         targets = NodeSettings.objects.filter(folder_path__isnull=False)
     except LookupError:
         return
     for obj in targets:
-        obj.folder_path = quote(obj.folder_path.encode('utf-8'))
-    bulk_update(targets, update_fields=['folder_path'])
+        obj.folder_path = quote(obj.folder_path.encode("utf-8"))
+    bulk_update(targets, update_fields=["folder_path"])
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0031_preprintprovider_share_source'),
+        ("osf", "0031_preprintprovider_share_source"),
     ]
 
     operations = [

@@ -8,16 +8,10 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0120_merge_20180716_1457'),
+        ("osf", "0120_merge_20180716_1457"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='wiki_pages_current',
-        ),
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='wiki_pages_versions',
-        ),
+        migrations.RemoveField(model_name="abstractnode", name="wiki_pages_current",),
+        migrations.RemoveField(model_name="abstractnode", name="wiki_pages_versions",),
     ]

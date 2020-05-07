@@ -10,6 +10,8 @@ from api.base import settings
 
 class DummyRequest(object):
     pass
+
+
 dummy_request = DummyRequest()
 
 
@@ -32,7 +34,7 @@ def get_current_request():
     try:
         return request._get_current_object()
     except RuntimeError:  # Not in a flask request context
-        if getattr(api_globals, 'request', None) is not None:
+        if getattr(api_globals, "request", None) is not None:
             return api_globals.request
         else:  # Not in a Django request
             return dummy_request
@@ -49,31 +51,32 @@ def get_request_and_user_id():
     user_id = None
     if isinstance(req, FlaskRequest):
         session = get_session()
-        user_id = session.data.get('auth_user_id')
-    elif hasattr(req, 'user'):
+        user_id = session.data.get("auth_user_id")
+    elif hasattr(req, "user"):
         # admin module can return a user w/o an id
-        user_id = getattr(req.user, '_id', None)
+        user_id = getattr(req.user, "_id", None)
     return req, user_id
 
 
 def get_headers_from_request(req):
     """ Get and normalize DRF and Flask request headers
     """
-    headers = getattr(req, 'META', {})
+    headers = getattr(req, "META", {})
     if headers:
         headers = {
-            '-'.join([part.capitalize() for part in k.split('_')]).replace('Http-', ''): v
+            "-".join([part.capitalize() for part in k.split("_")]).replace(
+                "Http-", ""
+            ): v
             for k, v in headers.items()
         }
-        remote_addr = (headers.get('X-Forwarded-For') or headers.get('Remote-Addr'))
-        headers['Remote-Addr'] = remote_addr.split(',')[0].strip() if remote_addr else None
+        remote_addr = headers.get("X-Forwarded-For") or headers.get("Remote-Addr")
+        headers["Remote-Addr"] = (
+            remote_addr.split(",")[0].strip() if remote_addr else None
+        )
     else:
-        headers = getattr(req, 'headers', {})
-        headers = {
-            k: v
-            for k, v in headers.items()
-        }
-        headers['Remote-Addr'] = req.remote_addr
+        headers = getattr(req, "headers", {})
+        headers = {k: v for k, v in headers.items()}
+        headers["Remote-Addr"] = req.remote_addr
     return headers
 
 

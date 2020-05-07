@@ -9,13 +9,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0090_add_collection_groups_permissions'),
+        ("osf", "0090_add_collection_groups_permissions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='notificationsubscription',
-            name='provider',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='notification_subscriptions', to='osf.AbstractProvider'),
+            model_name="notificationsubscription",
+            name="provider",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="notification_subscriptions",
+                to="osf.AbstractProvider",
+            ),
         ),
     ]

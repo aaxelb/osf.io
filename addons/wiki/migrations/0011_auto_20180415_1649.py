@@ -8,19 +8,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_wiki', '0010_migrate_node_wiki_pages'),
+        ("addons_wiki", "0010_migrate_node_wiki_pages"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='nodewikipage',
-            name='node',
-        ),
-        migrations.RemoveField(
-            model_name='nodewikipage',
-            name='user',
-        ),
-        migrations.DeleteModel(
-            name='NodeWikiPage',
-        ),
+        migrations.RemoveField(model_name="nodewikipage", name="node",),
+        migrations.RemoveField(model_name="nodewikipage", name="user",),
+        migrations.DeleteModel(name="NodeWikiPage",),
     ]

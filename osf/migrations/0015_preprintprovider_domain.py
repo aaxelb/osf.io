@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0014_merge'),
+        ("osf", "0014_merge"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintprovider',
-            name='domain',
+            model_name="preprintprovider",
+            name="domain",
             field=models.URLField(blank=True, null=True),
         ),
     ]

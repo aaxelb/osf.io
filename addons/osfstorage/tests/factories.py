@@ -11,13 +11,13 @@ from osf import models
 from addons.osfstorage.models import Region
 
 
-settings = apps.get_app_config('addons_osfstorage')
+settings = apps.get_app_config("addons_osfstorage")
 
 
 generic_location = {
-    'service': 'cloud',
-    settings.WATERBUTLER_RESOURCE: 'resource',
-    'object': '1615307',
+    "service": "cloud",
+    settings.WATERBUTLER_RESOURCE: "resource",
+    "object": "1615307",
 }
 
 

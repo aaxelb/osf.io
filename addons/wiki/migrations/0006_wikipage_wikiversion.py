@@ -14,42 +14,127 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0077_add_maintenance_permissions'),
+        ("osf", "0077_add_maintenance_permissions"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('addons_wiki', '0005_auto_20170713_1125'),
+        ("addons_wiki", "0005_auto_20170713_1125"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='WikiPage',
+            name="WikiPage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
-                ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
-                ('content_type_pk', models.PositiveIntegerField(blank=True, null=True)),
-                ('page_name', models.CharField(max_length=200, validators=[addons.wiki.models.validate_page_name])),
-                ('deleted', osf.utils.fields.NonNaiveDateTimeField(blank=True, db_index=True, null=True)),
-                ('node', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='wikis', to='osf.AbstractNode')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    django_extensions.db.fields.CreationDateTimeField(
+                        auto_now_add=True, verbose_name="created"
+                    ),
+                ),
+                (
+                    "modified",
+                    django_extensions.db.fields.ModificationDateTimeField(
+                        auto_now=True, verbose_name="modified"
+                    ),
+                ),
+                ("content_type_pk", models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    "page_name",
+                    models.CharField(
+                        max_length=200,
+                        validators=[addons.wiki.models.validate_page_name],
+                    ),
+                ),
+                (
+                    "deleted",
+                    osf.utils.fields.NonNaiveDateTimeField(
+                        blank=True, db_index=True, null=True
+                    ),
+                ),
+                (
+                    "node",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="wikis",
+                        to="osf.AbstractNode",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False,},
         ),
         migrations.CreateModel(
-            name='WikiVersion',
+            name="WikiVersion",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
-                ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
-                ('_id', models.CharField(db_index=True, default=osf.models.base.generate_object_id, max_length=24, unique=True)),
-                ('content', models.TextField(blank=True, default='')),
-                ('identifier', models.IntegerField(default=1)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('wiki_page', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='versions', to='addons_wiki.WikiPage')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    django_extensions.db.fields.CreationDateTimeField(
+                        auto_now_add=True, verbose_name="created"
+                    ),
+                ),
+                (
+                    "modified",
+                    django_extensions.db.fields.ModificationDateTimeField(
+                        auto_now=True, verbose_name="modified"
+                    ),
+                ),
+                (
+                    "_id",
+                    models.CharField(
+                        db_index=True,
+                        default=osf.models.base.generate_object_id,
+                        max_length=24,
+                        unique=True,
+                    ),
+                ),
+                ("content", models.TextField(blank=True, default="")),
+                ("identifier", models.IntegerField(default=1)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "wiki_page",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="versions",
+                        to="addons_wiki.WikiPage",
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False,},
         ),
     ]

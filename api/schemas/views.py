@@ -19,6 +19,7 @@ class RegistrationSchemaList(JSONAPIBaseView, generics.ListAPIView, ListFilterMi
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/metaschemas_list).
 
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -28,10 +29,10 @@ class RegistrationSchemaList(JSONAPIBaseView, generics.ListAPIView, ListFilterMi
     required_write_scopes = [CoreScopes.NODE_DRAFT_REGISTRATIONS_WRITE]
 
     serializer_class = RegistrationSchemaSerializer
-    view_category = 'schemas'
-    view_name = 'registration-schema-list'
+    view_category = "schemas"
+    view_name = "registration-schema-list"
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     def get_default_queryset(self):
         return RegistrationSchema.objects.get_latest_versions(self.request)
@@ -44,6 +45,7 @@ class RegistrationSchemaList(JSONAPIBaseView, generics.ListAPIView, ListFilterMi
 class RegistrationSchemaDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/metaschemas_read).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -53,12 +55,12 @@ class RegistrationSchemaDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = RegistrationSchemaSerializer
-    view_category = 'schemas'
-    view_name = 'registration-schema-detail'
+    view_category = "schemas"
+    view_name = "registration-schema-detail"
 
     # overrides RetrieveAPIView
     def get_object(self):
-        schema_id = self.kwargs['schema_id']
+        schema_id = self.kwargs["schema_id"]
         return get_object_or_error(RegistrationSchema, schema_id, self.request)
 
 
@@ -73,10 +75,10 @@ class FileMetadataSchemaList(JSONAPIBaseView, generics.ListAPIView):
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = FileMetadataSchemaSerializer
-    view_category = 'schemas'
-    view_name = 'file-metadata-schemas'
+    view_category = "schemas"
+    view_name = "file-metadata-schemas"
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     # overrides ListCreateAPIView
     def get_queryset(self):
@@ -94,12 +96,12 @@ class FileMetadataSchemaDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = FileMetadataSchemaSerializer
-    view_category = 'schemas'
-    view_name = 'file-metadata-schema-detail'
+    view_category = "schemas"
+    view_name = "file-metadata-schema-detail"
 
     # overrides RetrieveAPIView
     def get_object(self):
-        schema_id = self.kwargs['schema_id']
+        schema_id = self.kwargs["schema_id"]
         return get_object_or_error(FileMetadataSchema, schema_id, self.request)
 
 
@@ -116,12 +118,12 @@ class RegistrationSchemaBlocks(JSONAPIBaseView, generics.ListAPIView):
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = RegistrationSchemaBlockSerializer
-    view_category = 'schemas'
-    view_name = 'registration-schema-blocks'
-    ordering = ('_order',)
+    view_category = "schemas"
+    view_name = "registration-schema-blocks"
+    ordering = ("_order",)
 
     def get_queryset(self):
-        schema_id = self.kwargs.get('schema_id')
+        schema_id = self.kwargs.get("schema_id")
         schema = get_object_or_error(RegistrationSchema, schema_id, self.request)
         return schema.schema_blocks.all()
 
@@ -137,8 +139,10 @@ class RegistrationSchemaBlockDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = RegistrationSchemaBlockSerializer
-    view_category = 'schemas'
-    view_name = 'registration-schema-form-block-detail'
+    view_category = "schemas"
+    view_name = "registration-schema-form-block-detail"
 
     def get_object(self):
-        return get_object_or_error(RegistrationSchemaBlock, self.kwargs.get('schema_block_id'), self.request)
+        return get_object_or_error(
+            RegistrationSchemaBlock, self.kwargs.get("schema_block_id"), self.request
+        )

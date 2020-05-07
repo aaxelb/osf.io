@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 
 class TestDropboxSerializer(StorageAddonSerializerTestSuiteMixin, OsfTestCase):
-    addon_short_name = 'dropbox'
+    addon_short_name = "dropbox"
 
     ExternalAccountFactory = DropboxAccountFactory
     Serializer = DropboxSerializer

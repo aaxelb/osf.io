@@ -11,10 +11,10 @@ from addons.mendeley import models
 
 
 class MendeleyAccountFactory(ExternalAccountFactory):
-    provider = 'mendeley'
-    provider_id = Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = Sequence(lambda n: 'key-{0}'.format(n))
-    oauth_secret = Sequence(lambda n: 'secret-{0}'.format(n))
+    provider = "mendeley"
+    provider_id = Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = Sequence(lambda n: "key-{0}".format(n))
+    oauth_secret = Sequence(lambda n: "secret-{0}".format(n))
     expires_at = timezone.now() + relativedelta(days=1)
 
 

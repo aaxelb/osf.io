@@ -8,13 +8,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_wiki', '0006_wikipage_wikiversion'),
+        ("addons_wiki", "0006_wikipage_wikiversion"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nodewikipage',
-            name='former_guid',
-            field=models.CharField(blank=True, max_length=100, null=True, db_index=True),
+            model_name="nodewikipage",
+            name="former_guid",
+            field=models.CharField(
+                blank=True, max_length=100, null=True, db_index=True
+            ),
         ),
     ]

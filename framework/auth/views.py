@@ -15,10 +15,22 @@ from framework.auth import exceptions
 from framework.auth import cas, campaigns
 from framework.auth import logout as osf_logout
 from framework.auth import get_user
-from framework.auth.exceptions import DuplicateEmailError, ExpiredTokenError, InvalidTokenError
+from framework.auth.exceptions import (
+    DuplicateEmailError,
+    ExpiredTokenError,
+    InvalidTokenError,
+)
 from framework.auth.core import generate_verification_key
-from framework.auth.decorators import block_bing_preview, collect_auth, must_be_logged_in
-from framework.auth.forms import ResendConfirmationForm, ForgotPasswordForm, ResetPasswordForm
+from framework.auth.decorators import (
+    block_bing_preview,
+    collect_auth,
+    must_be_logged_in,
+)
+from framework.auth.forms import (
+    ResendConfirmationForm,
+    ForgotPasswordForm,
+    ResetPasswordForm,
+)
 from framework.auth.utils import ensure_external_identity_uniqueness, validate_recaptcha
 from framework.exceptions import HTTPError
 from framework.flask import redirect  # VOL-aware redirect
@@ -37,6 +49,7 @@ from osf.models.tag import Tag
 from osf.utils.requests import check_select_for_update
 from osf import features
 from website.util.metrics import CampaignClaimedTags, CampaignSourceTags
+
 
 @block_bing_preview
 @collect_auth
@@ -60,22 +73,24 @@ def reset_password_get(auth, uid=None, token=None):
     user_obj = OSFUser.load(uid)
     if not (user_obj and user_obj.verify_password_token(token=token)):
         error_data = {
-            'message_short': 'Invalid Request.',
-            'message_long': 'The requested URL is invalid, has expired, or was already used',
+            "message_short": "Invalid Request.",
+            "message_long": "The requested URL is invalid, has expired, or was already used",
         }
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data=error_data)
 
     # refresh the verification key (v2)
-    user_obj.verification_key_v2 = generate_verification_key(verification_type='password')
+    user_obj.verification_key_v2 = generate_verification_key(
+        verification_type="password"
+    )
     user_obj.save()
 
-    #override routes.py login_url to redirect to dashboard
-    service_url = web_url_for('dashboard', _absolute=True)
+    # override routes.py login_url to redirect to dashboard
+    service_url = web_url_for("dashboard", _absolute=True)
 
     return {
-        'uid': user_obj._id,
-        'token': user_obj.verification_key_v2['token'],
-        'login_url': service_url,
+        "uid": user_obj._id,
+        "token": user_obj.verification_key_v2["token"],
+        "login_url": service_url,
     }
 
 
@@ -96,8 +111,8 @@ def reset_password_post(uid=None, token=None):
     user_obj = OSFUser.load(uid)
     if not (user_obj and user_obj.verify_password_token(token=token)):
         error_data = {
-            'message_short': 'Invalid Request.',
-            'message_long': 'The requested URL is invalid, has expired, or was already used',
+            "message_short": "Invalid Request.",
+            "message_long": "The requested URL is invalid, has expired, or was already used",
         }
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data=error_data)
 
@@ -111,26 +126,32 @@ def reset_password_post(uid=None, token=None):
         user_obj.verification_key = generate_verification_key(verification_type=None)
         try:
             user_obj.set_password(form.password.data)
-            osf4m_source_tag, created = Tag.all_tags.get_or_create(name=CampaignSourceTags.Osf4m.value, system=True)
-            osf4m_claimed_tag, created = Tag.all_tags.get_or_create(name=CampaignClaimedTags.Osf4m.value, system=True)
+            osf4m_source_tag, created = Tag.all_tags.get_or_create(
+                name=CampaignSourceTags.Osf4m.value, system=True
+            )
+            osf4m_claimed_tag, created = Tag.all_tags.get_or_create(
+                name=CampaignClaimedTags.Osf4m.value, system=True
+            )
             if user_obj.all_tags.filter(id=osf4m_source_tag.id, system=True).exists():
                 user_obj.add_system_tag(osf4m_claimed_tag)
             user_obj.save()
         except exceptions.ChangePasswordError as error:
             for message in error.messages:
-                status.push_status_message(message, kind='warning', trust=False)
+                status.push_status_message(message, kind="warning", trust=False)
         else:
-            status.push_status_message('Password reset', kind='success', trust=False)
+            status.push_status_message("Password reset", kind="success", trust=False)
             # redirect to CAS and authenticate the user automatically with one-time verification key.
-            return redirect(cas.get_login_url(
-                web_url_for('user_account', _absolute=True),
-                username=user_obj.username,
-                verification_key=user_obj.verification_key
-            ))
+            return redirect(
+                cas.get_login_url(
+                    web_url_for("user_account", _absolute=True),
+                    username=user_obj.username,
+                    verification_key=user_obj.verification_key,
+                )
+            )
 
     return {
-        'uid': user_obj._id,
-        'token': user_obj.verification_key_v2['token'],
+        "uid": user_obj._id,
+        "token": user_obj.verification_key_v2["token"],
     }
 
 
@@ -148,9 +169,9 @@ def forgot_password_get(auth):
     if auth.logged_in:
         return auth_logout(redirect_url=request.url)
 
-    #overriding the routes.py sign in url to redirect to the dashboard after login
+    # overriding the routes.py sign in url to redirect to the dashboard after login
     context = {}
-    context['login_url'] = web_url_for('dashboard', _absolute=True)
+    context["login_url"] = web_url_for("dashboard", _absolute=True)
 
     return context
 
@@ -162,38 +183,46 @@ def forgot_password_post():
     :return {}
     """
 
-    form = ForgotPasswordForm(request.form, prefix='forgot_password')
+    form = ForgotPasswordForm(request.form, prefix="forgot_password")
 
     if not form.validate():
         # Don't go anywhere
         forms.push_errors_to_status(form.errors)
     else:
         email = form.email.data
-        status_message = ('If there is an OSF account associated with {0}, an email with instructions on how to '
-                          'reset the OSF password has been sent to {0}. If you do not receive an email and believe '
-                          'you should have, please contact OSF Support. ').format(email)
-        kind = 'success'
+        status_message = (
+            "If there is an OSF account associated with {0}, an email with instructions on how to "
+            "reset the OSF password has been sent to {0}. If you do not receive an email and believe "
+            "you should have, please contact OSF Support. "
+        ).format(email)
+        kind = "success"
         # check if the user exists
         user_obj = get_user(email=email)
         if user_obj:
             # rate limit forgot_password_post
-            if not throttle_period_expired(user_obj.email_last_sent, settings.SEND_EMAIL_THROTTLE):
-                status_message = 'You have recently requested to change your password. Please wait a few minutes ' \
-                                 'before trying again.'
-                kind = 'error'
+            if not throttle_period_expired(
+                user_obj.email_last_sent, settings.SEND_EMAIL_THROTTLE
+            ):
+                status_message = (
+                    "You have recently requested to change your password. Please wait a few minutes "
+                    "before trying again."
+                )
+                kind = "error"
             # TODO [OSF-6673]: Use the feature in [OSF-6998] for user to resend claim email.
             elif user_obj.is_active:
                 # new random verification key (v2)
-                user_obj.verification_key_v2 = generate_verification_key(verification_type='password')
+                user_obj.verification_key_v2 = generate_verification_key(
+                    verification_type="password"
+                )
                 user_obj.email_last_sent = timezone.now()
                 user_obj.save()
                 reset_link = furl.urljoin(
                     settings.DOMAIN,
                     web_url_for(
-                        'reset_password_get',
+                        "reset_password_get",
                         uid=user_obj._id,
-                        token=user_obj.verification_key_v2['token']
-                    )
+                        token=user_obj.verification_key_v2["token"],
+                    ),
                 )
                 mails.send_mail(
                     to_addr=email,
@@ -207,7 +236,9 @@ def forgot_password_post():
     return {}
 
 
-def login_and_register_handler(auth, login=True, campaign=None, next_url=None, logout=None):
+def login_and_register_handler(
+    auth, login=True, campaign=None, next_url=None, logout=None
+):
     """
     Non-view helper to handle `login` and `register` requests.
 
@@ -225,10 +256,10 @@ def login_and_register_handler(auth, login=True, campaign=None, next_url=None, l
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
 
     data = {
-        'status_code': http_status.HTTP_302_FOUND if login else http_status.HTTP_200_OK,
-        'next_url': next_url,
-        'campaign': None,
-        'must_login_warning': False,
+        "status_code": http_status.HTTP_302_FOUND if login else http_status.HTTP_200_OK,
+        "next_url": next_url,
+        "campaign": None,
+        "must_login_warning": False,
     }
 
     # login or register with campaign parameter
@@ -236,76 +267,82 @@ def login_and_register_handler(auth, login=True, campaign=None, next_url=None, l
         if validate_campaign(campaign):
             # GET `/register` or '/login` with `campaign=institution`
             # unlike other campaigns, institution login serves as an alternative for authentication
-            if campaign == 'institution':
+            if campaign == "institution":
                 if next_url is None:
-                    next_url = web_url_for('dashboard', _absolute=True)
-                data['status_code'] = http_status.HTTP_302_FOUND
+                    next_url = web_url_for("dashboard", _absolute=True)
+                data["status_code"] = http_status.HTTP_302_FOUND
                 if auth.logged_in:
-                    data['next_url'] = next_url
+                    data["next_url"] = next_url
                 else:
-                    data['next_url'] = cas.get_login_url(next_url, campaign='institution')
+                    data["next_url"] = cas.get_login_url(
+                        next_url, campaign="institution"
+                    )
             # for non-institution campaigns
             else:
-                destination = next_url if next_url else campaigns.campaign_url_for(campaign)
+                destination = (
+                    next_url if next_url else campaigns.campaign_url_for(campaign)
+                )
                 if auth.logged_in:
                     # if user is already logged in, go to the campaign landing page
-                    data['status_code'] = http_status.HTTP_302_FOUND
-                    data['next_url'] = destination
+                    data["status_code"] = http_status.HTTP_302_FOUND
+                    data["next_url"] = destination
                 else:
                     # if user is logged out, go to the osf register page with campaign context
                     if login:
                         # `GET /login?campaign=...`
-                        data['next_url'] = web_url_for('auth_register', campaign=campaign, next=destination)
+                        data["next_url"] = web_url_for(
+                            "auth_register", campaign=campaign, next=destination
+                        )
                     else:
                         # `GET /register?campaign=...`
-                        data['campaign'] = campaign
+                        data["campaign"] = campaign
                         if campaigns.is_proxy_login(campaign):
-                            data['next_url'] = web_url_for(
-                                'auth_login',
-                                next=destination,
-                                _absolute=True
+                            data["next_url"] = web_url_for(
+                                "auth_login", next=destination, _absolute=True
                             )
                         else:
-                            data['next_url'] = destination
+                            data["next_url"] = destination
         else:
             # invalid campaign, inform sentry and redirect to non-campaign sign up or sign in
-            redirect_view = 'auth_login' if login else 'auth_register'
-            data['status_code'] = http_status.HTTP_302_FOUND
-            data['next_url'] = web_url_for(redirect_view, campaigns=None, next=next_url)
-            data['campaign'] = None
+            redirect_view = "auth_login" if login else "auth_register"
+            data["status_code"] = http_status.HTTP_302_FOUND
+            data["next_url"] = web_url_for(redirect_view, campaigns=None, next=next_url)
+            data["campaign"] = None
             sentry.log_message(
-                '{} is not a valid campaign. Please add it if this is a new one'.format(campaign)
+                "{} is not a valid campaign. Please add it if this is a new one".format(
+                    campaign
+                )
             )
     # login or register with next parameter
     elif next_url:
         # TODO - logout is no longer used by claim_user_registered, see [#PLAT-1151]
         if logout:
             # handle `claim_user_registered`
-            data['next_url'] = next_url
+            data["next_url"] = next_url
             if auth.logged_in:
                 # log user out and come back
-                data['status_code'] = 'auth_logout'
+                data["status_code"] = "auth_logout"
             else:
                 # after logout, land on the register page with "must_login" warning
-                data['status_code'] = http_status.HTTP_200_OK
-                data['must_login_warning'] = True
+                data["status_code"] = http_status.HTTP_200_OK
+                data["must_login_warning"] = True
         elif auth.logged_in:
             # if user is already logged in, redirect to `next_url`
-            data['status_code'] = http_status.HTTP_302_FOUND
-            data['next_url'] = next_url
+            data["status_code"] = http_status.HTTP_302_FOUND
+            data["next_url"] = next_url
         elif login:
             # `/login?next=next_url`: go to CAS login page with current request url as service url
-            data['status_code'] = http_status.HTTP_302_FOUND
-            data['next_url'] = cas.get_login_url(request.url)
+            data["status_code"] = http_status.HTTP_302_FOUND
+            data["next_url"] = cas.get_login_url(request.url)
         else:
             # `/register?next=next_url`: land on OSF register page with request url as next url
-            data['status_code'] = http_status.HTTP_200_OK
-            data['next_url'] = request.url
+            data["status_code"] = http_status.HTTP_200_OK
+            data["next_url"] = request.url
     else:
         # `/login/` or `/register/` without any parameter
         if auth.logged_in:
-            data['status_code'] = http_status.HTTP_302_FOUND
-        data['next_url'] = web_url_for('dashboard', _absolute=True)
+            data["status_code"] = http_status.HTTP_302_FOUND
+        data["next_url"] = web_url_for("dashboard", _absolute=True)
 
     return data
 
@@ -328,12 +365,14 @@ def auth_login(auth):
     :return: redirects
     """
 
-    campaign = request.args.get('campaign')
-    next_url = request.args.get('next')
+    campaign = request.args.get("campaign")
+    next_url = request.args.get("next")
 
-    data = login_and_register_handler(auth, login=True, campaign=campaign, next_url=next_url)
-    if data['status_code'] == http_status.HTTP_302_FOUND:
-        return redirect(data['next_url'])
+    data = login_and_register_handler(
+        auth, login=True, campaign=campaign, next_url=next_url
+    )
+    if data["status_code"] == http_status.HTTP_302_FOUND:
+        return redirect(data["next_url"])
 
 
 @collect_auth
@@ -359,44 +398,54 @@ def auth_register(auth):
 
     context = {}
     # a target campaign in `auth.campaigns`
-    campaign = request.args.get('campaign')
+    campaign = request.args.get("campaign")
     # the service url for CAS login or redirect url for OSF
-    next_url = request.args.get('next')
+    next_url = request.args.get("next")
     # TODO: no longer used for `claim_user_registered`, see [#PLAT-1151]
-    logout = request.args.get('logout')
+    logout = request.args.get("logout")
 
     # logout must have next_url
     if logout and not next_url:
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
 
-    data = login_and_register_handler(auth, login=False, campaign=campaign, next_url=next_url, logout=logout)
+    data = login_and_register_handler(
+        auth, login=False, campaign=campaign, next_url=next_url, logout=logout
+    )
 
     # land on register page
-    if data['status_code'] == http_status.HTTP_200_OK:
-        if data['must_login_warning']:
+    if data["status_code"] == http_status.HTTP_200_OK:
+        if data["must_login_warning"]:
             status.push_status_message(language.MUST_LOGIN, trust=False)
-        destination = cas.get_login_url(data['next_url'])
+        destination = cas.get_login_url(data["next_url"])
         # "Already have and account?" link
-        context['non_institution_login_url'] = destination
+        context["non_institution_login_url"] = destination
         # "Sign In" button in navigation bar, overwrite the default value set in routes.py
-        context['login_url'] = destination
+        context["login_url"] = destination
         # "Login through your institution" link
-        context['institution_login_url'] = cas.get_login_url(data['next_url'], campaign='institution')
-        context['preprint_campaigns'] = {k._id + '-preprints': {
-            'id': k._id,
-            'name': k.name,
-            'logo_path': k.get_asset_url('square_color_no_transparent')
-        } for k in PreprintProvider.objects.all() if k._id != 'osf'}
-        context['campaign'] = data['campaign']
+        context["institution_login_url"] = cas.get_login_url(
+            data["next_url"], campaign="institution"
+        )
+        context["preprint_campaigns"] = {
+            k._id
+            + "-preprints": {
+                "id": k._id,
+                "name": k.name,
+                "logo_path": k.get_asset_url("square_color_no_transparent"),
+            }
+            for k in PreprintProvider.objects.all()
+            if k._id != "osf"
+        }
+        context["campaign"] = data["campaign"]
         return context, http_status.HTTP_200_OK
     # redirect to url
-    elif data['status_code'] == http_status.HTTP_302_FOUND:
-        return redirect(data['next_url'])
+    elif data["status_code"] == http_status.HTTP_302_FOUND:
+        return redirect(data["next_url"])
     # go to other views
-    elif data['status_code'] == 'auth_logout':
-        return auth_logout(redirect_url=data['next_url'])
+    elif data["status_code"] == "auth_logout":
+        return auth_logout(redirect_url=data["next_url"])
 
     raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
+
 
 @collect_auth
 def auth_logout(auth, redirect_url=None, next_url=None):
@@ -429,7 +478,7 @@ def auth_logout(auth, redirect_url=None, next_url=None):
     #   support `reauth`
 
     # logout/?next=<an OSF verified next url>
-    next_url = next_url or request.args.get('next', None)
+    next_url = next_url or request.args.get("next", None)
     if next_url and validate_next_url(next_url):
         cas_logout_endpoint = cas.get_logout_url(request.url)
         if auth.logged_in:
@@ -438,9 +487,13 @@ def auth_logout(auth, redirect_url=None, next_url=None):
             resp = redirect(next_url)
     # logout/ or logout/?redirect_url=<a CAS verified redirect url>
     else:
-        redirect_url = redirect_url or request.args.get('redirect_url') or web_url_for('goodbye', _absolute=True)
+        redirect_url = (
+            redirect_url
+            or request.args.get("redirect_url")
+            or web_url_for("goodbye", _absolute=True)
+        )
         # set redirection to CAS log out (or log in if `reauth` is present)
-        if 'reauth' in request.args:
+        if "reauth" in request.args:
             cas_endpoint = cas.get_login_url(redirect_url)
         else:
             cas_endpoint = cas.get_logout_url(redirect_url)
@@ -460,27 +513,35 @@ def auth_email_logout(token, user):
     When a user is adding an email or merging an account, add the email to the user and log them out.
     """
 
-    redirect_url = cas.get_logout_url(service_url=cas.get_login_url(service_url=web_url_for('index', _absolute=True)))
+    redirect_url = cas.get_logout_url(
+        service_url=cas.get_login_url(service_url=web_url_for("index", _absolute=True))
+    )
     try:
         unconfirmed_email = user.get_unconfirmed_email_for_token(token)
     except InvalidTokenError:
-        raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': 'Bad token',
-            'message_long': 'The provided token is invalid.'
-        })
+        raise HTTPError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={
+                "message_short": "Bad token",
+                "message_long": "The provided token is invalid.",
+            },
+        )
     except ExpiredTokenError:
-        status.push_status_message('The private link you used is expired.')
-        raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': 'Expired link',
-            'message_long': 'The private link you used is expired.'
-        })
+        status.push_status_message("The private link you used is expired.")
+        raise HTTPError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={
+                "message_short": "Expired link",
+                "message_long": "The private link you used is expired.",
+            },
+        )
     try:
         user_merge = OSFUser.objects.get(emails__address=unconfirmed_email)
     except OSFUser.DoesNotExist:
         user_merge = False
     if user_merge:
         remove_sessions_for_user(user_merge)
-    user.email_verifications[token]['confirmed'] = True
+    user.email_verifications[token]["confirmed"] = True
     user.save()
     remove_sessions_for_user(user)
     resp = redirect(redirect_url)
@@ -508,7 +569,7 @@ def external_login_confirm_email_get(auth, uid, token):
     if not user:
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
 
-    destination = request.args.get('destination')
+    destination = request.args.get("destination")
     if not destination:
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
 
@@ -518,7 +579,7 @@ def external_login_confirm_email_get(auth, uid, token):
         if auth.user._id != user._id:
             return auth_logout(redirect_url=request.url)
         # if it is the expected user
-        new = request.args.get('new', None)
+        new = request.args.get("new", None)
         if destination in campaigns.get_campaigns():
             # external domain takes priority
             campaign_url = campaigns.external_campaign_url_for(destination)
@@ -526,16 +587,22 @@ def external_login_confirm_email_get(auth, uid, token):
                 campaign_url = campaigns.campaign_url_for(destination)
             return redirect(campaign_url)
         if new:
-            status.push_status_message(language.WELCOME_MESSAGE, kind='default', jumbotron=True, trust=True, id='welcome_message')
-        return redirect(web_url_for('dashboard'))
+            status.push_status_message(
+                language.WELCOME_MESSAGE,
+                kind="default",
+                jumbotron=True,
+                trust=True,
+                id="welcome_message",
+            )
+        return redirect(web_url_for("dashboard"))
 
     # token is invalid
     if token not in user.email_verifications:
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
     verification = user.email_verifications[token]
-    email = verification['email']
-    provider = list(verification['external_identity'].keys())[0]
-    provider_id = list(verification['external_identity'][provider].keys())[0]
+    email = verification["email"]
+    provider = list(verification["external_identity"].keys())[0]
+    provider_id = list(verification["external_identity"][provider].keys())[0]
     # wrong provider
     if provider not in user.external_identity:
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
@@ -553,7 +620,7 @@ def external_login_confirm_email_get(auth, uid, token):
         user.emails.create(address=email.lower())
 
     user.date_last_logged_in = timezone.now()
-    user.external_identity[provider][provider_id] = 'VERIFIED'
+    user.external_identity[provider][provider_id] = "VERIFIED"
     user.social[provider.lower()] = provider_id
     del user.email_verifications[token]
     user.verification_key = generate_verification_key()
@@ -561,18 +628,18 @@ def external_login_confirm_email_get(auth, uid, token):
 
     service_url = request.url
 
-    if external_status == 'CREATE':
+    if external_status == "CREATE":
         mails.send_mail(
             to_addr=user.username,
             mail=mails.WELCOME,
-            mimetype='html',
+            mimetype="html",
             user=user,
             domain=settings.DOMAIN,
             osf_support_email=settings.OSF_SUPPORT_EMAIL,
             storage_flag_is_active=storage_i18n_flag_active(),
         )
-        service_url += '&{}'.format(urlencode({'new': 'true'}))
-    elif external_status == 'LINK':
+        service_url += "&{}".format(urlencode({"new": "true"}))
+    elif external_status == "LINK":
         mails.send_mail(
             user=user,
             to_addr=user.username,
@@ -582,11 +649,11 @@ def external_login_confirm_email_get(auth, uid, token):
         )
 
     # redirect to CAS and authenticate the user with the verification key
-    return redirect(cas.get_login_url(
-        service_url,
-        username=user.username,
-        verification_key=user.verification_key
-    ))
+    return redirect(
+        cas.get_login_url(
+            service_url, username=user.username, verification_key=user.verification_key
+        )
+    )
 
 
 @block_bing_preview
@@ -598,24 +665,36 @@ def confirm_email_get(token, auth=None, **kwargs):
     HTTP Method: GET
     """
 
-    is_merge = 'confirm_merge' in request.args
+    is_merge = "confirm_merge" in request.args
 
     try:
         if not is_merge or not check_select_for_update():
-            user = OSFUser.objects.get(guids___id=kwargs['uid'], guids___id__isnull=False)
+            user = OSFUser.objects.get(
+                guids___id=kwargs["uid"], guids___id__isnull=False
+            )
         else:
-            user = OSFUser.objects.filter(guids___id=kwargs['uid'], guids___id__isnull=False).select_for_update().get()
+            user = (
+                OSFUser.objects.filter(
+                    guids___id=kwargs["uid"], guids___id__isnull=False
+                )
+                .select_for_update()
+                .get()
+            )
     except OSFUser.DoesNotExist:
         raise HTTPError(http_status.HTTP_404_NOT_FOUND)
 
     is_initial_confirmation = not user.date_confirmed
-    log_out = request.args.get('logout', None)
+    log_out = request.args.get("logout", None)
 
     # if the user is merging or adding an email (they already are an osf user)
     if log_out:
         return auth_email_logout(token, user)
 
-    if auth and auth.user and (auth.user._id == user._id or auth.user._id == user.merged_by._id):
+    if (
+        auth
+        and auth.user
+        and (auth.user._id == user._id or auth.user._id == user.merged_by._id)
+    ):
         if not is_merge:
             # determine if the user registered through a campaign
             campaign = campaigns.campaign_for_user(user)
@@ -623,22 +702,36 @@ def confirm_email_get(token, auth=None, **kwargs):
                 return redirect(campaigns.campaign_url_for(campaign))
 
             # go to home page with push notification
-            if auth.user.emails.count() == 1 and len(auth.user.email_verifications) == 0:
-                status.push_status_message(language.WELCOME_MESSAGE, kind='default', jumbotron=True, trust=True, id='welcome_message')
+            if (
+                auth.user.emails.count() == 1
+                and len(auth.user.email_verifications) == 0
+            ):
+                status.push_status_message(
+                    language.WELCOME_MESSAGE,
+                    kind="default",
+                    jumbotron=True,
+                    trust=True,
+                    id="welcome_message",
+                )
             if token in auth.user.email_verifications:
-                status.push_status_message(language.CONFIRM_ALTERNATE_EMAIL_ERROR, kind='danger', trust=True, id='alternate_email_error')
-            return redirect(web_url_for('index'))
+                status.push_status_message(
+                    language.CONFIRM_ALTERNATE_EMAIL_ERROR,
+                    kind="danger",
+                    trust=True,
+                    id="alternate_email_error",
+                )
+            return redirect(web_url_for("index"))
 
-        status.push_status_message(language.MERGE_COMPLETE, kind='success', trust=False)
-        return redirect(web_url_for('user_account'))
+        status.push_status_message(language.MERGE_COMPLETE, kind="success", trust=False)
+        return redirect(web_url_for("user_account"))
 
     try:
         user.confirm_email(token, merge=is_merge)
     except exceptions.EmailConfirmTokenError as e:
-        raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': e.message_short,
-            'message_long': str(e)
-        })
+        raise HTTPError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={"message_short": e.message_short, "message_long": str(e)},
+        )
 
     if is_initial_confirmation:
         user.update_date_last_login()
@@ -648,7 +741,7 @@ def confirm_email_get(token, auth=None, **kwargs):
         mails.send_mail(
             to_addr=user.username,
             mail=mails.WELCOME,
-            mimetype='html',
+            mimetype="html",
             user=user,
             domain=settings.DOMAIN,
             osf_support_email=settings.OSF_SUPPORT_EMAIL,
@@ -659,11 +752,11 @@ def confirm_email_get(token, auth=None, **kwargs):
     user.verification_key = generate_verification_key()
     user.save()
     # redirect to CAS and authenticate the user with a verification key.
-    return redirect(cas.get_login_url(
-        request.url,
-        username=user.username,
-        verification_key=user.verification_key
-    ))
+    return redirect(
+        cas.get_login_url(
+            request.url, username=user.username, verification_key=user.verification_key
+        )
+    )
 
 
 @must_be_logged_in
@@ -676,18 +769,18 @@ def unconfirmed_email_remove(auth=None):
     user = auth.user
     json_body = request.get_json()
     try:
-        given_token = json_body['token']
+        given_token = json_body["token"]
     except KeyError:
-        raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': 'Missing token',
-            'message_long': 'Must provide a token'
-        })
+        raise HTTPError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={
+                "message_short": "Missing token",
+                "message_long": "Must provide a token",
+            },
+        )
     user.clean_email_verifications(given_token=given_token)
     user.save()
-    return {
-        'status': 'success',
-        'removed_email': json_body['address']
-    }, 200
+    return {"status": "success", "removed_email": json_body["address"]}, 200
 
 
 @must_be_logged_in
@@ -699,33 +792,43 @@ def unconfirmed_email_add(auth=None):
     user = auth.user
     json_body = request.get_json()
     try:
-        token = json_body['token']
+        token = json_body["token"]
     except KeyError:
-        raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': 'Missing token',
-            'message_long': 'Must provide a token'
-        })
+        raise HTTPError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={
+                "message_short": "Missing token",
+                "message_long": "Must provide a token",
+            },
+        )
     try:
         user.confirm_email(token, merge=True)
     except exceptions.InvalidTokenError:
-        raise InvalidTokenError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': 'Invalid user token',
-            'message_long': 'The user token is invalid'
-        })
+        raise InvalidTokenError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={
+                "message_short": "Invalid user token",
+                "message_long": "The user token is invalid",
+            },
+        )
     except exceptions.EmailConfirmTokenError as e:
-        raise HTTPError(http_status.HTTP_400_BAD_REQUEST, data={
-            'message_short': e.message_short,
-            'message_long': str(e)
-        })
+        raise HTTPError(
+            http_status.HTTP_400_BAD_REQUEST,
+            data={"message_short": e.message_short, "message_long": str(e)},
+        )
 
     user.save()
-    return {
-        'status': 'success',
-        'removed_email': json_body['address']
-    }, 200
+    return {"status": "success", "removed_email": json_body["address"]}, 200
 
 
-def send_confirm_email(user, email, renew=False, external_id_provider=None, external_id=None, destination=None):
+def send_confirm_email(
+    user,
+    email,
+    renew=False,
+    external_id_provider=None,
+    external_id=None,
+    destination=None,
+):
     """
     Sends `user` a confirmation to the given `email`.
 
@@ -746,7 +849,7 @@ def send_confirm_email(user, email, renew=False, external_id_provider=None, exte
         force=True,
         renew=renew,
         external_id_provider=external_id_provider,
-        destination=destination
+        destination=destination,
     )
 
     try:
@@ -760,22 +863,25 @@ def send_confirm_email(user, email, renew=False, external_id_provider=None, exte
     # Choose the appropriate email template to use and add existing_user flag if a merge or adding an email.
     if external_id_provider and external_id:
         # First time login through external identity provider, link or create an OSF account confirmation
-        if user.external_identity[external_id_provider][external_id] == 'CREATE':
+        if user.external_identity[external_id_provider][external_id] == "CREATE":
             mail_template = mails.EXTERNAL_LOGIN_CONFIRM_EMAIL_CREATE
-        elif user.external_identity[external_id_provider][external_id] == 'LINK':
+        elif user.external_identity[external_id_provider][external_id] == "LINK":
             mail_template = mails.EXTERNAL_LOGIN_CONFIRM_EMAIL_LINK
     elif merge_target:
         # Merge account confirmation
         mail_template = mails.CONFIRM_MERGE
-        confirmation_url = '{}?logout=1'.format(confirmation_url)
+        confirmation_url = "{}?logout=1".format(confirmation_url)
     elif user.is_active:
         # Add email confirmation
         mail_template = mails.CONFIRM_EMAIL
-        confirmation_url = '{}?logout=1'.format(confirmation_url)
+        confirmation_url = "{}?logout=1".format(confirmation_url)
     elif campaign:
         # Account creation confirmation: from campaign
         mail_template = campaigns.email_template_for_campaign(campaign)
-        if campaigns.is_proxy_login(campaign) and campaigns.get_service_provider(campaign) != 'OSF':
+        if (
+            campaigns.is_proxy_login(campaign)
+            and campaigns.get_service_provider(campaign) != "OSF"
+        ):
             branded_preprints_provider = campaigns.get_service_provider(campaign)
         logo = campaigns.get_campaign_logo(campaign)
     else:
@@ -785,7 +891,7 @@ def send_confirm_email(user, email, renew=False, external_id_provider=None, exte
     mails.send_mail(
         email,
         mail_template,
-        'html',
+        "html",
         user=user,
         confirmation_url=confirmation_url,
         email=email,
@@ -794,7 +900,7 @@ def send_confirm_email(user, email, renew=False, external_id_provider=None, exte
         branded_preprints_provider=branded_preprints_provider,
         osf_support_email=settings.OSF_SUPPORT_EMAIL,
         can_change_preferences=False,
-        logo=logo if logo else settings.OSF_LOGO
+        logo=logo if logo else settings.OSF_LOGO,
     )
 
 
@@ -816,34 +922,37 @@ def register_user(**kwargs):
     # Note: Both `landing.mako` and `register.mako` already have this check on the form. Users can not submit the form
     # if emails do not match. However, this check should not be removed given we may use the raw api call directly.
     json_data = request.get_json()
-    if str(json_data['email1']).lower() != str(json_data['email2']).lower():
+    if str(json_data["email1"]).lower() != str(json_data["email2"]).lower():
         raise HTTPError(
             http_status.HTTP_400_BAD_REQUEST,
-            data=dict(message_long='Email addresses must match.')
+            data=dict(message_long="Email addresses must match."),
         )
 
     # Verify that captcha is valid
-    if settings.RECAPTCHA_SITE_KEY and not validate_recaptcha(json_data.get('g-recaptcha-response'), remote_ip=request.remote_addr):
+    if settings.RECAPTCHA_SITE_KEY and not validate_recaptcha(
+        json_data.get("g-recaptcha-response"), remote_ip=request.remote_addr
+    ):
         raise HTTPError(
-            http_status.HTTP_400_BAD_REQUEST,
-            data=dict(message_long='Invalid Captcha')
+            http_status.HTTP_400_BAD_REQUEST, data=dict(message_long="Invalid Captcha")
         )
 
     try:
-        full_name = request.json['fullName']
+        full_name = request.json["fullName"]
         full_name = strip_html(full_name)
 
-        campaign = json_data.get('campaign')
+        campaign = json_data.get("campaign")
         if campaign and campaign not in campaigns.get_campaigns():
             campaign = None
 
-        accepted_terms_of_service = timezone.now() if json_data.get('acceptedTermsOfService') else None
+        accepted_terms_of_service = (
+            timezone.now() if json_data.get("acceptedTermsOfService") else None
+        )
         user = framework_auth.register_unconfirmed(
-            request.json['email1'],
-            request.json['password'],
+            request.json["email1"],
+            request.json["password"],
             full_name,
             campaign=campaign,
-            accepted_terms_of_service=accepted_terms_of_service
+            accepted_terms_of_service=accepted_terms_of_service,
         )
         framework_auth.signals.user_registered.send(user)
     except (ValidationValueError, DuplicateEmailError):
@@ -851,27 +960,26 @@ def register_user(**kwargs):
             http_status.HTTP_409_CONFLICT,
             data=dict(
                 message_long=language.ALREADY_REGISTERED.format(
-                    email=markupsafe.escape(request.json['email1'])
+                    email=markupsafe.escape(request.json["email1"])
                 )
-            )
+            ),
         )
     except BlacklistedEmailError:
         raise HTTPError(
             http_status.HTTP_400_BAD_REQUEST,
-            data=dict(message_long=language.BLACKLISTED_EMAIL)
+            data=dict(message_long=language.BLACKLISTED_EMAIL),
         )
     except ValidationError as e:
         raise HTTPError(
-            http_status.HTTP_400_BAD_REQUEST,
-            data=dict(message_long=str(e))
+            http_status.HTTP_400_BAD_REQUEST, data=dict(message_long=str(e))
         )
 
     if settings.CONFIRM_REGISTRATIONS_BY_EMAIL:
         send_confirm_email(user, email=user.username)
         message = language.REGISTRATION_SUCCESS.format(email=user.username)
-        return {'message': message}
+        return {"message": message}
     else:
-        return {'message': 'You may now log in.'}
+        return {"message": "You may now log in."}
 
 
 @collect_auth
@@ -887,7 +995,7 @@ def resend_confirmation_get(auth):
 
     form = ResendConfirmationForm(request.form)
     return {
-        'form': form,
+        "form": form,
     }
 
 
@@ -907,30 +1015,38 @@ def resend_confirmation_post(auth):
     if form.validate():
         clean_email = form.email.data
         user = get_user(email=clean_email)
-        status_message = ('If there is an OSF account associated with this unconfirmed email address {0}, '
-                          'a confirmation email has been resent to it. If you do not receive an email and believe '
-                          'you should have, please contact OSF Support.').format(clean_email)
-        kind = 'success'
+        status_message = (
+            "If there is an OSF account associated with this unconfirmed email address {0}, "
+            "a confirmation email has been resent to it. If you do not receive an email and believe "
+            "you should have, please contact OSF Support."
+        ).format(clean_email)
+        kind = "success"
         if user:
-            if throttle_period_expired(user.email_last_sent, settings.SEND_EMAIL_THROTTLE):
+            if throttle_period_expired(
+                user.email_last_sent, settings.SEND_EMAIL_THROTTLE
+            ):
                 try:
                     send_confirm_email(user, clean_email, renew=True)
                 except KeyError:
                     # already confirmed, redirect to dashboard
-                    status_message = 'This email {0} has already been confirmed.'.format(clean_email)
-                    kind = 'warning'
+                    status_message = "This email {0} has already been confirmed.".format(
+                        clean_email
+                    )
+                    kind = "warning"
                 user.email_last_sent = timezone.now()
                 user.save()
             else:
-                status_message = ('You have recently requested to resend your confirmation email. '
-                                 'Please wait a few minutes before trying again.')
-                kind = 'error'
+                status_message = (
+                    "You have recently requested to resend your confirmation email. "
+                    "Please wait a few minutes before trying again."
+                )
+                kind = "error"
         status.push_status_message(status_message, kind=kind, trust=False)
     else:
         forms.push_errors_to_status(form.errors)
 
     # Don't go anywhere
-    return {'form': form}
+    return {"form": form}
 
 
 def external_login_email_get():
@@ -944,13 +1060,13 @@ def external_login_email_get():
     if not session.is_external_first_login:
         raise HTTPError(http_status.HTTP_401_UNAUTHORIZED)
 
-    external_id_provider = session.data['auth_user_external_id_provider']
-    auth_user_fullname = session.data.get('auth_user_fullname')
+    external_id_provider = session.data["auth_user_external_id_provider"]
+    auth_user_fullname = session.data.get("auth_user_fullname")
 
     return {
-        'form': form,
-        'external_id_provider': external_id_provider,
-        'auth_user_fullname': auth_user_fullname,
+        "form": form,
+        "external_id_provider": external_id_provider,
+        "auth_user_fullname": auth_user_fullname,
     }
 
 
@@ -965,27 +1081,31 @@ def external_login_email_post():
     if not session.is_external_first_login:
         raise HTTPError(http_status.HTTP_401_UNAUTHORIZED)
 
-    external_id_provider = session.data['auth_user_external_id_provider']
-    external_id = session.data['auth_user_external_id']
-    fullname = session.data.get('auth_user_fullname') or form.name.data
-    service_url = session.data['service_url']
+    external_id_provider = session.data["auth_user_external_id_provider"]
+    external_id = session.data["auth_user_external_id"]
+    fullname = session.data.get("auth_user_fullname") or form.name.data
+    service_url = session.data["service_url"]
 
     # TODO: @cslzchen use user tags instead of destination
-    destination = 'dashboard'
+    destination = "dashboard"
     for campaign in campaigns.get_campaigns():
-        if campaign != 'institution':
+        if campaign != "institution":
             # Handle different url encoding schemes between `furl` and `urlparse/urllib`.
             # OSF use `furl` to parse service url during service validation with CAS. However, `web_url_for()` uses
             # `urlparse/urllib` to generate service url. `furl` handles `urlparser/urllib` generated urls while ` but
             # not vice versa.
             campaign_url = furl.furl(campaigns.campaign_url_for(campaign)).url
-            external_campaign_url = furl.furl(campaigns.external_campaign_url_for(campaign)).url
+            external_campaign_url = furl.furl(
+                campaigns.external_campaign_url_for(campaign)
+            ).url
             if campaigns.is_proxy_login(campaign):
                 # proxy campaigns: OSF Preprints and branded ones
-                if check_service_url_with_proxy_campaign(str(service_url), campaign_url, external_campaign_url):
+                if check_service_url_with_proxy_campaign(
+                    str(service_url), campaign_url, external_campaign_url
+                ):
                     destination = campaign
                     # continue to check branded preprints even service url matches osf preprints
-                    if campaign != 'osf-preprints':
+                    if campaign != "osf-preprints":
                         break
             elif service_url.startswith(campaign_url):
                 # osf campaigns: OSF Prereg and ERPC
@@ -996,9 +1116,7 @@ def external_login_email_post():
         clean_email = form.email.data
         user = get_user(email=clean_email)
         external_identity = {
-            external_id_provider: {
-                external_id: None,
-            },
+            external_id_provider: {external_id: None,},
         }
         try:
             ensure_external_identity_uniqueness(external_id_provider, external_id, user)
@@ -1006,12 +1124,17 @@ def external_login_email_post():
             raise HTTPError(http_status.HTTP_403_FORBIDDEN, e.message)
         if user:
             # 1. update user oauth, with pending status
-            external_identity[external_id_provider][external_id] = 'LINK'
+            external_identity[external_id_provider][external_id] = "LINK"
             if external_id_provider in user.external_identity:
-                user.external_identity[external_id_provider].update(external_identity[external_id_provider])
+                user.external_identity[external_id_provider].update(
+                    external_identity[external_id_provider]
+                )
             else:
                 user.external_identity.update(external_identity)
-            if not user.accepted_terms_of_service and form.accepted_terms_of_service.data:
+            if (
+                not user.accepted_terms_of_service
+                and form.accepted_terms_of_service.data
+            ):
                 user.accepted_terms_of_service = timezone.now()
             # 2. add unconfirmed email and send confirmation email
             user.add_unconfirmed_email(clean_email, external_identity=external_identity)
@@ -1021,27 +1144,28 @@ def external_login_email_post():
                 clean_email,
                 external_id_provider=external_id_provider,
                 external_id=external_id,
-                destination=destination
+                destination=destination,
             )
             # 3. notify user
             message = language.EXTERNAL_LOGIN_EMAIL_LINK_SUCCESS.format(
-                external_id_provider=external_id_provider,
-                email=user.username
+                external_id_provider=external_id_provider, email=user.username
             )
-            kind = 'success'
+            kind = "success"
             # 4. remove session and osf cookie
             remove_session(session)
         else:
             # 1. create unconfirmed user with pending status
-            external_identity[external_id_provider][external_id] = 'CREATE'
-            accepted_terms_of_service = timezone.now() if form.accepted_terms_of_service.data else None
+            external_identity[external_id_provider][external_id] = "CREATE"
+            accepted_terms_of_service = (
+                timezone.now() if form.accepted_terms_of_service.data else None
+            )
             user = OSFUser.create_unconfirmed(
                 username=clean_email,
                 password=None,
                 fullname=fullname,
                 external_identity=external_identity,
                 campaign=None,
-                accepted_terms_of_service=accepted_terms_of_service
+                accepted_terms_of_service=accepted_terms_of_service,
             )
             # TODO: [#OSF-6934] update social fields, verified social fields cannot be modified
             user.save()
@@ -1051,14 +1175,13 @@ def external_login_email_post():
                 user.username,
                 external_id_provider=external_id_provider,
                 external_id=external_id,
-                destination=destination
+                destination=destination,
             )
             # 4. notify user
             message = language.EXTERNAL_LOGIN_EMAIL_CREATE_SUCCESS.format(
-                external_id_provider=external_id_provider,
-                email=user.username
+                external_id_provider=external_id_provider, email=user.username
             )
-            kind = 'success'
+            kind = "success"
             # 5. remove session
             remove_session(session)
         status.push_status_message(message, kind=kind, trust=False)
@@ -1067,9 +1190,9 @@ def external_login_email_post():
 
     # Don't go anywhere
     return {
-        'form': form,
-        'external_id_provider': external_id_provider,
-        'auth_user_fullname': fullname
+        "form": form,
+        "external_id_provider": external_id_provider,
+        "auth_user_fullname": fullname,
     }
 
 
@@ -1096,17 +1219,19 @@ def validate_next_url(next_url):
 
     # disable external domain using `//`: the browser allows `//` as a shortcut for non-protocol specific requests
     # like http:// or https:// depending on the use of SSL on the page already.
-    if next_url.startswith('//'):
+    if next_url.startswith("//"):
         return False
 
     # only OSF, MFR, CAS and Branded Preprints domains are allowed
-    if next_url[0] == '/' or next_url.startswith(settings.DOMAIN):
+    if next_url[0] == "/" or next_url.startswith(settings.DOMAIN):
         # OSF
         return True
-    if next_url.startswith(settings.CAS_SERVER_URL) or next_url.startswith(settings.MFR_SERVER_URL):
+    if next_url.startswith(settings.CAS_SERVER_URL) or next_url.startswith(
+        settings.MFR_SERVER_URL
+    ):
         # CAS or MFR
         return True
-    for url in Region.objects.values_list('mfr_url', flat=True):
+    for url in Region.objects.values_list("mfr_url", flat=True):
         if next_url.startswith(url):
             return True
     for url in campaigns.get_external_domains():
@@ -1117,7 +1242,9 @@ def validate_next_url(next_url):
     return False
 
 
-def check_service_url_with_proxy_campaign(service_url, campaign_url, external_campaign_url=None):
+def check_service_url_with_proxy_campaign(
+    service_url, campaign_url, external_campaign_url=None
+):
     """
     Check if service url belongs to proxy campaigns: OSF Preprints and branded ones.
     Both service_url and campaign_url are parsed using `furl` encoding scheme.
@@ -1128,15 +1255,17 @@ def check_service_url_with_proxy_campaign(service_url, campaign_url, external_ca
     :return: the matched object or None
     """
 
-    prefix_1 = settings.DOMAIN + 'login/?next=' + campaign_url
-    prefix_2 = settings.DOMAIN + 'login?next=' + campaign_url
+    prefix_1 = settings.DOMAIN + "login/?next=" + campaign_url
+    prefix_2 = settings.DOMAIN + "login?next=" + campaign_url
 
     valid = service_url.startswith(prefix_1) or service_url.startswith(prefix_2)
     valid_external = False
 
     if external_campaign_url:
-        prefix_3 = settings.DOMAIN + 'login/?next=' + external_campaign_url
-        prefix_4 = settings.DOMAIN + 'login?next=' + external_campaign_url
-        valid_external = service_url.startswith(prefix_3) or service_url.startswith(prefix_4)
+        prefix_3 = settings.DOMAIN + "login/?next=" + external_campaign_url
+        prefix_4 = settings.DOMAIN + "login?next=" + external_campaign_url
+        valid_external = service_url.startswith(prefix_3) or service_url.startswith(
+            prefix_4
+        )
 
     return valid or valid_external

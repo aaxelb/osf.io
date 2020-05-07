@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0005_merge'),
+        ("osf", "0005_merge"),
     ]
 
     operations = [
@@ -24,6 +24,6 @@ class Migration(migrations.Migration):
                 """
                 DROP INDEX fileversion_metadata_sha_arch_vault_index;
                 """
-            ]
+            ],
         )
     ]

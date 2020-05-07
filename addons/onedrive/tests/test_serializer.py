@@ -10,9 +10,10 @@ from tests.base import OsfTestCase
 
 pytestmark = pytest.mark.django_db
 
+
 class TestOneDriveSerializer(StorageAddonSerializerTestSuiteMixin, OsfTestCase):
 
-    addon_short_name = 'onedrive'
+    addon_short_name = "onedrive"
 
     Serializer = OneDriveSerializer
     ExternalAccountFactory = OneDriveAccountFactory

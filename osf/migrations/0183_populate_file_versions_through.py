@@ -87,10 +87,11 @@ def populate_fileversion_name(state, schema):
     with connection.cursor() as cursor:
         cursor.execute(sql)
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0182_add_custom_file_versions_through'),
+        ("osf", "0182_add_custom_file_versions_through"),
     ]
 
     operations = [

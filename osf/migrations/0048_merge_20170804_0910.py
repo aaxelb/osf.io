@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0047_remove_abstractnode_users_watching_node'),
-        ('osf', '0044_basefilenode_uniqueness_index'),
+        ("osf", "0047_remove_abstractnode_users_watching_node"),
+        ("osf", "0044_basefilenode_uniqueness_index"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -11,25 +11,25 @@ logger = logging.getLogger(__file__)
 
 
 PREPRINT_DOI_NAMESPACE = {
-    'osf': '10.31219',
-    'agrixiv': '10.31220',
-    'arabixiv': '10.31221',
-    'bitss': '10.31222',
-    'eartharxiv': '10.31223',
-    'engrxiv': '10.31224',
-    'focusarchive': '10.31225',
-    'frenxiv': '10.31226',
-    'inarxiv': '10.31227',
-    'lawarxiv': '10.31228',
-    'lissa': '10.31229',
-    'marxiv': '10.31230',
-    'mindrxiv': '10.31231',
-    'nutrixiv': '10.31232',
-    'paleorxiv': '10.31233',
-    'psyarxiv': '10.31234',
-    'socarxiv': '10.31235',
-    'sportrxiv': '10.31236',
-    'thesiscommons': '10.31237'
+    "osf": "10.31219",
+    "agrixiv": "10.31220",
+    "arabixiv": "10.31221",
+    "bitss": "10.31222",
+    "eartharxiv": "10.31223",
+    "engrxiv": "10.31224",
+    "focusarchive": "10.31225",
+    "frenxiv": "10.31226",
+    "inarxiv": "10.31227",
+    "lawarxiv": "10.31228",
+    "lissa": "10.31229",
+    "marxiv": "10.31230",
+    "mindrxiv": "10.31231",
+    "nutrixiv": "10.31232",
+    "paleorxiv": "10.31233",
+    "psyarxiv": "10.31234",
+    "socarxiv": "10.31235",
+    "sportrxiv": "10.31236",
+    "thesiscommons": "10.31237",
 }
 
 
@@ -37,7 +37,9 @@ def add_doi_prefix(*args, **kwargs):
     for key, value in PREPRINT_DOI_NAMESPACE.items():
         provider = PreprintProvider.objects.filter(_id=key)
         if not provider.exists():
-            logger.info('Could not find provider with _id {}, skipping for now...'.format(key))
+            logger.info(
+                "Could not find provider with _id {}, skipping for now...".format(key)
+            )
             continue
         provider = provider.get()
         provider.doi_prefix = value
@@ -53,14 +55,14 @@ def remove_doi_prefix(*args, **kwargs):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0095_add_url_to_licenses'),
+        ("osf", "0095_add_url_to_licenses"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractprovider',
-            name='doi_prefix',
+            model_name="abstractprovider",
+            name="doi_prefix",
             field=models.CharField(blank=True, max_length=32, null=True),
         ),
-        migrations.RunPython(add_doi_prefix, remove_doi_prefix)
+        migrations.RunPython(add_doi_prefix, remove_doi_prefix),
     ]

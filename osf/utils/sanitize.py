@@ -11,7 +11,7 @@ def is_iterable(obj):
 
 def is_iterable_but_not_string(obj):
     """Return True if ``obj`` is an iterable object that isn't a string."""
-    return (is_iterable(obj) and not hasattr(obj, 'strip'))
+    return is_iterable(obj) and not hasattr(obj, "strip")
 
 
 def strip_html(unclean, tags=None):
@@ -29,7 +29,7 @@ def strip_html(unclean, tags=None):
         tags = []
 
     if unclean is None:
-        return u''
+        return u""
     elif isinstance(unclean, dict) or isinstance(unclean, list):
         return bleach.clean(str(unclean), strip=True, tags=[], attributes=[], styles=[])
     # We make this noop for non-string, non-collection inputs so this function can be used with higher-order
@@ -55,7 +55,7 @@ def unescape_entities(value, safe=None):
     :return: A string or list or dict without html escape characters
     """
     safe_characters = {
-        '&amp;': '&',
+        "&amp;": "&",
     }
 
     if safe and isinstance(safe, dict):
@@ -68,10 +68,7 @@ def unescape_entities(value, safe=None):
         }
 
     if is_iterable_but_not_string(value):
-        return [
-            unescape_entities(each, safe=safe_characters)
-            for each in value
-        ]
+        return [unescape_entities(each, safe=safe_characters) for each in value]
     if isinstance(value, basestring):
         for escape_sequence, character in safe_characters.items():
             value = value.replace(escape_sequence, character)
@@ -89,4 +86,6 @@ def safe_json(value):
     :param value: A string to be converted
     :return: A JSON-formatted string that explicitly escapes forward slashes when needed
     """
-    return json.dumps(value).replace('</', '<\\/')  # Fix injection of closing markup in strings
+    return json.dumps(value).replace(
+        "</", "<\\/"
+    )  # Fix injection of closing markup in strings

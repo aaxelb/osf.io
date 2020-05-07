@@ -3,9 +3,7 @@ import pytest
 from osf.utils.permissions import WRITE, READ
 from api.base.settings.defaults import API_BASE
 from api_tests.subjects.mixins import SubjectsRelationshipMixin
-from osf_tests.factories import (
-    ProjectFactory
-)
+from osf_tests.factories import ProjectFactory
 
 
 @pytest.mark.django_db
@@ -20,4 +18,4 @@ class TestNodeRelationshipSubjects(SubjectsRelationshipMixin):
 
     @pytest.fixture()
     def url(self, resource):
-        return '/{}nodes/{}/relationships/subjects/'.format(API_BASE, resource._id)
+        return "/{}nodes/{}/relationships/subjects/".format(API_BASE, resource._id)

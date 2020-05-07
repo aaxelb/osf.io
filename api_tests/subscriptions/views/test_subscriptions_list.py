@@ -1,12 +1,16 @@
 import pytest
 
 from api.base.settings.defaults import API_BASE
-from osf_tests.factories import AuthUserFactory, PreprintProviderFactory, ProjectFactory, NotificationSubscriptionFactory
+from osf_tests.factories import (
+    AuthUserFactory,
+    PreprintProviderFactory,
+    ProjectFactory,
+    NotificationSubscriptionFactory,
+)
 
 
 @pytest.mark.django_db
 class TestSubscriptionList:
-
     @pytest.fixture()
     def user(self):
         return AuthUserFactory()
@@ -14,7 +18,7 @@ class TestSubscriptionList:
     @pytest.fixture()
     def provider(self, user):
         provider = PreprintProviderFactory()
-        provider.add_to_group(user, 'moderator')
+        provider.add_to_group(user, "moderator")
         return provider
 
     @pytest.fixture()
@@ -23,23 +27,27 @@ class TestSubscriptionList:
 
     @pytest.fixture()
     def global_user_notification(self, user):
-        notification = NotificationSubscriptionFactory(_id='{}_global'.format(user._id), user=user, event_name='global')
-        notification.add_user_to_subscription(user, 'email_transactional')
+        notification = NotificationSubscriptionFactory(
+            _id="{}_global".format(user._id), user=user, event_name="global"
+        )
+        notification.add_user_to_subscription(user, "email_transactional")
         return notification
 
     @pytest.fixture()
     def url(self, user, node):
-        return '/{}subscriptions/'.format(API_BASE)
+        return "/{}subscriptions/".format(API_BASE)
 
-    def test_list_complete(self, app, user, provider, node, global_user_notification, url):
+    def test_list_complete(
+        self, app, user, provider, node, global_user_notification, url
+    ):
         res = app.get(url, auth=user.auth)
-        notification_ids = [item['id'] for item in res.json['data']]
+        notification_ids = [item["id"] for item in res.json["data"]]
         # There should only be 4 notifications: users' global, node's comments, node's file updates and provider's preprint added.
         assert len(notification_ids) == 4
-        assert '{}_global'.format(user._id) in notification_ids
-        assert '{}_new_pending_submissions'.format(provider._id) in notification_ids
-        assert '{}_comments'.format(node._id) in notification_ids
-        assert '{}_file_updated'.format(node._id) in notification_ids
+        assert "{}_global".format(user._id) in notification_ids
+        assert "{}_new_pending_submissions".format(provider._id) in notification_ids
+        assert "{}_comments".format(node._id) in notification_ids
+        assert "{}_file_updated".format(node._id) in notification_ids
 
     def test_unauthenticated(self, app, url):
         res = app.get(url, expect_errors=True)

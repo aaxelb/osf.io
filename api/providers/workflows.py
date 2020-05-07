@@ -8,8 +8,9 @@ from osf.utils.workflows import ChoiceEnum, DefaultStates
 @unique
 class Workflows(ChoiceEnum):
     NONE = None
-    PRE_MODERATION = 'pre-moderation'
-    POST_MODERATION = 'post-moderation'
+    PRE_MODERATION = "pre-moderation"
+    POST_MODERATION = "post-moderation"
+
 
 PUBLIC_STATES = {
     Workflows.NONE.value: (
@@ -18,9 +19,7 @@ PUBLIC_STATES = {
         DefaultStates.ACCEPTED.value,
         DefaultStates.REJECTED.value,
     ),
-    Workflows.PRE_MODERATION.value: (
-        DefaultStates.ACCEPTED.value,
-    ),
+    Workflows.PRE_MODERATION.value: (DefaultStates.ACCEPTED.value,),
     Workflows.POST_MODERATION.value: (
         DefaultStates.PENDING.value,
         DefaultStates.ACCEPTED.value,

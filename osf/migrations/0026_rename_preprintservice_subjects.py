@@ -8,17 +8,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0025_migrate_preprint_subjects_to_fks'),
+        ("osf", "0025_migrate_preprint_subjects_to_fks"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='preprintservice',
-            name='subjects',
-        ),
+        migrations.RemoveField(model_name="preprintservice", name="subjects",),
         migrations.RenameField(
-            model_name='preprintservice',
-            old_name='_subjects',
-            new_name='subjects'
+            model_name="preprintservice", old_name="_subjects", new_name="subjects"
         ),
     ]

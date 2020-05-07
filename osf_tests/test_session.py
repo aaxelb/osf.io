@@ -5,11 +5,11 @@ from tests.base import DbTestCase
 from osf_tests.factories import SessionFactory, UserFactory
 from osf.models import OSFUser, Session
 
+
 @pytest.mark.django_db
 class TestSession:
-
     def test_is_authenticated(self):
-        session = Session(data={'auth_user_id': 'abc12'})
+        session = Session(data={"auth_user_id": "abc12"})
         assert session.is_authenticated
 
         session2 = Session()
@@ -22,12 +22,15 @@ class TestSession:
         assert Session.load(session._id)
 
     def test_remove(self):
-        session, session2 = Session(data={'auth_user_id': '123ab'}), Session(data={'auth_user_id': 'ab123'})
+        session, session2 = (
+            Session(data={"auth_user_id": "123ab"}),
+            Session(data={"auth_user_id": "ab123"}),
+        )
         session.save()
         session2.save()
 
         assert Session.objects.count() == 2  # sanity check
-        Session.objects.filter(data__auth_user_id='123ab').delete()
+        Session.objects.filter(data__auth_user_id="123ab").delete()
         assert Session.objects.count() == 1
 
 
@@ -36,7 +39,7 @@ class SessionUtilsTestCase(DbTestCase):
         super(SessionUtilsTestCase, self).setUp(*args, **kwargs)
         self.user = UserFactory()
         # Ensure usable password
-        self.user.set_password('usablepassword')
+        self.user.set_password("usablepassword")
 
     def tearDown(self, *args, **kwargs):
         super(SessionUtilsTestCase, self).tearDown(*args, **kwargs)
@@ -66,7 +69,7 @@ class SessionUtilsTestCase(DbTestCase):
         SessionFactory(user=self.user)
         SessionFactory(user=self.user)
         assert Session.objects.all().count() == 3
-        self.user.set_password('killerqueen')
+        self.user.set_password("killerqueen")
         assert Session.objects.all().count() == 0
 
     def test_remove_session(self):

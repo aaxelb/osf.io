@@ -32,15 +32,17 @@ def get_or_create(name, description, save=True):
     """
 
     if name != name.lower():
-        raise ValueError('Scope names are case-sensitive, and should always be lower-case.')
+        raise ValueError(
+            "Scope names are case-sensitive, and should always be lower-case."
+        )
 
     try:
         scope_obj = ApiOAuth2Scope.objects.get(name=name)
-        setattr(scope_obj, 'description', description)
-        print('Updating existing database entry for: {}'.format(name))
+        setattr(scope_obj, "description", description)
+        print("Updating existing database entry for: {}".format(name))
     except ApiOAuth2Scope.DoesNotExist:
         scope_obj = ApiOAuth2Scope(name=name, description=description)
-        print('Created new database entry for: {}'.format(name))
+        print("Created new database entry for: {}".format(name))
 
     if save:
         scope_obj.save()
@@ -64,7 +66,11 @@ def do_populate(clear=False):
         if scope.is_public is True:
             get_or_create(name, scope.description, save=True)
         else:
-            logger.info('{} is not a publicly advertised scope; did not load into database'.format(name))
+            logger.info(
+                "{} is not a publicly advertised scope; did not load into database".format(
+                    name
+                )
+            )
 
 
 def main(dry=True):
@@ -73,11 +79,11 @@ def main(dry=True):
     with transaction.atomic():
         do_populate(clear=True)
         if dry:
-            raise Exception('Abort Transaction - Dry Run')
+            raise Exception("Abort Transaction - Dry Run")
 
 
-if __name__ == '__main__':
-    dry = 'dry' in sys.argv
+if __name__ == "__main__":
+    dry = "dry" in sys.argv
     if not dry:
         script_utils.add_file_logger(logger, __file__)
     main(dry=dry)

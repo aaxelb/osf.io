@@ -9,10 +9,10 @@ from osf_tests.factories import (
 
 from osf.metrics import UserInstitutionProjectCounts
 
+
 @pytest.mark.es
 @pytest.mark.django_db
 class TestInstitutionUserMetricList:
-
     @pytest.fixture()
     def institution(self):
         return InstitutionFactory()
@@ -28,14 +28,14 @@ class TestInstitutionUserMetricList:
     @pytest.fixture()
     def admin(self, institution):
         user = AuthUserFactory()
-        group = institution.get_group('institutional_admins')
+        group = institution.get_group("institutional_admins")
         group.user_set.add(user)
         group.save()
         return user
 
     @pytest.fixture()
     def url(self, institution):
-        return f'/{API_BASE}institutions/{institution._id}/metrics/users/'
+        return f"/{API_BASE}institutions/{institution._id}/metrics/users/"
 
     def test_get(self, app, url, user, user2, admin, institution):
 
@@ -48,23 +48,23 @@ class TestInstitutionUserMetricList:
         resp = app.get(url, auth=admin.auth)
         assert resp.status_code == 200
 
-        assert resp.json['data'] == []
+        assert resp.json["data"] == []
 
         # Old data that shouldn't appear in responses
         UserInstitutionProjectCounts.record(
             user_id=user._id,
             institution_id=institution._id,
-            department='Biology dept',
+            department="Biology dept",
             public_project_count=4,
             private_project_count=4,
-            timestamp=datetime.date(2019, 6, 4)
+            timestamp=datetime.date(2019, 6, 4),
         ).save()
 
         # New data
         UserInstitutionProjectCounts.record(
             user_id=user._id,
             institution_id=institution._id,
-            department='Biology dept',
+            department="Biology dept",
             public_project_count=6,
             private_project_count=5,
         ).save()
@@ -72,69 +72,64 @@ class TestInstitutionUserMetricList:
         UserInstitutionProjectCounts.record(
             user_id=user2._id,
             institution_id=institution._id,
-            department='Psychology dept',
+            department="Psychology dept",
             public_project_count=3,
             private_project_count=2,
         ).save()
 
         import time
+
         time.sleep(2)
 
         resp = app.get(url, auth=admin.auth)
 
-        assert resp.json['data'] == [
+        assert resp.json["data"] == [
             {
-                'id': user._id,
-                'type': 'institution-users',
-                'attributes': {
-                    'user_name': user.fullname,
-                    'public_projects': 6,
-                    'private_projects': 5,
-                    'department': 'Biology dept'
+                "id": user._id,
+                "type": "institution-users",
+                "attributes": {
+                    "user_name": user.fullname,
+                    "public_projects": 6,
+                    "private_projects": 5,
+                    "department": "Biology dept",
                 },
-                'relationships': {
-                    'user': {
-                        'links': {
-                            'related': {
-                                'href': f'http://localhost:8000/v2/users/{user._id}/',
-                                'meta': {}
+                "relationships": {
+                    "user": {
+                        "links": {
+                            "related": {
+                                "href": f"http://localhost:8000/v2/users/{user._id}/",
+                                "meta": {},
                             }
                         },
-                        'data': {
-                            'id': user._id,
-                            'type': 'users'
-                        }
+                        "data": {"id": user._id, "type": "users"},
                     }
                 },
-                'links': {
-                    'self': f'http://localhost:8000/v2/institutions/{institution._id}/metrics/users/'
-                }
+                "links": {
+                    "self": f"http://localhost:8000/v2/institutions/{institution._id}/metrics/users/"
+                },
             },
             {
-                'id': user2._id,
-                'type': 'institution-users',
-                'attributes': {
-                    'user_name': user2.fullname,
-                    'public_projects': 3,
-                    'private_projects': 2,
-                    'department': 'Psychology dept'
+                "id": user2._id,
+                "type": "institution-users",
+                "attributes": {
+                    "user_name": user2.fullname,
+                    "public_projects": 3,
+                    "private_projects": 2,
+                    "department": "Psychology dept",
                 },
-                'relationships': {
-                    'user': {
-                        'links': {
-                            'related': {
-                                'href': f'http://localhost:8000/v2/users/{user2._id}/',
-                                'meta': {}
+                "relationships": {
+                    "user": {
+                        "links": {
+                            "related": {
+                                "href": f"http://localhost:8000/v2/users/{user2._id}/",
+                                "meta": {},
                             }
                         },
-                        'data': {
-                            'id': user2._id,
-                            'type': 'users'
-                        }
+                        "data": {"id": user2._id, "type": "users"},
                     }
                 },
-                'links': {
-                    'self': f'http://localhost:8000/v2/institutions/{institution._id}/metrics/users/'
-                }
-            }
+                "links": {
+                    "self": f"http://localhost:8000/v2/institutions/{institution._id}/metrics/users/"
+                },
+            },
         ]

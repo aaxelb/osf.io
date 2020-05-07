@@ -15,10 +15,9 @@ default_adapter = HTTPAdapter()
 
 
 class GitHubClient(object):
-
     def __init__(self, external_account=None, access_token=None):
 
-        self.access_token = getattr(external_account, 'oauth_key', None) or access_token
+        self.access_token = getattr(external_account, "oauth_key", None) or access_token
         if self.access_token:
             self.gh3 = github3.login(token=self.access_token)
             self.gh3.set_client_id(
@@ -29,8 +28,8 @@ class GitHubClient(object):
 
         # Caching libary
         if github_settings.CACHE:
-            self.gh3._session.mount('https://api.github.com/user', default_adapter)
-            self.gh3._session.mount('https://', https_cache)
+            self.gh3._session.mount("https://api.github.com/user", default_adapter)
+            self.gh3._session.mount("https://", https_cache)
 
     def user(self, user=None):
         """Fetch a user or the authenticated user.
@@ -61,8 +60,8 @@ class GitHubClient(object):
         raise NotFoundError
 
     def repos(self):
-        repos = self.gh3.repositories(type='all', sort='pushed')
-        return [repo for repo in repos if repo.permissions['push']]
+        repos = self.gh3.repositories(type="all", sort="pushed")
+        return [repo for repo in repos if repo.permissions["push"]]
 
     def create_repo(self, repo, **kwargs):
         return self.gh3.create_repository(repo, **kwargs)
@@ -81,7 +80,7 @@ class GitHubClient(object):
         return self.repo(user, repo).branches() or []
 
     # TODO: Test
-    def starball(self, user, repo, archive='tar', ref='master'):
+    def starball(self, user, repo, archive="tar", ref="master"):
         """Get link for archive download.
 
         :param str user: GitHub user name
@@ -93,7 +92,7 @@ class GitHubClient(object):
 
         # github3 archive method writes file to disk
         repository = self.repo(user, repo)
-        url = repository._build_url(archive + 'ball', ref, base_url=repository._api)
+        url = repository._build_url(archive + "ball", ref, base_url=repository._api)
         resp = repository._get(url, allow_redirects=True, stream=True)
 
         return resp.headers, resp.content
@@ -156,14 +155,9 @@ class GitHubClient(object):
 
 def ref_to_params(branch=None, sha=None):
 
-    params = urlencode({
-        key: value
-        for key, value in {
-            'branch': branch,
-            'sha': sha,
-        }.items()
-        if value
-    })
+    params = urlencode(
+        {key: value for key, value in {"branch": branch, "sha": sha,}.items() if value}
+    )
     if params:
-        return '?' + params
-    return ''
+        return "?" + params
+    return ""

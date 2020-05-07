@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0060_add_nodelog_should_hide_nid_index'),
-        ('osf', '0062_accept_preprints'),
+        ("osf", "0060_add_nodelog_should_hide_nid_index"),
+        ("osf", "0062_accept_preprints"),
     ]
 
-    operations = [
-    ]
+    operations = []

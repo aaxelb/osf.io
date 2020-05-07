@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0034_rename_email_user_relation'),
+        ("osf", "0034_rename_email_user_relation"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metaschema',
-            name='active',
+            model_name="metaschema",
+            name="active",
             field=models.BooleanField(default=True),
         ),
     ]

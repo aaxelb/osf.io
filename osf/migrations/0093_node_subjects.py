@@ -8,18 +8,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0092_populate_notification_subscriptions'),
+        ("osf", "0092_populate_notification_subscriptions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractnode',
-            name='subjects',
-            field=models.ManyToManyField(blank=True, related_name='abstractnodes', to='osf.Subject'),
+            model_name="abstractnode",
+            name="subjects",
+            field=models.ManyToManyField(
+                blank=True, related_name="abstractnodes", to="osf.Subject"
+            ),
         ),
         migrations.AlterField(
-            model_name='preprintservice',
-            name='subjects',
-            field=models.ManyToManyField(blank=True, related_name='preprintservices', to='osf.Subject'),
+            model_name="preprintservice",
+            name="subjects",
+            field=models.ManyToManyField(
+                blank=True, related_name="preprintservices", to="osf.Subject"
+            ),
         ),
     ]

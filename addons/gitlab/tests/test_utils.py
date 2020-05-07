@@ -15,19 +15,14 @@ from addons.gitlab.models import NodeSettings
 def make_signature(secret, data):
     return hmac.new(secret.encode(), data.encode(), hashlib.sha1).hexdigest()
 
-HOOK_PAYLOAD = json.dumps({
-    'files': [],
-    'message': 'fake commit',
-})
+
+HOOK_PAYLOAD = json.dumps({"files": [], "message": "fake commit",})
 
 
 class TestHookVerify(OsfTestCase):
-
     def setUp(self):
         super(TestHookVerify, self).setUp()
-        self.node_settings = NodeSettings(
-            hook_secret='speakfriend',
-        )
+        self.node_settings = NodeSettings(hook_secret="speakfriend",)
 
     def test_verify_no_secret(self):
         self.node_settings.hook_secret = None
@@ -40,11 +35,10 @@ class TestHookVerify(OsfTestCase):
                 self.node_settings,
                 HOOK_PAYLOAD,
                 {
-                    'X-Hub-Signature': make_signature(
-                        self.node_settings.hook_secret,
-                        HOOK_PAYLOAD,
+                    "X-Hub-Signature": make_signature(
+                        self.node_settings.hook_secret, HOOK_PAYLOAD,
                     )
-                }
+                },
             )
         except HookError:
             assert 0
@@ -52,11 +46,9 @@ class TestHookVerify(OsfTestCase):
     def test_verify_invalid(self):
         with assert_raises(HookError):
             utils.verify_hook_signature(
-                self.node_settings,
-                HOOK_PAYLOAD,
-                {'X-Hub-Signature': 'invalid'}
+                self.node_settings, HOOK_PAYLOAD, {"X-Hub-Signature": "invalid"}
             )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     nose.run()

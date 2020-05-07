@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename as werkzeug_secure_filename
 
 def iso8601format(dt):
     """Given a datetime object, return an associated ISO-8601 string"""
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ') if dt else ''
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ") if dt else ""
 
 
 def secure_filename(filename):
@@ -26,7 +26,7 @@ def secure_filename(filename):
 
     # Check for leading underscores, and add them back in
     try:
-        secure = re.search('^_+', filename).group() + secure
+        secure = re.search("^_+", filename).group() + secure
     except AttributeError:
         pass
 
@@ -44,6 +44,8 @@ def throttle_period_expired(timestamp, throttle):
         if timestamp.tzinfo:
             return (timezone.now() - timestamp).total_seconds() > throttle
         else:
-            return (timezone.now() - timestamp.replace(tzinfo=pytz.utc)).total_seconds() > throttle
+            return (
+                timezone.now() - timestamp.replace(tzinfo=pytz.utc)
+            ).total_seconds() > throttle
     else:
         return (get_timestamp() - timestamp) > throttle

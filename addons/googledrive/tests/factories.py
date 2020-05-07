@@ -13,11 +13,12 @@ from addons.googledrive.models import UserSettings
 
 
 class GoogleDriveAccountFactory(ExternalAccountFactory):
-    provider = 'googledrive'
-    provider_id = factory.Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = factory.Sequence(lambda n: 'key-{0}'.format(n))
-    oauth_secret = factory.Sequence(lambda n: 'secret-{0}'.format(n))
+    provider = "googledrive"
+    provider_id = factory.Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = factory.Sequence(lambda n: "key-{0}".format(n))
+    oauth_secret = factory.Sequence(lambda n: "secret-{0}".format(n))
     expires_at = timezone.now() + relativedelta(days=1)
+
 
 class GoogleDriveUserSettingsFactory(DjangoModelFactory):
     class Meta:
@@ -25,11 +26,12 @@ class GoogleDriveUserSettingsFactory(DjangoModelFactory):
 
     owner = factory.SubFactory(UserFactory)
 
+
 class GoogleDriveNodeSettingsFactory(DjangoModelFactory):
     class Meta:
         model = NodeSettings
 
     owner = factory.SubFactory(ProjectFactory)
     user_settings = factory.SubFactory(GoogleDriveUserSettingsFactory)
-    folder_id = '1234567890'
-    folder_path = 'Drive/Camera Uploads'
+    folder_id = "1234567890"
+    folder_path = "Drive/Camera Uploads"

@@ -8,17 +8,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0075_merge_20171207_1511'),
+        ("osf", "0075_merge_20171207_1511"),
     ]
 
     operations = [
-        migrations.RenameModel(
-            old_name='Action',
-            new_name='ReviewAction',
-        ),
+        migrations.RenameModel(old_name="Action", new_name="ReviewAction",),
         migrations.RenameField(
-            model_name='preprintservice',
-            old_name='reviews_state',
-            new_name='machine_state',
+            model_name="preprintservice",
+            old_name="reviews_state",
+            new_name="machine_state",
         ),
     ]

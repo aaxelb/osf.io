@@ -8,28 +8,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0015_auto_20170421_1244'),
+        ("osf", "0015_auto_20170421_1244"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='guid_string',
-        ),
-        migrations.RemoveField(
-            model_name='basefilenode',
-            name='guid_string',
-        ),
-        migrations.RemoveField(
-            model_name='comment',
-            name='guid_string',
-        ),
-        migrations.RemoveField(
-            model_name='osfuser',
-            name='guid_string',
-        ),
-        migrations.RemoveField(
-            model_name='preprintservice',
-            name='guid_string',
-        ),
+        migrations.RemoveField(model_name="abstractnode", name="guid_string",),
+        migrations.RemoveField(model_name="basefilenode", name="guid_string",),
+        migrations.RemoveField(model_name="comment", name="guid_string",),
+        migrations.RemoveField(model_name="osfuser", name="guid_string",),
+        migrations.RemoveField(model_name="preprintservice", name="guid_string",),
     ]

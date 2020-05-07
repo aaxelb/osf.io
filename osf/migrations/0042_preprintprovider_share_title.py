@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0041_auto_20170706_1024'),
+        ("osf", "0041_auto_20170706_1024"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintprovider',
-            name='share_title',
-            field=models.TextField(blank=True, default=b''),
+            model_name="preprintprovider",
+            name="share_title",
+            field=models.TextField(blank=True, default=b""),
         ),
     ]

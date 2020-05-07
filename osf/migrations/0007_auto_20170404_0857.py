@@ -8,12 +8,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0006_add_jsonb_index_for_fileversions'),
+        ("osf", "0006_add_jsonb_index_for_fileversions"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='preprintservice',
-            options={'permissions': (('view_preprintservice', 'Can view preprint service details in the admin app.'),)},
+            name="preprintservice",
+            options={
+                "permissions": (
+                    (
+                        "view_preprintservice",
+                        "Can view preprint service details in the admin app.",
+                    ),
+                )
+            },
         ),
     ]

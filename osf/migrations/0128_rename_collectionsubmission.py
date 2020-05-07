@@ -8,17 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0127_merge_20180822_1927'),
+        ("osf", "0127_merge_20180822_1927"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='CollectedGuidMetadata',
-            new_name='CollectionSubmission',
+            old_name="CollectedGuidMetadata", new_name="CollectionSubmission",
         ),
         migrations.AlterField(
-            model_name='collectionsubmission',
-            name='subjects',
-            field=models.ManyToManyField(blank=True, related_name='collectionsubmissions', to='osf.Subject'),
+            model_name="collectionsubmission",
+            name="subjects",
+            field=models.ManyToManyField(
+                blank=True, related_name="collectionsubmissions", to="osf.Subject"
+            ),
         ),
     ]

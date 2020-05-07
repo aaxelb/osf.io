@@ -8,12 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_wiki', '0008_store_guid_on_nodewikipage'),
+        ("addons_wiki", "0008_store_guid_on_nodewikipage"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='wikipage',
-            index=models.Index(fields=['page_name', 'node'], name='addons_wiki_page_na_6d5d96_idx'),
+            model_name="wikipage",
+            index=models.Index(
+                fields=["page_name", "node"], name="addons_wiki_page_na_6d5d96_idx"
+            ),
         ),
     ]

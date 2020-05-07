@@ -4,8 +4,9 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-OLD_NAME = 'AsPredicted Preregistration'
-NEW_NAME = 'Preregistration Template from AsPredicted.org'
+OLD_NAME = "AsPredicted Preregistration"
+NEW_NAME = "Preregistration Template from AsPredicted.org"
+
 
 def rename_schema(model, from_name, to_name):
     try:
@@ -14,23 +15,26 @@ def rename_schema(model, from_name, to_name):
         return
 
     schema.name = to_name
-    schema.schema['name'] = to_name
-    schema.schema['title'] = to_name
-    schema.schema['pages'][0]['title'] = to_name
+    schema.schema["name"] = to_name
+    schema.schema["title"] = to_name
+    schema.schema["pages"][0]["title"] = to_name
     return schema.save()
 
+
 def rename_aspredicted_schema(state, schema):
-    RegistrationSchema = state.get_model('osf.registrationschema')
+    RegistrationSchema = state.get_model("osf.registrationschema")
     return rename_schema(RegistrationSchema, OLD_NAME, NEW_NAME)
 
+
 def undo_aspredicted_rename(state, schema):
-    RegistrationSchema = state.get_model('osf.registrationschema')
+    RegistrationSchema = state.get_model("osf.registrationschema")
     return rename_schema(RegistrationSchema, NEW_NAME, OLD_NAME)
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0138_merge_20181012_1944'),
+        ("osf", "0138_merge_20181012_1944"),
     ]
 
     operations = [

@@ -9,26 +9,15 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0002_add_lower_index_to_tags'),
+        ("osf", "0002_add_lower_index_to_tags"),
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name='tag',
-            options={'ordering': ('name',)},
-        ),
+        migrations.AlterModelOptions(name="tag", options={"ordering": ("name",)},),
         migrations.AlterModelManagers(
-            name='fileversion',
-            managers=[
-                ('includable_objects', django.db.models.manager.Manager()),
-            ],
+            name="fileversion",
+            managers=[("includable_objects", django.db.models.manager.Manager()),],
         ),
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='public_comments',
-        ),
-        migrations.RemoveField(
-            model_name='osfuser',
-            name='piwik_token',
-        ),
+        migrations.RemoveField(model_name="abstractnode", name="public_comments",),
+        migrations.RemoveField(model_name="osfuser", name="piwik_token",),
     ]

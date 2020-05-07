@@ -8,12 +8,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0117_merge_20180712_1241'),
+        ("osf", "0117_merge_20180712_1241"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='providerassetfile',
-            options={'permissions': (('view_providerassetfile', 'Can view provider asset files'),)},
+            name="providerassetfile",
+            options={
+                "permissions": (
+                    ("view_providerassetfile", "Can view provider asset files"),
+                )
+            },
         ),
     ]

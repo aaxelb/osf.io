@@ -5,4 +5,4 @@ logger = logging.getLogger(__name__)
 try:
     from addons.owncloud.settings.local import *  # noqa
 except ImportError:
-    logger.warn('No local.py settings file found')
+    logger.warn("No local.py settings file found")

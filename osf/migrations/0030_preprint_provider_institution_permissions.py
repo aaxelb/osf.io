@@ -8,17 +8,22 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0029_auto_20170511_1553'),
+        ("osf", "0029_auto_20170511_1553"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='institution',
-            options={'permissions': (('view_institution', 'Can view institution details'),)},
+            name="institution",
+            options={
+                "permissions": (("view_institution", "Can view institution details"),)
+            },
         ),
         migrations.AlterModelOptions(
-            name='preprintprovider',
-            options={'permissions': (('view_preprintprovider', 'Can view preprint provider details'),)},
+            name="preprintprovider",
+            options={
+                "permissions": (
+                    ("view_preprintprovider", "Can view preprint provider details"),
+                )
+            },
         ),
-
     ]

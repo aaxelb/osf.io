@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0039_maintenancestate'),
-        ('osf', '0037_remove_emails_for_unconfirmed_users'),
+        ("osf", "0039_maintenancestate"),
+        ("osf", "0037_remove_emails_for_unconfirmed_users"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -9,28 +9,24 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_bitbucket', '0002_auto_20170808_1140'),
+        ("addons_bitbucket", "0002_auto_20170808_1140"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='nodesettings',
-            new_name='is_deleted',
-            old_name='deleted',
+            model_name="nodesettings", new_name="is_deleted", old_name="deleted",
         ),
         migrations.RenameField(
-            model_name='usersettings',
-            new_name='is_deleted',
-            old_name='deleted',
+            model_name="usersettings", new_name="is_deleted", old_name="deleted",
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='deleted',
+            model_name="nodesettings",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='usersettings',
-            name='deleted',
+            model_name="usersettings",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
     ]

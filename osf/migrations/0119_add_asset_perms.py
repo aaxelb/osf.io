@@ -8,10 +8,11 @@ def noop(*args):
     # This is now handled by the post_migrate signal
     pass
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0118_auto_20180716_1216'),
+        ("osf", "0118_auto_20180716_1216"),
     ]
 
     operations = [

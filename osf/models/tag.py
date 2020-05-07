@@ -10,6 +10,7 @@ class TagManager(models.Manager):
     def get_queryset(self):
         return super(TagManager, self).get_queryset().filter(system=False)
 
+
 class Tag(BaseModel):
     name = models.CharField(db_index=True, max_length=1024)
     system = models.BooleanField(default=False)
@@ -19,8 +20,8 @@ class Tag(BaseModel):
 
     def __unicode__(self):
         if self.system:
-            return 'System Tag: {}'.format(self.name)
-        return u'{}'.format(self.name)
+            return "System Tag: {}".format(self.name)
+        return u"{}".format(self.name)
 
     def _natural_key(self):
         return hash(self.name + str(self.system))
@@ -40,5 +41,5 @@ class Tag(BaseModel):
             return None
 
     class Meta:
-        unique_together = ('name', 'system')
-        ordering = ('name', )
+        unique_together = ("name", "system")
+        ordering = ("name",)

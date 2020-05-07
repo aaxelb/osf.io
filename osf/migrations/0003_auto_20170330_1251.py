@@ -10,13 +10,15 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0002_add_lower_index_to_tags'),
+        ("osf", "0002_add_lower_index_to_tags"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='preprintservice',
-            name='date_modified',
-            field=osf.utils.fields.NonNaiveDateTimeField(default=django.utils.timezone.now),
+            model_name="preprintservice",
+            name="date_modified",
+            field=osf.utils.fields.NonNaiveDateTimeField(
+                default=django.utils.timezone.now
+            ),
         ),
     ]

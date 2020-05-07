@@ -9,7 +9,7 @@ from osf.utils.migrations import ensure_schemas
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0172_ensure_schemas'),
+        ("osf", "0172_ensure_schemas"),
     ]
 
     operations = [

@@ -8,10 +8,10 @@ from addons.gitlab.models import NodeSettings, UserSettings
 
 
 class GitLabAccountFactory(ExternalAccountFactory):
-    provider = 'gitlab'
-    provider_id = Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = Sequence(lambda n: 'key-{0}'.format(n))
-    display_name = 'abc'
+    provider = "gitlab"
+    provider_id = Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = Sequence(lambda n: "key-{0}".format(n))
+    display_name = "abc"
 
 
 class GitLabUserSettingsFactory(DjangoModelFactory):

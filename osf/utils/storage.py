@@ -12,15 +12,18 @@ class BannerImage(models.Model):
     filename = models.CharField(unique=True, max_length=256)
     image = models.BinaryField()
 
+
 @deconstructible
 class BannerImageStorage(Storage):
-    def _open(self, name, mode='rb'):
-        assert mode == 'rb'
+    def _open(self, name, mode="rb"):
+        assert mode == "rb"
         icon = BannerImage.objects.get(filename=name)
         return ContentFile(icon.image)
 
     def _save(self, name, content):
-        BannerImage.objects.update_or_create(filename=name, defaults={'image': content.read()})
+        BannerImage.objects.update_or_create(
+            filename=name, defaults={"image": content.read()}
+        )
         return name
 
     def delete(self, name):
@@ -31,4 +34,4 @@ class BannerImageStorage(Storage):
         return name
 
     def url(self, name):
-        return api_v2_url('/banners/{}/'.format(name), base_prefix='_/')
+        return api_v2_url("/banners/{}/".format(name), base_prefix="_/")

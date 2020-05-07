@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0123_merge_20180803_1346'),
-        ('osf', '0121_remove_wiki_fields_from_node'),
+        ("osf", "0123_merge_20180803_1346"),
+        ("osf", "0121_remove_wiki_fields_from_node"),
     ]
 
-    operations = [
-    ]
+    operations = []

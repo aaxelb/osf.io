@@ -18,12 +18,13 @@ class DropboxNodeSettingsFactory(DjangoModelFactory):
     class Meta:
         model = NodeSettings
 
-    folder = 'Camera Uploads'
+    folder = "Camera Uploads"
     owner = factory.SubFactory(ProjectFactory)
     user_settings = factory.SubFactory(DropboxUserSettingsFactory)
     external_account = factory.SubFactory(ExternalAccountFactory)
 
+
 class DropboxAccountFactory(ExternalAccountFactory):
-    provider = 'dropbox'
-    provider_id = factory.Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = factory.Sequence(lambda n: 'key-{0}'.format(n))
+    provider = "dropbox"
+    provider_id = factory.Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = factory.Sequence(lambda n: "key-{0}".format(n))

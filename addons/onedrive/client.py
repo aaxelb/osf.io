@@ -7,14 +7,13 @@ from addons.onedrive.settings import DEFAULT_ROOT_ID
 
 
 class OneDriveClient(BaseClient):
-
     def __init__(self, access_token=None):
         self.access_token = access_token
 
     @property
     def _default_headers(self):
         if self.access_token:
-            return {'Authorization': 'bearer {}'.format(self.access_token)}
+            return {"Authorization": "bearer {}".format(self.access_token)}
         return {}
 
     def folders(self, folder_id=None):
@@ -28,19 +27,22 @@ class OneDriveClient(BaseClient):
         """
 
         if folder_id is None or folder_id == DEFAULT_ROOT_ID:
-            url = self._build_url(settings.ONEDRIVE_API_URL, 'drive', DEFAULT_ROOT_ID, 'children')
+            url = self._build_url(
+                settings.ONEDRIVE_API_URL, "drive", DEFAULT_ROOT_ID, "children"
+            )
         else:
-            url = self._build_url(settings.ONEDRIVE_API_URL, 'drive', 'items',
-                                  folder_id, 'children')
+            url = self._build_url(
+                settings.ONEDRIVE_API_URL, "drive", "items", folder_id, "children"
+            )
 
         res = self._make_request(
-            'GET',
+            "GET",
             url,
-            params={'filter': 'folder ne null'},
-            expects=(200, ),
-            throws=HTTPError(401)
+            params={"filter": "folder ne null"},
+            expects=(200,),
+            throws=HTTPError(401),
         )
-        return res.json()['value']
+        return res.json()["value"]
 
     def user_info_for_token(self, access_token):
         """Given an access token, return information about the token's owner.
@@ -55,9 +57,9 @@ class OneDriveClient(BaseClient):
         :return: a dict containing metadata about the token's owner.
         """
         return self._make_request(
-            'GET',
-            self._build_url(settings.MSLIVE_API_URL, 'me'),
-            params={'access_token': access_token},
-            expects=(200, ),
-            throws=HTTPError(401)
+            "GET",
+            self._build_url(settings.MSLIVE_API_URL, "me"),
+            params={"access_token": access_token},
+            expects=(200,),
+            throws=HTTPError(401),
         ).json()

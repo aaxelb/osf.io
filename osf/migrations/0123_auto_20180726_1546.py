@@ -8,27 +8,56 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0122_unique_provider__id_by_type'),
+        ("osf", "0122_unique_provider__id_by_type"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='adminprofile',
-            options={'permissions': (('mark_spam', 'Can mark comments, projects and registrations as spam'), ('view_spam', 'Can view nodes, comments, and projects marked as spam'), ('view_metrics', 'Can view metrics on the OSF Admin app'), ('view_prereg', 'Can view entries for the preregistration chellenge on the admin'), ('administer_prereg', 'Can update, comment on, and approve entries to the prereg challenge'), ('view_desk', 'Can view details about Desk users'), ('delete_preprintrequest', 'Can delete preprints withdrawal requests'), ('change_preprintrequest', 'Can update preprints withdrawal requests'))},
+            name="adminprofile",
+            options={
+                "permissions": (
+                    (
+                        "mark_spam",
+                        "Can mark comments, projects and registrations as spam",
+                    ),
+                    (
+                        "view_spam",
+                        "Can view nodes, comments, and projects marked as spam",
+                    ),
+                    ("view_metrics", "Can view metrics on the OSF Admin app"),
+                    (
+                        "view_prereg",
+                        "Can view entries for the preregistration chellenge on the admin",
+                    ),
+                    (
+                        "administer_prereg",
+                        "Can update, comment on, and approve entries to the prereg challenge",
+                    ),
+                    ("view_desk", "Can view details about Desk users"),
+                    (
+                        "delete_preprintrequest",
+                        "Can delete preprints withdrawal requests",
+                    ),
+                    (
+                        "change_preprintrequest",
+                        "Can update preprints withdrawal requests",
+                    ),
+                )
+            },
         ),
         migrations.AddField(
-            model_name='noderequestaction',
-            name='auto',
+            model_name="noderequestaction",
+            name="auto",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='preprintrequestaction',
-            name='auto',
+            model_name="preprintrequestaction",
+            name="auto",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='reviewaction',
-            name='auto',
+            model_name="reviewaction",
+            name="auto",
             field=models.BooleanField(default=False),
         ),
     ]

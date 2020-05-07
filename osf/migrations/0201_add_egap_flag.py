@@ -6,10 +6,11 @@ from django.db import migrations
 from osf import features
 from osf.utils.migrations import AddWaffleFlags
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0200_auto_20200214_1518'),
+        ("osf", "0200_auto_20200214_1518"),
     ]
 
     operations = [

@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_owncloud', '0003_add_trailing_slash_back_to_implict_folders'),
-        ('addons_owncloud', '0003_auto_20170713_1125'),
+        ("addons_owncloud", "0003_add_trailing_slash_back_to_implict_folders"),
+        ("addons_owncloud", "0003_auto_20170713_1125"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -9,13 +9,15 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0067_auto_20171121_1050'),
+        ("osf", "0067_auto_20171121_1050"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintservice',
-            name='preprint_doi_created',
-            field=osf.utils.fields.NonNaiveDateTimeField(blank=True, default=None, null=True),
+            model_name="preprintservice",
+            name="preprint_doi_created",
+            field=osf.utils.fields.NonNaiveDateTimeField(
+                blank=True, default=None, null=True
+            ),
         ),
     ]

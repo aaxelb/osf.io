@@ -20,7 +20,7 @@ from admin.common_auth.forms import LoginForm, UserRegistrationForm, DeskUserFor
 class LoginView(FormView):
     form_class = LoginForm
     redirect_field_name = REDIRECT_FIELD_NAME
-    template_name = 'login.html'
+    template_name = "login.html"
 
     @method_decorator(csrf_protect)
     @method_decorator(never_cache)
@@ -29,43 +29,44 @@ class LoginView(FormView):
 
     def form_valid(self, form):
         user = authenticate(
-            username=form.cleaned_data.get('email').strip(),
-            password=form.cleaned_data.get('password').strip()
+            username=form.cleaned_data.get("email").strip(),
+            password=form.cleaned_data.get("password").strip(),
         )
         if user is not None:
             login(self.request, user)
         else:
             messages.error(
-                self.request,
-                'Email and/or Password incorrect. Please try again.'
+                self.request, "Email and/or Password incorrect. Please try again."
             )
-            return redirect('auth:login')
+            return redirect("auth:login")
         return super(LoginView, self).form_valid(form)
 
     def get_success_url(self):
-        redirect_to = self.request.GET.get(self.redirect_field_name, '')
-        if not redirect_to or redirect_to == '/':
-            redirect_to = reverse('home')
+        redirect_to = self.request.GET.get(self.redirect_field_name, "")
+        if not redirect_to or redirect_to == "/":
+            redirect_to = reverse("home")
         return redirect_to
 
 
 def logout_user(request):
     logout(request)
-    return redirect('auth:login')
+    return redirect("auth:login")
 
 
 class RegisterUser(PermissionRequiredMixin, FormView):
     form_class = UserRegistrationForm
-    template_name = 'register.html'
-    permission_required = 'osf.change_user'
+    template_name = "register.html"
+    permission_required = "osf.change_user"
     raise_exception = True
 
     def form_valid(self, form):
-        osf_id = form.cleaned_data.get('osf_id')
+        osf_id = form.cleaned_data.get("osf_id")
         osf_user = OSFUser.load(osf_id)
 
         if not osf_user:
-            raise Http404('OSF user with id "{}" not found. Please double check.'.format(osf_id))
+            raise Http404(
+                'OSF user with id "{}" not found. Please double check.'.format(osf_id)
+            )
 
         osf_user.is_staff = True
         osf_user.save()
@@ -73,40 +74,53 @@ class RegisterUser(PermissionRequiredMixin, FormView):
         # create AdminProfile for this new user
         profile, created = AdminProfile.objects.get_or_create(user=osf_user)
 
-        prereg_admin_group = Group.objects.get(name='prereg_admin')
-        for group in form.cleaned_data.get('group_perms'):
+        prereg_admin_group = Group.objects.get(name="prereg_admin")
+        for group in form.cleaned_data.get("group_perms"):
             osf_user.groups.add(group)
-            split = group.name.split('_')
+            split = group.name.split("_")
             group_type = split[0]
-            if group_type == 'reviews':
+            if group_type == "reviews":
                 provider_id = split[2]
                 provider = AbstractProvider.objects.get(id=provider_id)
-                provider.notification_subscriptions.get(event_name='new_pending_submissions').add_user_to_subscription(osf_user, 'email_transactional')
+                provider.notification_subscriptions.get(
+                    event_name="new_pending_submissions"
+                ).add_user_to_subscription(osf_user, "email_transactional")
             if group == prereg_admin_group:
-                administer_permission = Permission.objects.get(codename='administer_prereg')
+                administer_permission = Permission.objects.get(
+                    codename="administer_prereg"
+                )
                 osf_user.user_permissions.add(administer_permission)
 
         osf_user.save()
 
         if created:
-            messages.success(self.request, 'Registration successful for OSF User {}!'.format(osf_user.username))
+            messages.success(
+                self.request,
+                "Registration successful for OSF User {}!".format(osf_user.username),
+            )
         else:
-            messages.success(self.request, 'Permissions update successful for OSF User {}!'.format(osf_user.username))
+            messages.success(
+                self.request,
+                "Permissions update successful for OSF User {}!".format(
+                    osf_user.username
+                ),
+            )
         return super(RegisterUser, self).form_valid(form)
 
     def get_success_url(self):
-        return reverse('auth:register')
+        return reverse("auth:register")
 
     def get_initial(self):
         initial = super(RegisterUser, self).get_initial()
-        initial['osf_id'] = self.request.GET.get('id')
+        initial["osf_id"] = self.request.GET.get("id")
         return initial
+
 
 class DeskUserCreateFormView(PermissionRequiredMixin, CreateView):
     form_class = DeskUserForm
-    template_name = 'desk/settings.html'
-    success_url = reverse_lazy('auth:desk')
-    permission_required = 'osf.view_desk'
+    template_name = "desk/settings.html"
+    success_url = reverse_lazy("auth:desk")
+    permission_required = "osf.view_desk"
     raise_exception = True
 
     def form_valid(self, form):
@@ -116,9 +130,9 @@ class DeskUserCreateFormView(PermissionRequiredMixin, CreateView):
 
 class DeskUserUpdateFormView(PermissionRequiredMixin, UpdateView):
     form_class = DeskUserForm
-    template_name = 'desk/settings.html'
-    success_url = reverse_lazy('auth:desk')
-    permission_required = 'osf.view_desk'
+    template_name = "desk/settings.html"
+    success_url = reverse_lazy("auth:desk")
+    permission_required = "osf.view_desk"
     raise_exception = True
 
     def get_object(self, queryset=None):

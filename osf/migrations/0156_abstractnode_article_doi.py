@@ -9,13 +9,18 @@ import osf.models.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0155_merge_20190115_1437'),
+        ("osf", "0155_merge_20190115_1437"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractnode',
-            name='article_doi',
-            field=models.CharField(blank=True, max_length=128, null=True, validators=[osf.models.validators.validate_doi]),
+            model_name="abstractnode",
+            name="article_doi",
+            field=models.CharField(
+                blank=True,
+                max_length=128,
+                null=True,
+                validators=[osf.models.validators.validate_doi],
+            ),
         ),
     ]

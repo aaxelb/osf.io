@@ -1,4 +1,3 @@
-
 import pytz
 from django.db import models
 from django.db.models import Q
@@ -20,23 +19,27 @@ from website.project.model import get_valid_mentioned_users_guids
 
 class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
     __guid_min_length__ = 12
-    OVERVIEW = 'node'
-    FILES = 'files'
-    WIKI = 'wiki'
+    OVERVIEW = "node"
+    FILES = "files"
+    WIKI = "wiki"
 
-    user = models.ForeignKey('OSFUser', null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey("OSFUser", null=True, on_delete=models.CASCADE)
     # the node that the comment belongs to
-    node = models.ForeignKey('AbstractNode', null=True, on_delete=models.CASCADE)
+    node = models.ForeignKey("AbstractNode", null=True, on_delete=models.CASCADE)
 
     # The file or project overview page that the comment is for
-    root_target = models.ForeignKey(Guid, on_delete=models.SET_NULL,
-                                    related_name='comments',
-                                    null=True, blank=True)
+    root_target = models.ForeignKey(
+        Guid, on_delete=models.SET_NULL, related_name="comments", null=True, blank=True
+    )
 
     # the direct 'parent' of the comment (e.g. the target of a comment reply is another comment)
-    target = models.ForeignKey(Guid, on_delete=models.SET_NULL,
-                                    related_name='child_comments',
-                                    null=True, blank=True)
+    target = models.ForeignKey(
+        Guid,
+        on_delete=models.SET_NULL,
+        related_name="child_comments",
+        null=True,
+        blank=True,
+    )
 
     edited = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -44,26 +47,30 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
     # The type of root_target: node/files
     page = models.CharField(max_length=255, blank=True)
     content = models.TextField(
-        validators=[validators.CommentMaxLength(settings.COMMENT_MAXLENGTH),
-                    validators.string_required]
+        validators=[
+            validators.CommentMaxLength(settings.COMMENT_MAXLENGTH),
+            validators.string_required,
+        ]
     )
 
     # The mentioned users
-    ever_mentioned = models.ManyToManyField(blank=True, related_name='mentioned_in', to='OSFUser')
+    ever_mentioned = models.ManyToManyField(
+        blank=True, related_name="mentioned_in", to="OSFUser"
+    )
 
     @property
     def url(self):
-        return '/{}/'.format(self._id)
+        return "/{}/".format(self._id)
 
     @property
     def absolute_api_v2_url(self):
-        path = '/comments/{}/'.format(self._id)
+        path = "/comments/{}/".format(self._id)
         return api_v2_url(path)
 
     @property
     def target_type(self):
         """The object "type" used in the OSF v2 API."""
-        return 'comments'
+        return "comments"
 
     @property
     def root_target_page(self):
@@ -81,7 +88,7 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
     def get_comment_page_url(self):
         if isinstance(self.root_target.referent, Node):
             return self.node.absolute_url
-        return settings.DOMAIN + str(self.root_target._id) + '/'
+        return settings.DOMAIN + str(self.root_target._id) + "/"
 
     def get_content(self, auth):
         """ Returns the comment content if the user is allowed to see it. Deleted comments
@@ -89,8 +96,10 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
         if not auth and not self.node.is_public:
             raise PermissionsError
 
-        if self.is_deleted and ((not auth or auth.user.is_anonymous) or
-                                (auth and not auth.user.is_anonymous and self.user._id != auth.user._id)):
+        if self.is_deleted and (
+            (not auth or auth.user.is_anonymous)
+            or (auth and not auth.user.is_anonymous and self.user._id != auth.user._id)
+        ):
             return None
 
         return self.content
@@ -100,13 +109,13 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
             return self.root_target.referent.name
         elif self.page == Comment.WIKI:
             return self.root_target.referent.page_name
-        return ''
+        return ""
 
     def get_comment_page_type(self):
         if self.page == Comment.FILES:
-            return 'file'
+            return "file"
         elif self.page == Comment.WIKI:
-            return 'wiki'
+            return "wiki"
         return self.node.project_or_component
 
     @classmethod
@@ -119,15 +128,17 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
                 view_timestamp = user.get_node_comment_timestamps(target_id=root_id)
                 root_target = Guid.load(root_id)
             else:
-                raise ValueError('Invalid page')
+                raise ValueError("Invalid page")
 
             if not view_timestamp.tzinfo:
                 view_timestamp = view_timestamp.replace(tzinfo=pytz.utc)
 
             return cls.objects.filter(
-                Q(node=node) & ~Q(user=user) & Q(is_deleted=False) &
-                (Q(created__gt=view_timestamp) | Q(modified__gt=view_timestamp)) &
-                Q(root_target=root_target)
+                Q(node=node)
+                & ~Q(user=user)
+                & Q(is_deleted=False)
+                & (Q(created__gt=view_timestamp) | Q(modified__gt=view_timestamp))
+                & Q(root_target=root_target)
             ).count()
 
         return 0
@@ -136,21 +147,25 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
     def create(cls, auth, **kwargs):
         comment = cls(**kwargs)
         if not comment.node.can_comment(auth):
-            raise PermissionsError('{0!r} does not have permission to comment on this node'.format(auth.user))
+            raise PermissionsError(
+                "{0!r} does not have permission to comment on this node".format(
+                    auth.user
+                )
+            )
         log_dict = {
-            'project': comment.node.parent_id,
-            'node': comment.node._id,
-            'user': comment.user._id,
-            'comment': comment._id,
+            "project": comment.node.parent_id,
+            "node": comment.node._id,
+            "user": comment.user._id,
+            "comment": comment._id,
         }
         if isinstance(comment.target.referent, Comment):
             comment.root_target = comment.target.referent.root_target
         else:
             comment.root_target = comment.target
 
-        page = getattr(comment.root_target.referent, 'root_target_page', None)
+        page = getattr(comment.root_target.referent, "root_target_page", None)
         if not page:
-            raise ValueError('Invalid root target.')
+            raise ValueError("Invalid root target.")
         comment.page = page
 
         log_dict.update(comment.root_target.referent.get_extra_log_params(comment))
@@ -160,61 +175,75 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
             if not comment.id:
                 # must have id before accessing M2M
                 comment.save()
-            new_mentions = get_valid_mentioned_users_guids(comment, comment.node.contributors_and_group_members)
+            new_mentions = get_valid_mentioned_users_guids(
+                comment, comment.node.contributors_and_group_members
+            )
             if new_mentions:
-                project_signals.mention_added.send(comment, new_mentions=new_mentions, auth=auth)
-                comment.ever_mentioned.add(*comment.node.contributors.filter(guids___id__in=new_mentions))
+                project_signals.mention_added.send(
+                    comment, new_mentions=new_mentions, auth=auth
+                )
+                comment.ever_mentioned.add(
+                    *comment.node.contributors.filter(guids___id__in=new_mentions)
+                )
 
         comment.save()
 
         comment.node.add_log(
-            NodeLog.COMMENT_ADDED,
-            log_dict,
-            auth=auth,
-            save=False,
+            NodeLog.COMMENT_ADDED, log_dict, auth=auth, save=False,
         )
 
         comment.node.save()
-        project_signals.comment_added.send(comment, auth=auth, new_mentions=new_mentions)
+        project_signals.comment_added.send(
+            comment, auth=auth, new_mentions=new_mentions
+        )
 
         return comment
 
     def edit(self, content, auth, save=False):
         if not self.node.can_comment(auth) or self.user._id != auth.user._id:
-            raise PermissionsError('{0!r} does not have permission to edit this comment'.format(auth.user))
+            raise PermissionsError(
+                "{0!r} does not have permission to edit this comment".format(auth.user)
+            )
         log_dict = {
-            'project': self.node.parent_id,
-            'node': self.node._id,
-            'user': self.user._id,
-            'comment': self._id,
+            "project": self.node.parent_id,
+            "node": self.node._id,
+            "user": self.user._id,
+            "comment": self._id,
         }
         log_dict.update(self.root_target.referent.get_extra_log_params(self))
         self.content = content
         self.edited = True
         self.modified = timezone.now()
-        new_mentions = get_valid_mentioned_users_guids(self, self.node.contributors_and_group_members)
+        new_mentions = get_valid_mentioned_users_guids(
+            self, self.node.contributors_and_group_members
+        )
 
         if save:
             if new_mentions:
-                project_signals.mention_added.send(self, new_mentions=new_mentions, auth=auth)
-                self.ever_mentioned.add(*self.node.contributors.filter(guids___id__in=new_mentions))
+                project_signals.mention_added.send(
+                    self, new_mentions=new_mentions, auth=auth
+                )
+                self.ever_mentioned.add(
+                    *self.node.contributors.filter(guids___id__in=new_mentions)
+                )
             self.save()
             self.node.add_log(
-                NodeLog.COMMENT_UPDATED,
-                log_dict,
-                auth=auth,
-                save=False,
+                NodeLog.COMMENT_UPDATED, log_dict, auth=auth, save=False,
             )
             self.node.save()
 
     def delete(self, auth, save=False):
         if not self.node.can_comment(auth) or self.user._id != auth.user._id:
-            raise PermissionsError('{0!r} does not have permission to comment on this node'.format(auth.user))
+            raise PermissionsError(
+                "{0!r} does not have permission to comment on this node".format(
+                    auth.user
+                )
+            )
         log_dict = {
-            'project': self.node.parent_id,
-            'node': self.node._id,
-            'user': self.user._id,
-            'comment': self._id,
+            "project": self.node.parent_id,
+            "node": self.node._id,
+            "user": self.user._id,
+            "comment": self._id,
         }
         self.is_deleted = True
         current_time = timezone.now()
@@ -224,32 +253,30 @@ class Comment(GuidMixin, SpamMixin, CommentableMixin, BaseModel):
         if save:
             self.save()
             self.node.add_log(
-                NodeLog.COMMENT_REMOVED,
-                log_dict,
-                auth=auth,
-                save=False,
+                NodeLog.COMMENT_REMOVED, log_dict, auth=auth, save=False,
             )
             self.node.save()
 
     def undelete(self, auth, save=False):
         if not self.node.can_comment(auth) or self.user._id != auth.user._id:
-            raise PermissionsError('{0!r} does not have permission to comment on this node'.format(auth.user))
+            raise PermissionsError(
+                "{0!r} does not have permission to comment on this node".format(
+                    auth.user
+                )
+            )
         self.is_deleted = False
         self.deleted = None
         log_dict = {
-            'project': self.node.parent_id,
-            'node': self.node._id,
-            'user': self.user._id,
-            'comment': self._id,
+            "project": self.node.parent_id,
+            "node": self.node._id,
+            "user": self.user._id,
+            "comment": self._id,
         }
         log_dict.update(self.root_target.referent.get_extra_log_params(self))
         self.modified = timezone.now()
         if save:
             self.save()
             self.node.add_log(
-                NodeLog.COMMENT_RESTORED,
-                log_dict,
-                auth=auth,
-                save=False,
+                NodeLog.COMMENT_RESTORED, log_dict, auth=auth, save=False,
             )
             self.node.save()

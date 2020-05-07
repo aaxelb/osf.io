@@ -21,18 +21,25 @@ except Exception as err:
 
 
 class TestEmail(unittest.TestCase):
-
-    @unittest.skipIf(not SERVER_RUNNING,
-                     "Mailserver isn't running. Run \"invoke mailserver\".")
-    @unittest.skipIf(not settings.USE_EMAIL,
-                     'settings.USE_EMAIL is False')
+    @unittest.skipIf(
+        not SERVER_RUNNING, 'Mailserver isn\'t running. Run "invoke mailserver".'
+    )
+    @unittest.skipIf(not settings.USE_EMAIL, "settings.USE_EMAIL is False")
     def test_sending_email(self):
-        assert_true(send_email('foo@bar.com', 'baz@quux.com', subject='no subject',
-                                 message='<h1>Greetings!</h1>', ttls=False, login=False))
+        assert_true(
+            send_email(
+                "foo@bar.com",
+                "baz@quux.com",
+                subject="no subject",
+                message="<h1>Greetings!</h1>",
+                ttls=False,
+                login=False,
+            )
+        )
 
     def test_send_with_sendgrid_success(self):
         mock_client = mock.MagicMock()
-        mock_client.send.return_value = 200, 'success'
+        mock_client.send.return_value = 200, "success"
         from_addr, to_addr = fake_email(), fake_email()
         category1, category2 = fake.word(), fake.word()
         subject = fake.bs()
@@ -42,9 +49,9 @@ class TestEmail(unittest.TestCase):
             to_addr=to_addr,
             subject=subject,
             message=message,
-            mimetype='html',
+            mimetype="html",
             client=mock_client,
-            categories=(category1, category2)
+            categories=(category1, category2),
         )
         assert_true(ret)
 
@@ -58,11 +65,11 @@ class TestEmail(unittest.TestCase):
         assert_equal(first_call_arg.subject, subject)
         assert_in(message, first_call_arg.html)
         # Categories are set
-        assert_equal(first_call_arg.smtpapi.data['category'], (category1, category2))
+        assert_equal(first_call_arg.smtpapi.data["category"], (category1, category2))
 
     def test_send_with_sendgrid_failure_returns_false(self):
         mock_client = mock.MagicMock()
-        mock_client.send.return_value = 400, 'failed'
+        mock_client.send.return_value = 400, "failed"
         from_addr, to_addr = fake_email(), fake_email()
         subject = fake.bs()
         message = fake.text()
@@ -71,11 +78,11 @@ class TestEmail(unittest.TestCase):
             to_addr=to_addr,
             subject=subject,
             message=message,
-            mimetype='html',
-            client=mock_client
+            mimetype="html",
+            client=mock_client,
         )
         assert_false(ret)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -8,12 +8,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0111_auto_20180605_1240'),
+        ("osf", "0111_auto_20180605_1240"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='collectionprovider',
-            options={'permissions': (('view_collectionprovider', 'Can view collection provider details'),)},
+            name="collectionprovider",
+            options={
+                "permissions": (
+                    ("view_collectionprovider", "Can view collection provider details"),
+                )
+            },
         ),
     ]

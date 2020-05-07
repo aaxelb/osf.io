@@ -16,16 +16,38 @@ from api.base.views import (
     BaseNodeLinksList,
     WaterButlerMixin,
 )
-from api.base.serializers import HideIfWithdrawal, LinkedRegistrationsRelationshipSerializer
+from api.base.serializers import (
+    HideIfWithdrawal,
+    LinkedRegistrationsRelationshipSerializer,
+)
 from api.base.serializers import LinkedNodesRelationshipSerializer
 from api.base.pagination import NodeContributorPagination
-from api.base.parsers import JSONAPIRelationshipParser, JSONAPIMultipleRelationshipsParser
-from api.base.parsers import JSONAPIRelationshipParserForRegularJSON, JSONAPIMultipleRelationshipsParserForRegularJSON
-from api.base.utils import get_user_auth, default_node_list_permission_queryset, is_bulk_request, is_truthy
-from api.comments.serializers import RegistrationCommentSerializer, CommentCreateSerializer
+from api.base.parsers import (
+    JSONAPIRelationshipParser,
+    JSONAPIMultipleRelationshipsParser,
+)
+from api.base.parsers import (
+    JSONAPIRelationshipParserForRegularJSON,
+    JSONAPIMultipleRelationshipsParserForRegularJSON,
+)
+from api.base.utils import (
+    get_user_auth,
+    default_node_list_permission_queryset,
+    is_bulk_request,
+    is_truthy,
+)
+from api.comments.serializers import (
+    RegistrationCommentSerializer,
+    CommentCreateSerializer,
+)
 from api.draft_registrations.views import DraftMixin
 from api.identifiers.serializers import RegistrationIdentifierSerializer
-from api.nodes.views import NodeIdentifierList, NodeBibliographicContributorsList, NodeSubjectsList, NodeSubjectsRelationship
+from api.nodes.views import (
+    NodeIdentifierList,
+    NodeBibliographicContributorsList,
+    NodeSubjectsList,
+    NodeSubjectsRelationship,
+)
 from api.users.views import UserMixin
 from api.users.serializers import UserSerializer
 
@@ -49,14 +71,31 @@ from api.registrations.serializers import (
 from api.nodes.filters import NodesFilterMixin
 
 from api.nodes.views import (
-    NodeMixin, NodeRegistrationsList, NodeLogList,
-    NodeCommentsList, NodeStorageProvidersList, NodeFilesList, NodeFileDetail,
-    NodeInstitutionsList, NodeForksList, NodeWikiList, LinkedNodesList,
-    NodeViewOnlyLinksList, NodeViewOnlyLinkDetail, NodeCitationDetail, NodeCitationStyleDetail,
-    NodeLinkedRegistrationsList, NodeLinkedByNodesList, NodeLinkedByRegistrationsList, NodeInstitutionsRelationship,
+    NodeMixin,
+    NodeRegistrationsList,
+    NodeLogList,
+    NodeCommentsList,
+    NodeStorageProvidersList,
+    NodeFilesList,
+    NodeFileDetail,
+    NodeInstitutionsList,
+    NodeForksList,
+    NodeWikiList,
+    LinkedNodesList,
+    NodeViewOnlyLinksList,
+    NodeViewOnlyLinkDetail,
+    NodeCitationDetail,
+    NodeCitationStyleDetail,
+    NodeLinkedRegistrationsList,
+    NodeLinkedByNodesList,
+    NodeLinkedByRegistrationsList,
+    NodeInstitutionsRelationship,
 )
 
-from api.registrations.serializers import RegistrationNodeLinksSerializer, RegistrationFileSerializer
+from api.registrations.serializers import (
+    RegistrationNodeLinksSerializer,
+    RegistrationFileSerializer,
+)
 from api.wikis.serializers import RegistrationWikiSerializer
 
 from api.base.utils import get_object_or_error
@@ -69,15 +108,14 @@ class RegistrationMixin(NodeMixin):
     """
 
     serializer_class = RegistrationSerializer
-    node_lookup_url_kwarg = 'node_id'
+    node_lookup_url_kwarg = "node_id"
 
     def get_node(self, check_object_permissions=True):
         node = get_object_or_error(
             AbstractNode,
             self.kwargs[self.node_lookup_url_kwarg],
             self.request,
-            display_name='node',
-
+            display_name="node",
         )
         # Nodes that are folders/collections are treated as a separate resource, so if the client
         # requests a collection through a node endpoint, we return a 404
@@ -89,9 +127,16 @@ class RegistrationMixin(NodeMixin):
         return node
 
 
-class RegistrationList(JSONAPIBaseView, generics.ListCreateAPIView, bulk_views.BulkUpdateJSONAPIView, NodesFilterMixin, DraftMixin):
+class RegistrationList(
+    JSONAPIBaseView,
+    generics.ListCreateAPIView,
+    bulk_views.BulkUpdateJSONAPIView,
+    NodesFilterMixin,
+    DraftMixin,
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_list).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -101,29 +146,34 @@ class RegistrationList(JSONAPIBaseView, generics.ListCreateAPIView, bulk_views.B
     required_write_scopes = [CoreScopes.NODE_REGISTRATIONS_WRITE]
 
     serializer_class = RegistrationSerializer
-    view_category = 'registrations'
-    view_name = 'registration-list'
+    view_category = "registrations"
+    view_name = "registration-list"
 
-    ordering = ('-modified',)
+    ordering = ("-modified",)
     model_class = Registration
 
-    parser_classes = (JSONAPIMultipleRelationshipsParser, JSONAPIMultipleRelationshipsParserForRegularJSON,)
+    parser_classes = (
+        JSONAPIMultipleRelationshipsParser,
+        JSONAPIMultipleRelationshipsParserForRegularJSON,
+    )
 
     # overrides BulkUpdateJSONAPIView
     def get_serializer_class(self):
         """
         Use RegistrationDetailSerializer which requires 'id'
         """
-        if self.request.method in ('PUT', 'PATCH'):
+        if self.request.method in ("PUT", "PATCH"):
             return RegistrationDetailSerializer
-        elif self.request.method == 'POST':
+        elif self.request.method == "POST":
             return RegistrationCreateSerializer
         else:
             return RegistrationSerializer
 
     # overrides NodesFilterMixin
     def get_default_queryset(self):
-        return default_node_list_permission_queryset(user=self.request.user, model_cls=Registration)
+        return default_node_list_permission_queryset(
+            user=self.request.user, model_cls=Registration
+        )
 
     def is_blacklisted(self):
         query_params = self.parse_query_params(self.request.query_params)
@@ -139,12 +189,18 @@ class RegistrationList(JSONAPIBaseView, generics.ListCreateAPIView, bulk_views.B
         # For bulk requests, queryset is formed from request body.
         if is_bulk_request(self.request):
             auth = get_user_auth(self.request)
-            registrations = Registration.objects.filter(guids___id__in=[registration['id'] for registration in self.request.data])
+            registrations = Registration.objects.filter(
+                guids___id__in=[
+                    registration["id"] for registration in self.request.data
+                ]
+            )
 
             # If skip_uneditable=True in query_params, skip nodes for which the user
             # does not have EDIT permissions.
-            if is_truthy(self.request.query_params.get('skip_uneditable', False)):
-                return Registration.objects.get_nodes_for_user(auth.user, WRITE_NODE, registrations)
+            if is_truthy(self.request.query_params.get("skip_uneditable", False)):
+                return Registration.objects.get_nodes_for_user(
+                    auth.user, WRITE_NODE, registrations
+                )
 
             for registration in registrations:
                 if not registration.can_edit(auth):
@@ -158,18 +214,20 @@ class RegistrationList(JSONAPIBaseView, generics.ListCreateAPIView, bulk_views.B
             registrations = registrations.exclude(retraction__isnull=False)
 
         return registrations.select_related(
-            'root',
-            'root__embargo',
-            'root__embargo_termination_approval',
-            'root__retraction',
-            'root__registration_approval',
+            "root",
+            "root__embargo",
+            "root__embargo_termination_approval",
+            "root__retraction",
+            "root__registration_approval",
         )
 
     # overrides ListCreateJSONAPIView
     def perform_create(self, serializer):
         """Create a registration from a draft.
         """
-        draft_id = self.request.data.get('draft_registration', None) or self.request.data.get('draft_registration_id', None)
+        draft_id = self.request.data.get(
+            "draft_registration", None
+        ) or self.request.data.get("draft_registration_id", None)
         draft = self.get_draft(draft_id)
         node = draft.branched_from
         user = get_user_auth(self.request).user
@@ -180,7 +238,7 @@ class RegistrationList(JSONAPIBaseView, generics.ListCreateAPIView, bulk_views.B
             serializer.save(draft=draft)
         else:
             raise PermissionDenied(
-                'You must be an admin contributor on both the project and the draft registration to create a registration.',
+                "You must be an admin contributor on both the project and the draft registration to create a registration.",
             )
 
     def check_branched_from(self, draft):
@@ -188,9 +246,12 @@ class RegistrationList(JSONAPIBaseView, generics.ListCreateAPIView, bulk_views.B
         return
 
 
-class RegistrationDetail(JSONAPIBaseView, generics.RetrieveUpdateAPIView, RegistrationMixin, WaterButlerMixin):
+class RegistrationDetail(
+    JSONAPIBaseView, generics.RetrieveUpdateAPIView, RegistrationMixin, WaterButlerMixin
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_read).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         ContributorOrPublic,
@@ -201,25 +262,28 @@ class RegistrationDetail(JSONAPIBaseView, generics.RetrieveUpdateAPIView, Regist
     required_write_scopes = [CoreScopes.NODE_REGISTRATIONS_WRITE]
 
     serializer_class = RegistrationDetailSerializer
-    view_category = 'registrations'
-    view_name = 'registration-detail'
+    view_category = "registrations"
+    view_name = "registration-detail"
 
-    parser_classes = (JSONAPIMultipleRelationshipsParser, JSONAPIMultipleRelationshipsParserForRegularJSON,)
+    parser_classes = (
+        JSONAPIMultipleRelationshipsParser,
+        JSONAPIMultipleRelationshipsParserForRegularJSON,
+    )
 
     # overrides RetrieveAPIView
     def get_object(self):
         registration = self.get_node()
         if not registration.is_registration:
-            raise ValidationError('This is not a registration.')
+            raise ValidationError("This is not a registration.")
         return registration
 
     def get_renderer_context(self):
         context = super(RegistrationDetail, self).get_renderer_context()
-        show_counts = is_truthy(self.request.query_params.get('related_counts', False))
+        show_counts = is_truthy(self.request.query_params.get("related_counts", False))
         if show_counts:
             registration = self.get_object()
-            context['meta'] = {
-                'templated_by_count': registration.templated_list.count(),
+            context["meta"] = {
+                "templated_by_count": registration.templated_list.count(),
             }
         return context
 
@@ -227,8 +291,9 @@ class RegistrationDetail(JSONAPIBaseView, generics.RetrieveUpdateAPIView, Regist
 class RegistrationContributorsList(BaseContributorList, RegistrationMixin, UserMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_contributors_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-contributors'
+
+    view_category = "registrations"
+    view_name = "registration-contributors"
 
     pagination_class = NodeContributorPagination
     serializer_class = RegistrationContributorsSerializer
@@ -245,14 +310,17 @@ class RegistrationContributorsList(BaseContributorList, RegistrationMixin, UserM
 
     def get_default_queryset(self):
         node = self.get_node(check_object_permissions=False)
-        return node.contributor_set.all().include('user__guids')
+        return node.contributor_set.all().include("user__guids")
 
 
-class RegistrationContributorDetail(BaseContributorDetail, RegistrationMixin, UserMixin):
+class RegistrationContributorDetail(
+    BaseContributorDetail, RegistrationMixin, UserMixin
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_contributors_read).
     """
-    view_category = 'registrations'
-    view_name = 'registration-contributor-detail'
+
+    view_category = "registrations"
+    view_name = "registration-contributor-detail"
     serializer_class = RegistrationContributorsSerializer
 
     required_read_scopes = [CoreScopes.NODE_REGISTRATIONS_READ]
@@ -266,16 +334,20 @@ class RegistrationContributorDetail(BaseContributorDetail, RegistrationMixin, Us
     )
 
 
-class RegistrationBibliographicContributorsList(NodeBibliographicContributorsList, RegistrationMixin):
+class RegistrationBibliographicContributorsList(
+    NodeBibliographicContributorsList, RegistrationMixin
+):
 
     pagination_class = NodeContributorPagination
     serializer_class = RegistrationContributorsSerializer
 
-    view_category = 'registrations'
-    view_name = 'registration-bibliographic-contributors'
+    view_category = "registrations"
+    view_name = "registration-bibliographic-contributors"
 
 
-class RegistrationImplicitContributorsList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin, RegistrationMixin):
+class RegistrationImplicitContributorsList(
+    JSONAPIBaseView, generics.ListAPIView, ListFilterMixin, RegistrationMixin
+):
     permission_classes = (
         AdminOrPublic,
         drf_permissions.IsAuthenticatedOrReadOnly,
@@ -288,9 +360,9 @@ class RegistrationImplicitContributorsList(JSONAPIBaseView, generics.ListAPIView
     model_class = OSFUser
 
     serializer_class = UserSerializer
-    view_category = 'registrations'
-    view_name = 'registration-implicit-contributors'
-    ordering = ('_order',)  # default ordering
+    view_category = "registrations"
+    view_name = "registration-implicit-contributors"
+    ordering = ("_order",)  # default ordering
 
     def get_default_queryset(self):
         node = self.get_node()
@@ -302,11 +374,14 @@ class RegistrationImplicitContributorsList(JSONAPIBaseView, generics.ListAPIView
         return queryset
 
 
-class RegistrationChildrenList(BaseChildrenList, generics.ListAPIView, RegistrationMixin):
+class RegistrationChildrenList(
+    BaseChildrenList, generics.ListAPIView, RegistrationMixin
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_children_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-children'
+
+    view_category = "registrations"
+    view_name = "registration-children"
     serializer_class = RegistrationSerializer
 
     required_read_scopes = [CoreScopes.NODE_REGISTRATIONS_READ]
@@ -318,36 +393,41 @@ class RegistrationChildrenList(BaseChildrenList, generics.ListAPIView, Registrat
 class RegistrationCitationDetail(NodeCitationDetail, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_citations_list).
     """
+
     required_read_scopes = [CoreScopes.NODE_REGISTRATIONS_READ]
 
-    view_category = 'registrations'
-    view_name = 'registration-citation'
+    view_category = "registrations"
+    view_name = "registration-citation"
 
 
 class RegistrationCitationStyleDetail(NodeCitationStyleDetail, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_citation_read).
     """
+
     required_read_scopes = [CoreScopes.NODE_REGISTRATIONS_READ]
 
-    view_category = 'registrations'
-    view_name = 'registration-style-citation'
+    view_category = "registrations"
+    view_name = "registration-style-citation"
 
 
 class RegistrationForksList(NodeForksList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_forks_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-forks'
+
+    view_category = "registrations"
+    view_name = "registration-forks"
+
 
 class RegistrationCommentsList(NodeCommentsList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_comments_list).
     """
+
     serializer_class = RegistrationCommentSerializer
-    view_category = 'registrations'
-    view_name = 'registration-comments'
+    view_category = "registrations"
+    view_name = "registration-comments"
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
+        if self.request.method == "POST":
             return CommentCreateSerializer
         else:
             return RegistrationCommentSerializer
@@ -356,17 +436,19 @@ class RegistrationCommentsList(NodeCommentsList, RegistrationMixin):
 class RegistrationLogList(NodeLogList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_logs_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-logs'
+
+    view_category = "registrations"
+    view_name = "registration-logs"
 
 
 class RegistrationStorageProvidersList(NodeStorageProvidersList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_providers_list).
     """
+
     serializer_class = RegistrationStorageProviderSerializer
 
-    view_category = 'registrations'
-    view_name = 'registration-storage-providers'
+    view_category = "registrations"
+    view_name = "registration-storage-providers"
 
 
 class RegistrationNodeLinksList(BaseNodeLinksList, RegistrationMixin):
@@ -423,8 +505,9 @@ class RegistrationNodeLinksList(BaseNodeLinksList, RegistrationMixin):
 
     #This Request/Response
     """
-    view_category = 'registrations'
-    view_name = 'registration-pointers'
+
+    view_category = "registrations"
+    view_name = "registration-pointers"
     serializer_class = RegistrationNodeLinksSerializer
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
@@ -481,8 +564,9 @@ class RegistrationNodeLinksDetail(BaseNodeLinksDetail, RegistrationMixin):
 
     #This Request/Response
     """
-    view_category = 'registrations'
-    view_name = 'registration-pointer-detail'
+
+    view_category = "registrations"
+    view_name = "registration-pointer-detail"
     serializer_class = RegistrationNodeLinksSerializer
 
     permission_classes = (
@@ -501,54 +585,61 @@ class RegistrationNodeLinksDetail(BaseNodeLinksDetail, RegistrationMixin):
     def get_object(self):
         registration = self.get_node()
         if not registration.is_registration:
-            raise ValidationError('This is not a registration.')
+            raise ValidationError("This is not a registration.")
         return registration
 
 
 class RegistrationLinkedByNodesList(NodeLinkedByNodesList, RegistrationMixin):
-    view_category = 'registrations'
-    view_name = 'registration-linked-by-nodes'
+    view_category = "registrations"
+    view_name = "registration-linked-by-nodes"
 
 
-class RegistrationLinkedByRegistrationsList(NodeLinkedByRegistrationsList, RegistrationMixin):
-    view_category = 'registrations'
-    view_name = 'registration-linked-by-registrations'
+class RegistrationLinkedByRegistrationsList(
+    NodeLinkedByRegistrationsList, RegistrationMixin
+):
+    view_category = "registrations"
+    view_name = "registration-linked-by-registrations"
 
 
 class RegistrationRegistrationsList(NodeRegistrationsList, RegistrationMixin):
     """List of registrations of a registration."""
-    view_category = 'registrations'
-    view_name = 'registration-registrations'
+
+    view_category = "registrations"
+    view_name = "registration-registrations"
 
 
 class RegistrationFilesList(NodeFilesList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_files_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-files'
+
+    view_category = "registrations"
+    view_name = "registration-files"
     serializer_class = RegistrationFileSerializer
 
 
 class RegistrationFileDetail(NodeFileDetail, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_files_read).
     """
-    view_category = 'registrations'
-    view_name = 'registration-file-detail'
+
+    view_category = "registrations"
+    view_name = "registration-file-detail"
     serializer_class = RegistrationFileSerializer
 
 
 class RegistrationInstitutionsList(NodeInstitutionsList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_institutions_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-institutions'
+
+    view_category = "registrations"
+    view_name = "registration-institutions"
 
 
 class RegistrationSubjectsList(NodeSubjectsList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_subjects_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-subjects'
+
+    view_category = "registrations"
+    view_name = "registration-subjects"
 
     required_read_scopes = [CoreScopes.NODE_REGISTRATIONS_READ]
 
@@ -560,15 +651,18 @@ class RegistrationSubjectsRelationship(NodeSubjectsRelationship, RegistrationMix
     required_read_scopes = [CoreScopes.NODE_REGISTRATIONS_READ]
     required_write_scopes = [CoreScopes.NODE_REGISTRATIONS_WRITE]
 
-    view_category = 'registrations'
-    view_name = 'registration-relationships-subjects'
+    view_category = "registrations"
+    view_name = "registration-relationships-subjects"
 
 
-class RegistrationInstitutionsRelationship(NodeInstitutionsRelationship, RegistrationMixin):
+class RegistrationInstitutionsRelationship(
+    NodeInstitutionsRelationship, RegistrationMixin
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_institutions_relationship).
     """
-    view_category = 'registrations'
-    view_name = 'registration-relationships-institutions'
+
+    view_category = "registrations"
+    view_name = "registration-relationships-institutions"
 
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
@@ -580,8 +674,9 @@ class RegistrationInstitutionsRelationship(NodeInstitutionsRelationship, Registr
 class RegistrationWikiList(NodeWikiList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_wikis_list).
     """
-    view_category = 'registrations'
-    view_name = 'registration-wikis'
+
+    view_category = "registrations"
+    view_name = "registration-wikis"
 
     serializer_class = RegistrationWikiSerializer
 
@@ -589,11 +684,14 @@ class RegistrationWikiList(NodeWikiList, RegistrationMixin):
 class RegistrationLinkedNodesList(LinkedNodesList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_linked_nodes_list).
     """
-    view_category = 'registrations'
-    view_name = 'linked-nodes'
+
+    view_category = "registrations"
+    view_name = "linked-nodes"
 
 
-class RegistrationLinkedNodesRelationship(JSONAPIBaseView, generics.RetrieveAPIView, RegistrationMixin):
+class RegistrationLinkedNodesRelationship(
+    JSONAPIBaseView, generics.RetrieveAPIView, RegistrationMixin
+):
     """ Relationship Endpoint for Nodes -> Linked Node relationships
 
     Used to retrieve the ids of the linked nodes attached to this collection. For each id, there
@@ -602,8 +700,9 @@ class RegistrationLinkedNodesRelationship(JSONAPIBaseView, generics.RetrieveAPIV
     ##Actions
 
     """
-    view_category = 'registrations'
-    view_name = 'node-pointer-relationship'
+
+    view_category = "registrations"
+    view_name = "node-pointer-relationship"
 
     permission_classes = (
         ContributorOrPublicForRelationshipPointers,
@@ -616,31 +715,39 @@ class RegistrationLinkedNodesRelationship(JSONAPIBaseView, generics.RetrieveAPIV
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = LinkedNodesRelationshipSerializer
-    parser_classes = (JSONAPIRelationshipParser, JSONAPIRelationshipParserForRegularJSON, )
+    parser_classes = (
+        JSONAPIRelationshipParser,
+        JSONAPIRelationshipParserForRegularJSON,
+    )
 
     def get_object(self):
         node = self.get_node(check_object_permissions=False)
         auth = get_user_auth(self.request)
         obj = {
-            'data': [
-                linked_node for linked_node in
-                node.linked_nodes.filter(is_deleted=False).exclude(type='osf.collection').exclude(type='osf.registration')
+            "data": [
+                linked_node
+                for linked_node in node.linked_nodes.filter(is_deleted=False)
+                .exclude(type="osf.collection")
+                .exclude(type="osf.registration")
                 if linked_node.can_view(auth)
-            ], 'self': node,
+            ],
+            "self": node,
         }
         self.check_object_permissions(self.request, obj)
         return obj
 
 
-class RegistrationLinkedRegistrationsRelationship(JSONAPIBaseView, generics.RetrieveAPIView, RegistrationMixin):
+class RegistrationLinkedRegistrationsRelationship(
+    JSONAPIBaseView, generics.RetrieveAPIView, RegistrationMixin
+):
     """Relationship Endpoint for Registration -> Linked Registration relationships. *Read-only*
 
     Used to retrieve the ids of the linked registrations attached to this collection. For each id, there
     exists a node link that contains that registration.
     """
 
-    view_category = 'registrations'
-    view_name = 'node-registration-pointer-relationship'
+    view_category = "registrations"
+    view_name = "node-registration-pointer-relationship"
 
     permission_classes = (
         ContributorOrPublicForRelationshipPointers,
@@ -653,24 +760,31 @@ class RegistrationLinkedRegistrationsRelationship(JSONAPIBaseView, generics.Retr
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = LinkedRegistrationsRelationshipSerializer
-    parser_classes = (JSONAPIRelationshipParser, JSONAPIRelationshipParserForRegularJSON,)
+    parser_classes = (
+        JSONAPIRelationshipParser,
+        JSONAPIRelationshipParserForRegularJSON,
+    )
 
     def get_object(self):
         node = self.get_node(check_object_permissions=False)
         auth = get_user_auth(self.request)
         obj = {
-            'data': [
-                linked_registration for linked_registration in
-                node.linked_nodes.filter(is_deleted=False, type='osf.registration').exclude(type='osf.collection')
+            "data": [
+                linked_registration
+                for linked_registration in node.linked_nodes.filter(
+                    is_deleted=False, type="osf.registration"
+                ).exclude(type="osf.collection")
                 if linked_registration.can_view(auth)
             ],
-            'self': node,
+            "self": node,
         }
         self.check_object_permissions(self.request, obj)
         return obj
 
 
-class RegistrationLinkedRegistrationsList(NodeLinkedRegistrationsList, RegistrationMixin):
+class RegistrationLinkedRegistrationsList(
+    NodeLinkedRegistrationsList, RegistrationMixin
+):
     """List of registrations linked to this registration. *Read-only*.
 
     Linked registrations are the registration nodes pointed to by node links.
@@ -736,28 +850,30 @@ class RegistrationLinkedRegistrationsList(NodeLinkedRegistrationsList, Registrat
     """
 
     serializer_class = RegistrationSerializer
-    view_category = 'registrations'
-    view_name = 'linked-registrations'
+    view_category = "registrations"
+    view_name = "linked-registrations"
 
 
 class RegistrationViewOnlyLinksList(NodeViewOnlyLinksList, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_view_only_links_list).
     """
+
     required_read_scopes = [CoreScopes.REGISTRATION_VIEW_ONLY_LINKS_READ]
     required_write_scopes = [CoreScopes.REGISTRATION_VIEW_ONLY_LINKS_WRITE]
 
-    view_category = 'registrations'
-    view_name = 'registration-view-only-links'
+    view_category = "registrations"
+    view_name = "registration-view-only-links"
 
 
 class RegistrationViewOnlyLinkDetail(NodeViewOnlyLinkDetail, RegistrationMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/registrations_view_only_links_read).
     """
+
     required_read_scopes = [CoreScopes.REGISTRATION_VIEW_ONLY_LINKS_READ]
     required_write_scopes = [CoreScopes.REGISTRATION_VIEW_ONLY_LINKS_WRITE]
 
-    view_category = 'registrations'
-    view_name = 'registration-view-only-link-detail'
+    view_category = "registrations"
+    view_name = "registration-view-only-link-detail"
 
 
 class RegistrationIdentifierList(RegistrationMixin, NodeIdentifierList):

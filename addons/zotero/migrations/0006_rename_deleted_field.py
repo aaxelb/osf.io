@@ -9,28 +9,24 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_zotero', '0005_zotero_personal_libraries_20180216_0849'),
+        ("addons_zotero", "0005_zotero_personal_libraries_20180216_0849"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='nodesettings',
-            new_name='is_deleted',
-            old_name='deleted',
+            model_name="nodesettings", new_name="is_deleted", old_name="deleted",
         ),
         migrations.RenameField(
-            model_name='usersettings',
-            new_name='is_deleted',
-            old_name='deleted',
+            model_name="usersettings", new_name="is_deleted", old_name="deleted",
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='deleted',
+            model_name="nodesettings",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='usersettings',
-            name='deleted',
+            model_name="usersettings",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
     ]

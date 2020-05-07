@@ -10,18 +10,18 @@ from osf_tests.factories import UserFactory, PreprintFactory, NodeFactory
 
 @pytest.mark.django_db
 class TestGuidAutoInclude:
-    guid_factories = [
-        UserFactory,
-        PreprintFactory,
-        NodeFactory
-    ]
+    guid_factories = [UserFactory, PreprintFactory, NodeFactory]
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     def test_filter_object(self, Factory):
         obj = Factory()
-        assert '__guids' in str(obj._meta.model.objects.filter(id=obj.id).query), 'Guids were not included in filter query for {}'.format(obj._meta.model.__name__)
+        assert "__guids" in str(
+            obj._meta.model.objects.filter(id=obj.id).query
+        ), "Guids were not included in filter query for {}".format(
+            obj._meta.model.__name__
+        )
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_all(self, Factory, django_assert_num_queries):
         for _ in range(0, 5):
@@ -29,9 +29,9 @@ class TestGuidAutoInclude:
         with django_assert_num_queries(1):
             wut = Factory._meta.model.objects.all()
             for x in wut:
-                assert x._id is not None, 'Guid was None'
+                assert x._id is not None, "Guid was None"
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_filter(self, Factory, django_assert_num_queries):
         objects = []
@@ -42,9 +42,9 @@ class TestGuidAutoInclude:
 
             wut = Factory._meta.model.objects.filter(id__in=new_ids)
             for x in wut:
-                assert x._id is not None, 'Guid was None'
+                assert x._id is not None, "Guid was None"
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_filter_order_by(self, Factory, django_assert_num_queries):
         objects = []
@@ -53,84 +53,108 @@ class TestGuidAutoInclude:
         new_ids = [o.id for o in objects]
         with django_assert_num_queries(1):
 
-            wut = Factory._meta.model.objects.filter(id__in=new_ids).order_by('id')
+            wut = Factory._meta.model.objects.filter(id__in=new_ids).order_by("id")
             for x in wut:
-                assert x._id is not None, 'Guid was None'
+                assert x._id is not None, "Guid was None"
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_values(self, Factory, django_assert_num_queries):
         objects = []
         for _ in range(0, 5):
             objects.append(Factory())
         with django_assert_num_queries(1):
-            wut = Factory._meta.model.objects.values('id')
+            wut = Factory._meta.model.objects.values("id")
             for x in wut:
-                assert len(x) == 1, 'Too many keys in values'
+                assert len(x) == 1, "Too many keys in values"
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_exclude(self, Factory, django_assert_num_queries):
         objects = []
         for _ in range(0, 5):
             objects.append(Factory())
         try:
-            dtfield = [x.name for x in objects[0]._meta.get_fields() if isinstance(x, DateTimeField)][0]
+            dtfield = [
+                x.name
+                for x in objects[0]._meta.get_fields()
+                if isinstance(x, DateTimeField)
+            ][0]
         except IndexError:
-            pytest.skip('Thing doesn\'t have a DateTimeField')
+            pytest.skip("Thing doesn't have a DateTimeField")
 
         with django_assert_num_queries(1):
             wut = Factory._meta.model.objects.exclude(**{dtfield: timezone.now()})
             for x in wut:
-                assert x._id is not None, 'Guid was None'
+                assert x._id is not None, "Guid was None"
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     def test_update_objects(self, Factory):
         objects = []
         for _ in range(0, 5):
             objects.append(Factory())
         new_ids = [o.id for o in objects]
         try:
-            dtfield = [x.name for x in objects[0]._meta.get_fields() if isinstance(x, DateTimeField)][0]
+            dtfield = [
+                x.name
+                for x in objects[0]._meta.get_fields()
+                if isinstance(x, DateTimeField)
+            ][0]
         except IndexError:
-            pytest.skip('Thing doesn\'t have a DateTimeField')
+            pytest.skip("Thing doesn't have a DateTimeField")
         qs = objects[0]._meta.model.objects.filter(id__in=new_ids)
-        assert len(qs) > 0, 'No results returned'
+        assert len(qs) > 0, "No results returned"
         try:
             qs.update(**{dtfield: timezone.now()})
         except Exception as ex:
-            pytest.fail('Queryset update failed for {} with exception {}'.format(Factory._meta.model.__name__, ex))
+            pytest.fail(
+                "Queryset update failed for {} with exception {}".format(
+                    Factory._meta.model.__name__, ex
+                )
+            )
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     def test_update_on_objects_filtered_by_guids(self, Factory):
         objects = []
         for _ in range(0, 5):
             objects.append(Factory())
         new__ids = [o._id for o in objects]
         try:
-            dtfield = [x.name for x in objects[0]._meta.get_fields() if isinstance(x, DateTimeField)][0]
+            dtfield = [
+                x.name
+                for x in objects[0]._meta.get_fields()
+                if isinstance(x, DateTimeField)
+            ][0]
         except IndexError:
-            pytest.skip('Thing doesn\'t have a DateTimeField')
+            pytest.skip("Thing doesn't have a DateTimeField")
         qs = objects[0]._meta.model.objects.filter(guids___id__in=new__ids)
-        assert len(qs) > 0, 'No results returned'
+        assert len(qs) > 0, "No results returned"
         try:
             qs.update(**{dtfield: timezone.now()})
         except Exception as ex:
-            pytest.fail('Queryset update failed for {} with exception {}'.format(Factory._meta.model.__name__, ex))
+            pytest.fail(
+                "Queryset update failed for {} with exception {}".format(
+                    Factory._meta.model.__name__, ex
+                )
+            )
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_related_manager(self, Factory, django_assert_num_queries):
         thing_with_contributors = Factory()
-        if not hasattr(thing_with_contributors, 'contributors'):
-            pytest.skip('Thing must have contributors')
+        if not hasattr(thing_with_contributors, "contributors"):
+            pytest.skip("Thing must have contributors")
         try:
             with django_assert_num_queries(1):
                 [x._id for x in thing_with_contributors.contributors.all()]
         except Exception as ex:
-            pytest.fail('Related manager failed for {} with exception {}'.format(Factory._meta.model.__name__, ex))
+            pytest.fail(
+                "Related manager failed for {} with exception {}".format(
+                    Factory._meta.model.__name__, ex
+                )
+            )
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_count_objects(self, Factory, django_assert_num_queries):
         objects = []
@@ -142,7 +166,7 @@ class TestGuidAutoInclude:
             count = qs.count()
         assert count == len(objects)
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_bulk_create_objects(self, Factory, django_assert_num_queries):
         objects = []
@@ -150,14 +174,14 @@ class TestGuidAutoInclude:
         kwargs = {}
         if Factory == PreprintFactory:
             # Don't try to save preprints on build when neither the subject nor provider have been saved
-            kwargs['finish'] = False
+            kwargs["finish"] = False
         for _ in range(0, 5):
             objects.append(Factory.build(**kwargs))
         with django_assert_num_queries(1):
             things = Model.objects.bulk_create(objects)
         assert len(things) == len(objects)
 
-    @pytest.mark.parametrize('Factory', guid_factories)
+    @pytest.mark.parametrize("Factory", guid_factories)
     @pytest.mark.django_assert_num_queries
     def test_bulk_update_objects(self, Factory, django_assert_num_queries):
         objects = []
@@ -165,9 +189,13 @@ class TestGuidAutoInclude:
         for id in ids:
             objects.append(Factory())
         try:
-            dtfield = [x.name for x in objects[0]._meta.get_fields() if isinstance(x, DateTimeField)][0]
+            dtfield = [
+                x.name
+                for x in objects[0]._meta.get_fields()
+                if isinstance(x, DateTimeField)
+            ][0]
         except IndexError:
-            pytest.skip('Thing doesn\'t have a DateTimeField')
+            pytest.skip("Thing doesn't have a DateTimeField")
         for obj in objects:
             setattr(obj, dtfield, timezone.now())
         with django_assert_num_queries(1):

@@ -39,25 +39,27 @@ class PreprintMetricMixin(JSONAPIBaseView):
         get list of guids from the kwargs
         use that in a query to narrow down metrics results
         """
-        preprint_guid_string = query_params.get('guids')
+        preprint_guid_string = query_params.get("guids")
         if not preprint_guid_string:
             raise ValidationError(
-                'To gather metrics for preprints, you must provide one or more preprint ' +
-                'guids in the `guids` query parameter.',
+                "To gather metrics for preprints, you must provide one or more preprint "
+                + "guids in the `guids` query parameter.",
             )
-        preprint_guids = preprint_guid_string.split(',')
+        preprint_guids = preprint_guid_string.split(",")
 
-        return search.filter('terms', preprint_id=preprint_guids)
+        return search.filter("terms", preprint_id=preprint_guids)
 
     def format_response(self, response, query_params):
         data = []
-        if getattr(response, 'aggregations') and response.aggregations:
+        if getattr(response, "aggregations") and response.aggregations:
             for result in response.aggregations.dates.buckets:
                 guid_results = {}
                 for preprint_result in result.preprints.buckets:
-                    guid_results[preprint_result['key']] = preprint_result['total']['value']
+                    guid_results[preprint_result["key"]] = preprint_result["total"][
+                        "value"
+                    ]
                     # return 0 for the guids with no results for consistent payloads
-                guids = query_params['guids'].split(',')
+                guids = query_params["guids"].split(",")
                 if guid_results.keys() != guids:
                     for guid in guids:
                         if not guid_results.get(guid):
@@ -66,8 +68,8 @@ class PreprintMetricMixin(JSONAPIBaseView):
                 data.append(result_dict)
 
         return {
-            'metric_type': self.metric_type,
-            'data': data,
+            "metric_type": self.metric_type,
+            "data": data,
         }
 
     def execute_search(self, search, query=None):
@@ -77,11 +79,7 @@ class PreprintMetricMixin(JSONAPIBaseView):
             if query:
                 es = get_connection(search._using)
                 response = search._response_class(
-                    search,
-                    es.search(
-                        index=search._index,
-                        body=query,
-                    ),
+                    search, es.search(index=search._index, body=query,),
                 )
             else:
                 response = search.execute()
@@ -93,17 +91,21 @@ class PreprintMetricMixin(JSONAPIBaseView):
         return response
 
     def get(self, *args, **kwargs):
-        query_params = getattr(self.request, 'query_params', self.request.GET)
+        query_params = getattr(self.request, "query_params", self.request.GET)
 
-        interval = query_params.get('interval', 'day')
+        interval = query_params.get("interval", "day")
 
         start_datetime, end_datetime = parse_datetimes(query_params)
 
         search = self.metric.search(after=start_datetime)
-        search = search.filter('range', timestamp={'gte': start_datetime, 'lt': end_datetime})
-        search.aggs.bucket('dates', 'date_histogram', field='timestamp', interval=interval) \
-            .bucket('preprints', 'terms', field='preprint_id') \
-            .metric('total', 'sum', field='count')
+        search = search.filter(
+            "range", timestamp={"gte": start_datetime, "lt": end_datetime}
+        )
+        search.aggs.bucket(
+            "dates", "date_histogram", field="timestamp", interval=interval
+        ).bucket("preprints", "terms", field="preprint_id").metric(
+            "total", "sum", field="count"
+        )
         search = self.add_search(search, query_params, **kwargs)
         response = self.execute_search(search)
         resp_dict = self.format_response(response, query_params)
@@ -116,26 +118,26 @@ class PreprintMetricMixin(JSONAPIBaseView):
         Caution - this could be slow if a very large query is executed, so use with care!
         """
         search = self.metric.search()
-        query = request.data.get('query')
+        query = request.data.get("query")
 
         try:
             results = self.execute_search(search, query)
         except RequestError as e:
             if e.args:
-                raise ValidationError(e.info['error']['root_cause'][0]['reason'])
-            raise ValidationError('Malformed elasticsearch query.')
+                raise ValidationError(e.info["error"]["root_cause"][0]["reason"])
+            raise ValidationError("Malformed elasticsearch query.")
 
         return JsonResponse(results.to_dict())
 
 
 class PreprintViewMetrics(PreprintMetricMixin):
 
-    view_category = 'preprint-metrics'
-    view_name = 'preprint-view-metrics'
+    view_category = "preprint-metrics"
+    view_name = "preprint-view-metrics"
 
     @property
     def metric_type(self):
-        return 'views'
+        return "views"
 
     @property
     def metric(self):
@@ -144,12 +146,12 @@ class PreprintViewMetrics(PreprintMetricMixin):
 
 class PreprintDownloadMetrics(PreprintMetricMixin):
 
-    view_category = 'preprint-metrics'
-    view_name = 'preprint-download-metrics'
+    view_category = "preprint-metrics"
+    view_name = "preprint-download-metrics"
 
     @property
     def metric_type(self):
-        return 'downloads'
+        return "downloads"
 
     @property
     def metric(self):

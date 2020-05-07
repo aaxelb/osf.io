@@ -17,4 +17,4 @@ class Command(BaseCommand):
         institutions = Institution.objects.all()
         for institution in institutions:
             institution.update_group_permissions()
-            logger.info('Added perms to {}.'.format(institution.name))
+            logger.info("Added perms to {}.".format(institution.name))

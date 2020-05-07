@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0072_merge_20171128_1018'),
+        ("osf", "0072_merge_20171128_1018"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='citationstyle',
-            name='has_bibliography',
+            model_name="citationstyle",
+            name="has_bibliography",
             field=models.BooleanField(default=False),
         ),
     ]

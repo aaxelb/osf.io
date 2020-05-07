@@ -4,15 +4,17 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
+
 def noop(*args):
     # This migration used to add permissions,
     # This is now handled by the post_migrate signal
     pass
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0076_action_rename'),
+        ("osf", "0076_action_rename"),
     ]
 
     operations = [

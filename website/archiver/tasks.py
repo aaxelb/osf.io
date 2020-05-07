@@ -60,7 +60,9 @@ class ArchivedFileNotFound(Exception):
     def __init__(self, registration, missing_files, *args, **kwargs):
         super(ArchivedFileNotFound, self).__init__(*args, **kwargs)
 
-        self.draft_registration = DraftRegistration.objects.get(registered_node=registration)
+        self.draft_registration = DraftRegistration.objects.get(
+            registered_node=registration
+        )
         self.missing_files = missing_files
 
 
@@ -70,14 +72,11 @@ class ArchiverTask(celery.Task):
     ignore_result = False
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        job = ArchiveJob.load(kwargs.get('job_pk'))
+        job = ArchiveJob.load(kwargs.get("job_pk"))
         if not job:
-            raise ArchiverStateError({
-                'exception': exc,
-                'args': args,
-                'kwargs': kwargs,
-                'einfo': einfo,
-            })
+            raise ArchiverStateError(
+                {"exception": exc, "args": args, "kwargs": kwargs, "einfo": einfo,}
+            )
         if job.status == ARCHIVER_FAILURE:
             # already captured
             return
@@ -89,15 +88,13 @@ class ArchiverTask(celery.Task):
         elif isinstance(exc, HTTPError):
             dst.archive_status = ARCHIVER_NETWORK_ERROR
             errors = [
-                each for each in
-                dst.archive_job.target_info()
-                if each is not None
+                each for each in dst.archive_job.target_info() if each is not None
             ]
         elif isinstance(exc, ArchivedFileNotFound):
             dst.archive_status = ARCHIVER_FILE_NOT_FOUND
             errors = {
-                'missing_files': exc.missing_files,
-                'draft': exc.draft_registration
+                "missing_files": exc.missing_files,
+                "draft": exc.draft_registration,
             }
         else:
             dst.archive_status = ARCHIVER_UNCAUGHT_ERROR
@@ -107,7 +104,7 @@ class ArchiverTask(celery.Task):
 
 
 @celery_app.task(base=ArchiverTask, ignore_result=False)
-@logged('stat_addon')
+@logged("stat_addon")
 def stat_addon(addon_short_name, job_pk):
     """Collect metadata about the file tree of a given addon
 
@@ -119,23 +116,25 @@ def stat_addon(addon_short_name, job_pk):
     # published content
     addon_name = addon_short_name
     version = None
-    if 'dataverse' in addon_short_name:
-        addon_name = 'dataverse'
-        version = 'latest' if addon_short_name.split('-')[-1] == 'draft' else 'latest-published'
+    if "dataverse" in addon_short_name:
+        addon_name = "dataverse"
+        version = (
+            "latest"
+            if addon_short_name.split("-")[-1] == "draft"
+            else "latest-published"
+        )
     create_app_context()
     job = ArchiveJob.load(job_pk)
     src, dst, user = job.info()
     src_addon = src.get_addon(addon_name)
-    if hasattr(src_addon, 'configured') and not src_addon.configured:
+    if hasattr(src_addon, "configured") and not src_addon.configured:
         # Addon enabled but not configured - no file trees, nothing to archive.
         return AggregateStatResult(src_addon._id, addon_short_name)
     try:
         file_tree = src_addon._get_file_tree(user=user, version=version)
     except HTTPError as e:
         dst.archive_job.update_target(
-            addon_short_name,
-            ARCHIVER_NETWORK_ERROR,
-            errors=[e.data['error']],
+            addon_short_name, ARCHIVER_NETWORK_ERROR, errors=[e.data["error"]],
         )
         raise
     result = AggregateStatResult(
@@ -147,7 +146,7 @@ def stat_addon(addon_short_name, job_pk):
 
 
 @celery_app.task(base=ArchiverTask, ignore_result=False)
-@logged('make_copy_request')
+@logged("make_copy_request")
 def make_copy_request(job_pk, url, data):
     """Make the copy request to the WaterBulter API and handle
     successful and failed responses
@@ -160,22 +159,32 @@ def make_copy_request(job_pk, url, data):
     create_app_context()
     job = ArchiveJob.load(job_pk)
     src, dst, user = job.info()
-    logger.info('Sending copy request for addon: {0} on node: {1}'.format(data['provider'], dst._id))
+    logger.info(
+        "Sending copy request for addon: {0} on node: {1}".format(
+            data["provider"], dst._id
+        )
+    )
     res = requests.post(url, data=json.dumps(data))
-    if res.status_code not in (http_status.HTTP_200_OK, http_status.HTTP_201_CREATED, http_status.HTTP_202_ACCEPTED):
+    if res.status_code not in (
+        http_status.HTTP_200_OK,
+        http_status.HTTP_201_CREATED,
+        http_status.HTTP_202_ACCEPTED,
+    ):
         raise HTTPError(res.status_code)
+
 
 def make_waterbutler_payload(dst_id, rename):
     return {
-        'action': 'copy',
-        'path': '/',
-        'rename': rename.replace('/', '-'),
-        'resource': dst_id,
-        'provider': settings.ARCHIVE_PROVIDER,
+        "action": "copy",
+        "path": "/",
+        "rename": rename.replace("/", "-"),
+        "resource": dst_id,
+        "provider": settings.ARCHIVE_PROVIDER,
     }
 
+
 @celery_app.task(base=ArchiverTask, ignore_result=False)
-@logged('archive_addon')
+@logged("archive_addon")
 def archive_addon(addon_short_name, job_pk):
     """Archive the contents of an addon by making a copy request to the
     WaterBulter API
@@ -187,30 +196,43 @@ def archive_addon(addon_short_name, job_pk):
     create_app_context()
     job = ArchiveJob.load(job_pk)
     src, dst, user = job.info()
-    logger.info('Archiving addon: {0} on node: {1}'.format(addon_short_name, src._id))
+    logger.info("Archiving addon: {0} on node: {1}".format(addon_short_name, src._id))
 
     cookie = user.get_or_create_cookie().decode()
-    params = {'cookie': cookie}
-    rename_suffix = ''
+    params = {"cookie": cookie}
+    rename_suffix = ""
     # The dataverse API will not differentiate between published and draft files
     # unless expcicitly asked. We need to create seperate folders for published and
     # draft in the resulting archive.
     #
     # Additionally trying to run the archive without this distinction creates a race
     # condition that non-deterministically caused archive jobs to fail.
-    if 'dataverse' in addon_short_name:
-        params['revision'] = 'latest' if addon_short_name.split('-')[-1] == 'draft' else 'latest-published'
-        rename_suffix = ' (draft)' if addon_short_name.split('-')[-1] == 'draft' else ' (published)'
-        addon_short_name = 'dataverse'
+    if "dataverse" in addon_short_name:
+        params["revision"] = (
+            "latest"
+            if addon_short_name.split("-")[-1] == "draft"
+            else "latest-published"
+        )
+        rename_suffix = (
+            " (draft)" if addon_short_name.split("-")[-1] == "draft" else " (published)"
+        )
+        addon_short_name = "dataverse"
     src_provider = src.get_addon(addon_short_name)
     folder_name = src_provider.archive_folder_name
-    rename = '{}{}'.format(folder_name, rename_suffix)
-    url = waterbutler_api_url_for(src._id, addon_short_name, _internal=True, base_url=src.osfstorage_region.waterbutler_url, **params)
+    rename = "{}{}".format(folder_name, rename_suffix)
+    url = waterbutler_api_url_for(
+        src._id,
+        addon_short_name,
+        _internal=True,
+        base_url=src.osfstorage_region.waterbutler_url,
+        **params
+    )
     data = make_waterbutler_payload(dst._id, rename)
     make_copy_request.delay(job_pk=job_pk, url=url, data=data)
 
+
 @celery_app.task(base=ArchiverTask, ignore_result=False)
-@logged('archive_node')
+@logged("archive_node")
 def archive_node(stat_results, job_pk):
     """First use the results of #stat_node to check disk usage of the
     initiated registration, then either fail the registration or
@@ -223,28 +245,25 @@ def archive_node(stat_results, job_pk):
     create_app_context()
     job = ArchiveJob.load(job_pk)
     src, dst, user = job.info()
-    logger.info('Archiving node: {0}'.format(src._id))
+    logger.info("Archiving node: {0}".format(src._id))
 
     if not isinstance(stat_results, list):
         stat_results = [stat_results]
-    stat_result = AggregateStatResult(
-        dst._id,
-        dst.title,
-        targets=stat_results
-    )
-    if (NO_ARCHIVE_LIMIT not in job.initiator.system_tags) and (stat_result.disk_usage > settings.MAX_ARCHIVE_SIZE):
+    stat_result = AggregateStatResult(dst._id, dst.title, targets=stat_results)
+    if (NO_ARCHIVE_LIMIT not in job.initiator.system_tags) and (
+        stat_result.disk_usage > settings.MAX_ARCHIVE_SIZE
+    ):
         raise ArchiverSizeExceeded(result=stat_result)
     else:
         if not stat_result.targets:
             job.status = ARCHIVER_SUCCESS
             job.save()
         for result in stat_result.targets:
-            if not result['num_files']:
-                job.update_target(result['target_name'], ARCHIVER_SUCCESS)
+            if not result["num_files"]:
+                job.update_target(result["target_name"], ARCHIVER_SUCCESS)
             else:
                 archive_addon.delay(
-                    addon_short_name=result['target_name'],
-                    job_pk=job_pk
+                    addon_short_name=result["target_name"], job_pk=job_pk
                 )
         project_signals.archive_callback.send(dst)
 
@@ -261,25 +280,24 @@ def archive(job_pk):
     job = ArchiveJob.load(job_pk)
     src, dst, user = job.info()
     logger = get_task_logger(__name__)
-    logger.info('Received archive task for Node: {0} into Node: {1}'.format(src._id, dst._id))
+    logger.info(
+        "Received archive task for Node: {0} into Node: {1}".format(src._id, dst._id)
+    )
     return celery.chain(
         [
-            celery.group([
-                stat_addon.si(
-                    addon_short_name=target.name,
-                    job_pk=job_pk,
-                )
-                for target in job.target_addons.all()
-            ]),
-            archive_node.s(
-                job_pk=job_pk
-            )
+            celery.group(
+                [
+                    stat_addon.si(addon_short_name=target.name, job_pk=job_pk,)
+                    for target in job.target_addons.all()
+                ]
+            ),
+            archive_node.s(job_pk=job_pk),
         ]
     )
 
 
 @celery_app.task(base=ArchiverTask, ignore_result=False)
-@logged('archive_success')
+@logged("archive_success")
 def archive_success(dst_pk, job_pk):
     """Archiver's final callback. For the time being the use case for this task
     is to rewrite references to files selected in a registration schema (the Prereg

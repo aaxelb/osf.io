@@ -9,13 +9,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0095_collectedguidmetadata_subjects'),
+        ("osf", "0095_collectedguidmetadata_subjects"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractprovider',
-            name='primary_collection',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='osf.Collection'),
+            model_name="abstractprovider",
+            name="primary_collection",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="osf.Collection",
+            ),
         ),
     ]

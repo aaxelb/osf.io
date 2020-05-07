@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_zotero', '0002_auto_20170323_1534'),
+        ("addons_zotero", "0002_auto_20170323_1534"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nodesettings',
-            name='library_id',
+            model_name="nodesettings",
+            name="library_id",
             field=models.TextField(blank=True, null=True),
         ),
     ]

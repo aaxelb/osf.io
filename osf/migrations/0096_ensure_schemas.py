@@ -12,7 +12,7 @@ logger = logging.getLogger(__file__)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0095_reset_osf_abstractprovider_licenses_acceptable_id_seq'),
+        ("osf", "0095_reset_osf_abstractprovider_licenses_acceptable_id_seq"),
     ]
 
     operations = [

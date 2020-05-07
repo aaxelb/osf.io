@@ -10,88 +10,91 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0006_add_jsonb_index_for_fileversions'),
+        ("osf", "0006_add_jsonb_index_for_fileversions"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='osfuser',
-            name='mailing_lists',
-        ),
+        migrations.RemoveField(model_name="osfuser", name="mailing_lists",),
         migrations.AlterField(
-            model_name='abstractnode',
-            name='date_created',
+            model_name="abstractnode",
+            name="date_created",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='abstractnode',
-            name='date_modified',
-            field=osf.utils.fields.NonNaiveDateTimeField(auto_now=True, db_index=True, default=django.utils.timezone.now),
+            model_name="abstractnode",
+            name="date_modified",
+            field=osf.utils.fields.NonNaiveDateTimeField(
+                auto_now=True, db_index=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='apioauth2application',
-            name='date_created',
+            model_name="apioauth2application",
+            name="date_created",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='comment',
-            name='date_created',
+            model_name="comment",
+            name="date_created",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='comment',
-            name='date_modified',
+            model_name="comment",
+            name="date_modified",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='draftregistration',
-            name='datetime_initiated',
+            model_name="draftregistration",
+            name="datetime_initiated",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='draftregistration',
-            name='datetime_updated',
+            model_name="draftregistration",
+            name="datetime_updated",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='fileversion',
-            name='date_created',
+            model_name="fileversion",
+            name="date_created",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='guid',
-            name='created',
-            field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True, db_index=True),
+            model_name="guid",
+            name="created",
+            field=osf.utils.fields.NonNaiveDateTimeField(
+                auto_now_add=True, db_index=True
+            ),
         ),
         migrations.AlterField(
-            model_name='osfuser',
-            name='date_registered',
-            field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True, db_index=True),
+            model_name="osfuser",
+            name="date_registered",
+            field=osf.utils.fields.NonNaiveDateTimeField(
+                auto_now_add=True, db_index=True
+            ),
         ),
         migrations.AlterField(
-            model_name='preprintservice',
-            name='date_created',
+            model_name="preprintservice",
+            name="date_created",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='preprintservice',
-            name='date_modified',
+            model_name="preprintservice",
+            name="date_modified",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='recentlyaddedcontributor',
-            name='date_added',
+            model_name="recentlyaddedcontributor",
+            name="date_added",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='session',
-            name='date_created',
+            model_name="session",
+            name="date_created",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='session',
-            name='date_modified',
+            model_name="session",
+            name="date_modified",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now=True),
         ),
     ]

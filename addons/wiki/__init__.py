@@ -1,1 +1,1 @@
-default_app_config = 'addons.wiki.apps.WikiAddonAppConfig'
+default_app_config = "addons.wiki.apps.WikiAddonAppConfig"

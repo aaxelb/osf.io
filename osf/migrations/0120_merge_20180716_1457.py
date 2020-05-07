@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0119_add_registrationprovider_perms_to_admin'),
-        ('osf', '0119_add_asset_perms'),
+        ("osf", "0119_add_registrationprovider_perms_to_admin"),
+        ("osf", "0119_add_asset_perms"),
     ]
 
-    operations = [
-    ]
+    operations = []

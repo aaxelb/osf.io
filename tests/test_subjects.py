@@ -46,32 +46,67 @@ class TestSubjectTreeValidation(OsfTestCase):
         self.child_subj_11.save()
         self.outside_child.save()
 
-        self.valid_full_hierarchy = [self.root_subject._id, self.parent_subj_0._id, self.child_subj_00._id]
-        self.valid_two_level_hierarchy = [self.two_level_root._id, self.two_level_parent._id]
+        self.valid_full_hierarchy = [
+            self.root_subject._id,
+            self.parent_subj_0._id,
+            self.child_subj_00._id,
+        ]
+        self.valid_two_level_hierarchy = [
+            self.two_level_root._id,
+            self.two_level_parent._id,
+        ]
         self.valid_one_level_hierarchy = [self.one_level_root._id]
         self.valid_partial_hierarchy = [self.root_subject._id, self.parent_subj_1._id]
         self.valid_root = [self.root_subject._id]
 
         self.no_root = [self.parent_subj_0._id, self.child_subj_00._id]
         self.no_parent = [self.root_subject._id, self.child_subj_00._id]
-        self.invalid_child_leaf = [self.root_subject._id, self.parent_subj_0._id, self.child_subj_10._id]
-        self.invalid_parent_leaf = [self.root_subject._id, self.outside_parent._id, self.child_subj_00._id]
-        self.invalid_root_leaf = [self.outside_root._id, self.parent_subj_0._id, self.child_subj_00._id]
-        self.invalid_ids = ['notarealsubjectid', 'thisisalsoafakeid']
+        self.invalid_child_leaf = [
+            self.root_subject._id,
+            self.parent_subj_0._id,
+            self.child_subj_10._id,
+        ]
+        self.invalid_parent_leaf = [
+            self.root_subject._id,
+            self.outside_parent._id,
+            self.child_subj_00._id,
+        ]
+        self.invalid_root_leaf = [
+            self.outside_root._id,
+            self.parent_subj_0._id,
+            self.child_subj_00._id,
+        ]
+        self.invalid_ids = ["notarealsubjectid", "thisisalsoafakeid"]
 
     def test_hiarachy_property(self):
-        assert_equal(self.child_subj_00.hierarchy, [self.root_subject._id, self.parent_subj_0._id, self.child_subj_00._id])
-        assert_equal(self.two_level_parent.hierarchy, [self.two_level_root._id, self.two_level_parent._id])
+        assert_equal(
+            self.child_subj_00.hierarchy,
+            [self.root_subject._id, self.parent_subj_0._id, self.child_subj_00._id],
+        )
+        assert_equal(
+            self.two_level_parent.hierarchy,
+            [self.two_level_root._id, self.two_level_parent._id],
+        )
         assert_equal(self.one_level_root.hierarchy, [self.one_level_root._id])
-        assert_equal(self.parent_subj_1.hierarchy, [self.root_subject._id, self.parent_subj_1._id])
+        assert_equal(
+            self.parent_subj_1.hierarchy,
+            [self.root_subject._id, self.parent_subj_1._id],
+        )
         assert_equal(self.root_subject.hierarchy, [self.root_subject._id])
 
-
     def test_object_hierarchy_property(self):
-        assert_equal(self.child_subj_00.object_hierarchy, [self.root_subject, self.parent_subj_0, self.child_subj_00])
-        assert_equal(self.two_level_parent.object_hierarchy, [self.two_level_root, self.two_level_parent])
+        assert_equal(
+            self.child_subj_00.object_hierarchy,
+            [self.root_subject, self.parent_subj_0, self.child_subj_00],
+        )
+        assert_equal(
+            self.two_level_parent.object_hierarchy,
+            [self.two_level_root, self.two_level_parent],
+        )
         assert_equal(self.one_level_root.object_hierarchy, [self.one_level_root])
-        assert_equal(self.parent_subj_1.object_hierarchy, [self.root_subject, self.parent_subj_1])
+        assert_equal(
+            self.parent_subj_1.object_hierarchy, [self.root_subject, self.parent_subj_1]
+        )
         assert_equal(self.root_subject.object_hierarchy, [self.root_subject])
 
     def test_validation_full_hierarchy(self):
@@ -93,37 +128,38 @@ class TestSubjectTreeValidation(OsfTestCase):
         with assert_raises(ValidationValueError) as e:
             validate_subject_hierarchy(self.no_root)
 
-        assert_in('Unable to find root', e.exception.message)
+        assert_in("Unable to find root", e.exception.message)
 
     def test_invalidation_no_parent(self):
         with assert_raises(ValidationValueError) as e:
             validate_subject_hierarchy(self.no_parent)
 
-        assert_in('Invalid subject hierarchy', e.exception.message)
+        assert_in("Invalid subject hierarchy", e.exception.message)
 
     def test_invalidation_invalid_child_leaf(self):
         with assert_raises(ValidationValueError) as e:
             validate_subject_hierarchy(self.invalid_child_leaf)
 
-        assert_in('Invalid subject hierarchy', e.exception.message)
+        assert_in("Invalid subject hierarchy", e.exception.message)
 
     def test_invalidation_invalid_parent_leaf(self):
         with assert_raises(ValidationValueError) as e:
             validate_subject_hierarchy(self.invalid_parent_leaf)
 
-        assert_in('Invalid subject hierarchy', e.exception.message)
+        assert_in("Invalid subject hierarchy", e.exception.message)
 
     def test_invalidation_invalid_root_leaf(self):
         with assert_raises(ValidationValueError) as e:
             validate_subject_hierarchy(self.invalid_root_leaf)
 
-        assert_in('Invalid subject hierarchy', e.exception.message)
+        assert_in("Invalid subject hierarchy", e.exception.message)
 
     def test_invalidation_invalid_ids(self):
         with assert_raises(ValidationValueError) as e:
             validate_subject_hierarchy(self.invalid_ids)
 
-        assert_in('could not be found', e.exception.message)
+        assert_in("could not be found", e.exception.message)
+
 
 class TestSubjectEditValidation(OsfTestCase):
     def setUp(self):
@@ -131,12 +167,12 @@ class TestSubjectEditValidation(OsfTestCase):
         self.subject = SubjectFactory()
 
     def test_edit_unused_subject(self):
-        self.subject.text = 'asdfg'
+        self.subject.text = "asdfg"
         self.subject.save()
 
     def test_edit_used_subject(self):
         preprint = PreprintFactory(subjects=[[self.subject._id]])
-        self.subject.text = 'asdfg'
+        self.subject.text = "asdfg"
         with assert_raises(ValidationError):
             self.subject.save()
 
@@ -149,29 +185,46 @@ class TestSubjectEditValidation(OsfTestCase):
             self.subject.delete()
 
     def test_max_highlighted_count(self):
-        highlights = [SubjectFactory(provider=self.subject.provider, highlighted=True) for _ in range(10)]
+        highlights = [
+            SubjectFactory(provider=self.subject.provider, highlighted=True)
+            for _ in range(10)
+        ]
         with assert_raises(ValidationError):
-            self.subject.highlighted=True
+            self.subject.highlighted = True
             self.subject.save()
+
 
 class TestSubjectProperties(OsfTestCase):
     def setUp(self):
         super(TestSubjectProperties, self).setUp()
 
-        self.osf_provider = PreprintProviderFactory(_id='osf', share_title='bepress')
-        self.asdf_provider = PreprintProviderFactory(_id='asdf')
-        self.bepress_subj = SubjectFactory(text='BePress Text', provider=self.osf_provider)
-        self.other_subj = SubjectFactory(text='Other Text', bepress_subject=self.bepress_subj, provider=self.asdf_provider)
+        self.osf_provider = PreprintProviderFactory(_id="osf", share_title="bepress")
+        self.asdf_provider = PreprintProviderFactory(_id="asdf")
+        self.bepress_subj = SubjectFactory(
+            text="BePress Text", provider=self.osf_provider
+        )
+        self.other_subj = SubjectFactory(
+            text="Other Text",
+            bepress_subject=self.bepress_subj,
+            provider=self.asdf_provider,
+        )
 
     def test_bepress_text(self):
-        assert self.other_subj.bepress_text == 'BePress Text'
-        assert self.bepress_subj.bepress_text == 'BePress Text'
+        assert self.other_subj.bepress_text == "BePress Text"
+        assert self.bepress_subj.bepress_text == "BePress Text"
 
     def test_path(self):
-        self.bepress_child = SubjectFactory(text='BePress Child', provider=self.osf_provider, parent=self.bepress_subj)
-        self.other_child = SubjectFactory(text='Other Child', bepress_subject=self.bepress_subj, provider=self.asdf_provider, parent=self.other_subj)
+        self.bepress_child = SubjectFactory(
+            text="BePress Child", provider=self.osf_provider, parent=self.bepress_subj
+        )
+        self.other_child = SubjectFactory(
+            text="Other Child",
+            bepress_subject=self.bepress_subj,
+            provider=self.asdf_provider,
+            parent=self.other_subj,
+        )
 
-        assert self.bepress_subj.path == 'bepress|BePress Text'
-        assert self.bepress_child.path == 'bepress|BePress Text|BePress Child'
-        assert self.other_subj.path == 'asdf|Other Text'
-        assert self.other_child.path == 'asdf|Other Text|Other Child'
+        assert self.bepress_subj.path == "bepress|BePress Text"
+        assert self.bepress_child.path == "bepress|BePress Text|BePress Child"
+        assert self.other_subj.path == "asdf|Other Text"
+        assert self.other_child.path == "asdf|Other Text|Other Child"

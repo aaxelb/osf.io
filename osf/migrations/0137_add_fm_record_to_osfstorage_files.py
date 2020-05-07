@@ -10,16 +10,20 @@ logger = logging.getLogger(__name__)
 
 increment = 500000
 
+
 def remove_records_from_files(state, schema):
-    FileMetadataRecord = state.get_model('osf', 'filemetadatarecord')
+    FileMetadataRecord = state.get_model("osf", "filemetadatarecord")
     FileMetadataRecord.objects.all().delete()
+
 
 # Batching adapted from strategy in website/search_migration/migrate.py
 def add_records_to_files_sql(state, schema):
-    FileMetadataSchema = state.get_model('osf', 'filemetadataschema')
-    datacite_schema_id = FileMetadataSchema.objects.filter(_id='datacite').values_list('id', flat=True)[0]
-    OsfStorageFile = state.get_model('osf', 'osfstoragefile')
-    max_fid = getattr(OsfStorageFile.objects.last(), 'id', 0)
+    FileMetadataSchema = state.get_model("osf", "filemetadataschema")
+    datacite_schema_id = FileMetadataSchema.objects.filter(_id="datacite").values_list(
+        "id", flat=True
+    )[0]
+    OsfStorageFile = state.get_model("osf", "osfstoragefile")
+    max_fid = getattr(OsfStorageFile.objects.last(), "id", 0)
 
     sql = """
         INSERT INTO osf_filemetadatarecord (created, modified, _id, metadata, file_id, schema_id)
@@ -30,7 +34,9 @@ def add_records_to_files_sql(state, schema):
                        AND OSF_FILE.id > {}
                        AND OSF_FILE.id <= {}
                 );
-    """ % (datacite_schema_id)
+    """ % (
+        datacite_schema_id
+    )
 
     total_pages = int(ceil(max_fid / float(increment)))
     page_start = 0
@@ -40,18 +46,18 @@ def add_records_to_files_sql(state, schema):
         page += 1
         page_end += increment
         if page <= total_pages:
-            logger.info('Updating page {} / {}'.format(page_end / increment, total_pages))
+            logger.info(
+                "Updating page {} / {}".format(page_end / increment, total_pages)
+            )
         with connection.cursor() as cursor:
-            cursor.execute(sql.format(
-                page_start,
-                page_end
-            ))
+            cursor.execute(sql.format(page_start, page_end))
         page_start = page_end
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0136_add_datacite_file_metadata_schema'),
+        ("osf", "0136_add_datacite_file_metadata_schema"),
     ]
 
     operations = [

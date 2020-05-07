@@ -11,11 +11,12 @@ from addons.onedrive.models import UserSettings, NodeSettings
 
 
 class OneDriveAccountFactory(ExternalAccountFactory):
-    provider = 'onedrive'
-    provider_id = Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = Sequence(lambda n: 'key-{0}'.format(n))
-    oauth_secret = Sequence(lambda n: 'secret-{0}'.format(n))
+    provider = "onedrive"
+    provider_id = Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = Sequence(lambda n: "key-{0}".format(n))
+    oauth_secret = Sequence(lambda n: "secret-{0}".format(n))
     expires_at = timezone.now() + relativedelta(days=1)
+
 
 class OneDriveUserSettingsFactory(DjangoModelFactory):
     class Meta:
@@ -30,5 +31,5 @@ class OneDriveNodeSettingsFactory(DjangoModelFactory):
 
     owner = SubFactory(ProjectFactory)
     user_settings = SubFactory(OneDriveUserSettingsFactory)
-    folder_id = '1234567890'
-    folder_path = 'Drive/Camera Uploads'
+    folder_id = "1234567890"
+    folder_path = "Drive/Camera Uploads"

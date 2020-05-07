@@ -8,10 +8,10 @@ from addons.bitbucket.models import NodeSettings, UserSettings
 
 
 class BitbucketAccountFactory(ExternalAccountFactory):
-    provider = 'bitbucket'
-    provider_id = Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = Sequence(lambda n: 'key-{0}'.format(n))
-    display_name = 'abc'
+    provider = "bitbucket"
+    provider_id = Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = Sequence(lambda n: "key-{0}".format(n))
+    display_name = "abc"
 
 
 class BitbucketUserSettingsFactory(DjangoModelFactory):

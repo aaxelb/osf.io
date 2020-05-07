@@ -8,13 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0051_remove_invalid_social_entries'),
+        ("osf", "0051_remove_invalid_social_entries"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintprovider',
-            name='share_publish_type',
-            field=models.CharField(choices=[(b'Preprint', b'Preprint'), (b'Thesis', b'Thesis')], default=b'Preprint', help_text=b'This SHARE type will be used when pushing publications to SHARE', max_length=32),
+            model_name="preprintprovider",
+            name="share_publish_type",
+            field=models.CharField(
+                choices=[(b"Preprint", b"Preprint"), (b"Thesis", b"Thesis")],
+                default=b"Preprint",
+                help_text=b"This SHARE type will be used when pushing publications to SHARE",
+                max_length=32,
+            ),
         ),
     ]

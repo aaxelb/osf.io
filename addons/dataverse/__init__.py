@@ -1,1 +1,1 @@
-default_app_config = 'addons.dataverse.apps.DataverseAddonAppConfig'
+default_app_config = "addons.dataverse.apps.DataverseAddonAppConfig"

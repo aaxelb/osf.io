@@ -9,21 +9,23 @@ from addons.base.exceptions import HookError
 
 from addons.gitlab.api import GitLabClient
 
-MESSAGE_BASE = 'via the Open Science Framework'
+MESSAGE_BASE = "via the Open Science Framework"
 MESSAGES = {
-    'add': 'Added {0}'.format(MESSAGE_BASE),
-    'move': 'Moved {0}'.format(MESSAGE_BASE),
-    'copy': 'Copied {0}'.format(MESSAGE_BASE),
-    'update': 'Updated {0}'.format(MESSAGE_BASE),
-    'delete': 'Deleted {0}'.format(MESSAGE_BASE),
+    "add": "Added {0}".format(MESSAGE_BASE),
+    "move": "Moved {0}".format(MESSAGE_BASE),
+    "copy": "Copied {0}".format(MESSAGE_BASE),
+    "update": "Updated {0}".format(MESSAGE_BASE),
+    "delete": "Deleted {0}".format(MESSAGE_BASE),
 }
 
 
 def make_hook_secret():
-    return str(uuid.uuid4()).replace('-', '')
+    return str(uuid.uuid4()).replace("-", "")
 
 
-HOOK_SIGNATURE_KEY = 'X-Hub-Signature'
+HOOK_SIGNATURE_KEY = "X-Hub-Signature"
+
+
 def verify_hook_signature(node_settings, data, headers):
     """Verify hook signature.
     :param GitLabNodeSettings node_settings:
@@ -32,19 +34,19 @@ def verify_hook_signature(node_settings, data, headers):
     :raises: HookError if signature is missing or invalid
     """
     if node_settings.hook_secret is None:
-        raise HookError('No secret key')
+        raise HookError("No secret key")
     digest = hmac.new(
-        node_settings.hook_secret.encode('utf-8'),
-        data.encode('utf-8'),
-        digestmod=hashlib.sha1
+        node_settings.hook_secret.encode("utf-8"),
+        data.encode("utf-8"),
+        digestmod=hashlib.sha1,
     ).hexdigest()
-    signature = headers.get(HOOK_SIGNATURE_KEY, '').replace('sha1=', '')
+    signature = headers.get(HOOK_SIGNATURE_KEY, "").replace("sha1=", "")
     if digest != signature:
-        raise HookError('Invalid signature')
+        raise HookError("Invalid signature")
 
 
 def get_path(kwargs, required=True):
-    path = kwargs.get('path')
+    path = kwargs.get("path")
     if path:
         return unquote_plus(path)
     elif required:
@@ -78,7 +80,7 @@ def get_refs(addon, branch=None, sha=None, connection=None):
     # Use registered SHA if provided
     for each in branches:
         if branch == each.name:
-            sha = each.commit['id']
+            sha = each.commit["id"]
             break
 
     return branch, sha, branches
@@ -92,28 +94,26 @@ def check_permissions(node_settings, auth, connection, branch, sha=None, repo=No
     has_auth = bool(user_settings and user_settings.has_auth)
     if has_auth:
         repo = repo or connection.repo(node_settings.repo_id)
-        project_permissions = repo.permissions.get('project_access') or {}
-        group_permissions = repo.permissions.get('group_access') or {}
-        has_access = (
-            repo is not None and (
-                # See https://docs.gitlab.com/ee/api/members.html
-                project_permissions.get('access_level', 0) >= 30 or
-                group_permissions.get('access_level', 0) >= 30
-            )
+        project_permissions = repo.permissions.get("project_access") or {}
+        group_permissions = repo.permissions.get("group_access") or {}
+        has_access = repo is not None and (
+            # See https://docs.gitlab.com/ee/api/members.html
+            project_permissions.get("access_level", 0) >= 30
+            or group_permissions.get("access_level", 0) >= 30
         )
 
     if sha:
         current_branch = connection.branches(node_settings.repo_id, branch)
         # TODO Will I ever return false?
-        is_head = sha == current_branch.commit['id']
+        is_head = sha == current_branch.commit["id"]
     else:
         is_head = True
 
     can_edit = (
-        node_settings.owner.can_edit(auth) and
-        not node_settings.owner.is_registration and
-        has_access and
-        is_head
+        node_settings.owner.can_edit(auth)
+        and not node_settings.owner.is_registration
+        and has_access
+        and is_head
     )
 
     return can_edit

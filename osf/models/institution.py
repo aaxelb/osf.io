@@ -18,19 +18,21 @@ from website import settings as website_settings
 logger = logging.getLogger(__name__)
 
 
-class Institution(DirtyFieldsMixin, Loggable, base.ObjectIDMixin, base.BaseModel, GuardianMixin):
+class Institution(
+    DirtyFieldsMixin, Loggable, base.ObjectIDMixin, base.BaseModel, GuardianMixin
+):
 
     # TODO Remove null=True for things that shouldn't be nullable
     # e.g. CharFields should never be null=True
 
     INSTITUTION_GROUPS = {
-        'institutional_admins': ('view_institutional_metrics', ),
+        "institutional_admins": ("view_institutional_metrics",),
     }
-    group_format = 'institution_{self._id}_{group}'
+    group_format = "institution_{self._id}_{group}"
     groups = INSTITUTION_GROUPS
 
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, default='', null=True)
+    description = models.TextField(blank=True, default="", null=True)
 
     # TODO Could `banner_name` and `logo_name` be a FilePathField?
     banner_name = models.CharField(max_length=255, blank=True, null=True)
@@ -42,24 +44,30 @@ class Institution(DirtyFieldsMixin, Loggable, base.ObjectIDMixin, base.BaseModel
     # For `CAS` and `OAuth`, we use pac4j.
     # Only institutions with a valid delegation protocol show up on the institution login page.
     DELEGATION_PROTOCOL_CHOICES = (
-        ('cas-pac4j', 'CAS by pac4j'),
-        ('oauth-pac4j', 'OAuth by pac4j'),
-        ('saml-shib', 'SAML by Shibboleth'),
-        ('', 'No Delegation Protocol'),
+        ("cas-pac4j", "CAS by pac4j"),
+        ("oauth-pac4j", "OAuth by pac4j"),
+        ("saml-shib", "SAML by Shibboleth"),
+        ("", "No Delegation Protocol"),
     )
-    delegation_protocol = models.CharField(max_length=15, choices=DELEGATION_PROTOCOL_CHOICES, blank=True, default='')
+    delegation_protocol = models.CharField(
+        max_length=15, choices=DELEGATION_PROTOCOL_CHOICES, blank=True, default=""
+    )
 
     # login_url and logout_url can be null or empty
     login_url = models.URLField(null=True, blank=True)
     logout_url = models.URLField(null=True, blank=True)
 
-    domains = fields.ArrayField(models.CharField(max_length=255), db_index=True, null=True, blank=True)
-    email_domains = fields.ArrayField(models.CharField(max_length=255), db_index=True, null=True, blank=True)
+    domains = fields.ArrayField(
+        models.CharField(max_length=255), db_index=True, null=True, blank=True
+    )
+    email_domains = fields.ArrayField(
+        models.CharField(max_length=255), db_index=True, null=True, blank=True
+    )
 
     contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through=InstitutionalContributor,
-        related_name='institutions'
+        related_name="institutions",
     )
 
     is_deleted = models.BooleanField(default=False, db_index=True)
@@ -68,65 +76,77 @@ class Institution(DirtyFieldsMixin, Loggable, base.ObjectIDMixin, base.BaseModel
     class Meta:
         # custom permissions for use in the OSF Admin App
         permissions = (
-            ('view_institution', 'Can view institution details'),
-            ('view_institutional_metrics', 'Can access metrics endpoints for their Institution'),
+            ("view_institution", "Can view institution details"),
+            (
+                "view_institutional_metrics",
+                "Can access metrics endpoints for their Institution",
+            ),
         )
 
     def __init__(self, *args, **kwargs):
-        kwargs.pop('node', None)
+        kwargs.pop("node", None)
         super(Institution, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
-        return u'{} : ({})'.format(self.name, self._id)
+        return u"{} : ({})".format(self.name, self._id)
 
     @property
     def api_v2_url(self):
-        return reverse('institutions:institution-detail', kwargs={'institution_id': self._id, 'version': 'v2'})
+        return reverse(
+            "institutions:institution-detail",
+            kwargs={"institution_id": self._id, "version": "v2"},
+        )
 
     @property
     def absolute_url(self):
-        return urljoin(website_settings.DOMAIN, 'institutions/{}/'.format(self._id))
+        return urljoin(website_settings.DOMAIN, "institutions/{}/".format(self._id))
 
     @property
     def absolute_api_v2_url(self):
         from api.base.utils import absolute_reverse
-        return absolute_reverse('institutions:institution-detail', kwargs={'institution_id': self._id, 'version': 'v2'})
+
+        return absolute_reverse(
+            "institutions:institution-detail",
+            kwargs={"institution_id": self._id, "version": "v2"},
+        )
 
     @property
     def nodes_url(self):
-        return self.absolute_api_v2_url + 'nodes/'
+        return self.absolute_api_v2_url + "nodes/"
 
     @property
     def nodes_relationship_url(self):
-        return self.absolute_api_v2_url + 'relationships/nodes/'
+        return self.absolute_api_v2_url + "relationships/nodes/"
 
     @property
     def registrations_url(self):
-        return self.absolute_api_v2_url + 'registrations/'
+        return self.absolute_api_v2_url + "registrations/"
 
     @property
     def registrations_relationship_url(self):
-        return self.absolute_api_v2_url + 'relationships/registrations/'
+        return self.absolute_api_v2_url + "relationships/registrations/"
 
     @property
     def logo_path(self):
         if self.logo_name:
-            return '/static/img/institutions/shields/{}'.format(self.logo_name)
+            return "/static/img/institutions/shields/{}".format(self.logo_name)
         else:
             return None
 
     @property
     def logo_path_rounded_corners(self):
-        logo_base = '/static/img/institutions/shields-rounded-corners/{}-rounded-corners.png'
+        logo_base = (
+            "/static/img/institutions/shields-rounded-corners/{}-rounded-corners.png"
+        )
         if self.logo_name:
-            return logo_base.format(self.logo_name.replace('.png', ''))
+            return logo_base.format(self.logo_name.replace(".png", ""))
         else:
             return None
 
     @property
     def banner_path(self):
         if self.banner_name:
-            return '/static/img/institutions/banners/{}'.format(self.banner_name)
+            return "/static/img/institutions/banners/{}".format(self.banner_name)
         else:
             return None
 
@@ -150,6 +170,7 @@ class Institution(DirtyFieldsMixin, Loggable, base.ObjectIDMixin, base.BaseModel
     def save(self, *args, **kwargs):
         self.update_search()
         return super(Institution, self).save(*args, **kwargs)
+
 
 @receiver(post_save, sender=Institution)
 def create_institution_auth_groups(sender, instance, created, **kwargs):

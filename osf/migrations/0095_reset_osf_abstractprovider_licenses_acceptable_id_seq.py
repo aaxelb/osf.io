@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0094_update_preprintprovider_group_auth'),
+        ("osf", "0094_update_preprintprovider_group_auth"),
     ]
 
     operations = [
@@ -28,6 +28,6 @@ class Migration(migrations.Migration):
 
             SELECT setval(pg_get_serial_sequence('"osf_abstractprovider"','id'), 1, max("id") IS NOT null)
             FROM "osf_abstractprovider_licenses_acceptable";
-            """
+            """,
         ),
     ]

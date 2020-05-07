@@ -9,13 +9,14 @@ class Migration(migrations.Migration):
     atomic = False  # CREATE INDEX CONCURRENTLY cannot be run in a txn
 
     dependencies = [
-        ('osf', '0176_pagecounter_data'),
+        ("osf", "0176_pagecounter_data"),
     ]
 
     operations = [
-        migrations.RunSQL([
-            'CREATE INDEX CONCURRENTLY page_counter_idx ON osf_pagecounter (action, resource_id, file_id, version);',
-        ], [
-            'DROP INDEX IF EXISTS page_counter_idx, RESTRICT;'
-        ])
+        migrations.RunSQL(
+            [
+                "CREATE INDEX CONCURRENTLY page_counter_idx ON osf_pagecounter (action, resource_id, file_id, version);",
+            ],
+            ["DROP INDEX IF EXISTS page_counter_idx, RESTRICT;"],
+        )
     ]

@@ -9,13 +9,13 @@ from website.settings import MFR_SERVER_URL
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_osfstorage', '0004_storage_region_models'),
+        ("addons_osfstorage", "0004_storage_region_models"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='region',
-            name='mfr_url',
+            model_name="region",
+            name="mfr_url",
             field=models.URLField(default=MFR_SERVER_URL),
         ),
     ]

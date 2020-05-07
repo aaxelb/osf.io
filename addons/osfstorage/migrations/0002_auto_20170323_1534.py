@@ -11,19 +11,30 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('addons_osfstorage', '0001_initial'),
-        ('osf', '0001_initial'),
+        ("addons_osfstorage", "0001_initial"),
+        ("osf", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nodesettings',
-            name='owner',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addons_osfstorage_node_settings', to='osf.AbstractNode'),
+            model_name="nodesettings",
+            name="owner",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addons_osfstorage_node_settings",
+                to="osf.AbstractNode",
+            ),
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='root_node',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='osf.OsfStorageFolder'),
+            model_name="nodesettings",
+            name="root_node",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="osf.OsfStorageFolder",
+            ),
         ),
     ]

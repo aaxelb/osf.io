@@ -11,9 +11,10 @@ from tests.base import OsfTestCase
 
 pytestmark = pytest.mark.django_db
 
+
 class TestZoteroSerializer(CitationAddonSerializerTestSuiteMixin, OsfTestCase):
 
-    addon_short_name = 'zotero'
+    addon_short_name = "zotero"
 
     Serializer = ZoteroSerializer
     ExternalAccountFactory = ZoteroAccountFactory

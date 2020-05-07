@@ -8,24 +8,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0137_transfer_preprint_service_permissions'),
+        ("osf", "0137_transfer_preprint_service_permissions"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='abstractnode',
-            name='_has_abandoned_preprint',
+            model_name="abstractnode", name="_has_abandoned_preprint",
         ),
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='_is_preprint_orphan',
-        ),
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='preprint_article_doi',
-        ),
-        migrations.RemoveField(
-            model_name='abstractnode',
-            name='preprint_file',
-        ),
+        migrations.RemoveField(model_name="abstractnode", name="_is_preprint_orphan",),
+        migrations.RemoveField(model_name="abstractnode", name="preprint_article_doi",),
+        migrations.RemoveField(model_name="abstractnode", name="preprint_file",),
     ]

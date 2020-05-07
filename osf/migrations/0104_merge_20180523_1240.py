@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0103_set_osf_storage_node_settings_region'),
-        ('osf', '0100_notificationdigest_provider'),
+        ("osf", "0103_set_osf_storage_node_settings_region"),
+        ("osf", "0100_notificationdigest_provider"),
     ]
 
-    operations = [
-    ]
+    operations = []

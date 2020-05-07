@@ -15,25 +15,25 @@ from osf.models import OSFUser
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
-            '--dry',
-            action='store_true',
-            dest='dry_run',
-            help='Dry run',
+            "--dry", action="store_true", dest="dry_run", help="Dry run",
         )
-        parser.add_argument('guids', type=str, nargs='+', help='user guid to be deleted')
+        parser.add_argument(
+            "guids", type=str, nargs="+", help="user guid to be deleted"
+        )
 
     def handle(self, *args, **options):
-        guids = options.get('guids', None)
-        dry_run = options.get('dry_run', False)
+        guids = options.get("guids", None)
+        dry_run = options.get("dry_run", False)
 
         if not ask_for_confirmation(
-            'About to delete user(s): {}. yes or no?'.format(' '.join(guids))
+            "About to delete user(s): {}. yes or no?".format(" ".join(guids))
         ):
-            print('Exiting...')
+            print("Exiting...")
             sys.exit(1)
 
         with transaction.atomic():
@@ -41,6 +41,6 @@ class Command(BaseCommand):
                 user = OSFUser.load(guid)
                 user.gdpr_delete()
                 user.save()
-                logger.info('Deleted user {}'.format(user._id))
+                logger.info("Deleted user {}".format(user._id))
             if dry_run:
-                raise RuntimeError('Dry run -- transaction rolled back.')
+                raise RuntimeError("Dry run -- transaction rolled back.")

@@ -14,15 +14,9 @@ def escape_html(data):
     :rtype: str or list or dict
     """
     if isinstance(data, dict):
-        return {
-            key: escape_html(value)
-            for (key, value) in data.items()
-        }
+        return {key: escape_html(value) for (key, value) in data.items()}
     if is_iterable_but_not_string(data):
-        return [
-            escape_html(value)
-            for value in data
-        ]
+        return [escape_html(value) for value in data]
     if isinstance(data, basestring):
         return bleach.clean(data)
     return data
@@ -33,4 +27,4 @@ def temp_ampersand_fixer(s):
 
     Explicitly differentiate from safe_unescape_html in case use cases/behaviors diverge
     """
-    return s.replace('&amp;', '&')
+    return s.replace("&amp;", "&")

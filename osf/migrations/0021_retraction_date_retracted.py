@@ -9,13 +9,13 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0020_auto_20170426_0920'),
+        ("osf", "0020_auto_20170426_0920"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='retraction',
-            name='date_retracted',
+            model_name="retraction",
+            name="date_retracted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
     ]

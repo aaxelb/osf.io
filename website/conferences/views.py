@@ -47,7 +47,7 @@ def meeting_hook():
             message.sender_email,
             CONFERENCE_INACTIVE,
             fullname=message.sender_display,
-            presentations_url=web_url_for('conference_view', _absolute=True),
+            presentations_url=web_url_for("conference_view", _absolute=True),
             can_change_preferences=False,
             logo=settings.OSF_MEETINGS_LOGO,
         )
@@ -68,14 +68,12 @@ def add_poster_by_email(conference, message):
             CONFERENCE_FAILED,
             fullname=message.sender_display,
             can_change_preferences=False,
-            logo=settings.OSF_MEETINGS_LOGO
+            logo=settings.OSF_MEETINGS_LOGO,
         )
 
     with transaction.atomic():
         user, user_created = get_or_create_user(
-            message.sender_display,
-            message.sender_email,
-            is_spam=message.is_spam,
+            message.sender_display, message.sender_email, is_spam=message.is_spam,
         )
         if user_created:
             if utils.is_valid_email(user.fullname):
@@ -88,19 +86,16 @@ def add_poster_by_email(conference, message):
 
             # must save the user first before accessing user._id
             set_password_url = web_url_for(
-                'reset_password_get',
+                "reset_password_get",
                 uid=user._id,
-                token=user.verification_key_v2['token'],
+                token=user.verification_key_v2["token"],
                 _absolute=True,
             )
         else:
             set_password_url = None
 
         # Always create a new meeting node
-        node = Node.objects.create(
-            title=message.subject,
-            creator=user
-        )
+        node = Node.objects.create(title=message.subject, creator=user)
         node.add_system_tag(CampaignSourceTags.Osf4m.value)
         node.save()
 
@@ -109,16 +104,17 @@ def add_poster_by_email(conference, message):
         utils.record_message(message, node, created_user)
     # Prevent circular import error
     from framework.auth import signals as auth_signals
+
     if user_created:
         auth_signals.user_confirmed.send(user)
 
     utils.upload_attachments(user, node, message.attachments)
 
     download_url = node.web_url_for(
-        'addon_view_or_download_file',
+        "addon_view_or_download_file",
         path=message.attachments[0].filename,
-        provider='osfstorage',
-        action='download',
+        provider="osfstorage",
+        action="download",
         _absolute=True,
     )
 
@@ -128,9 +124,7 @@ def add_poster_by_email(conference, message):
         CONFERENCE_SUBMITTED,
         conf_full_name=conference.name,
         conf_view_url=web_url_for(
-            'conference_results',
-            meeting=message.conference_name,
-            _absolute=True,
+            "conference_results", meeting=message.conference_name, _absolute=True,
         ),
         fullname=message.sender_display,
         user_created=user_created,
@@ -141,10 +135,11 @@ def add_poster_by_email(conference, message):
         presentation_type=message.conference_category.lower(),
         is_spam=message.is_spam,
         can_change_preferences=False,
-        logo=settings.OSF_MEETINGS_LOGO
+        logo=settings.OSF_MEETINGS_LOGO,
     )
     if user_created:
         signals.osf4m_user_created.send(user, conference=conference, node=node)
+
 
 def conference_data(meeting):
     try:
@@ -154,14 +149,15 @@ def conference_data(meeting):
 
     return conference_submissions_sql(conf)
 
+
 def conference_submissions_sql(conf):
     """
     Serializes all meeting submissions to a conference (returns array of dictionaries)
     :param obj conf: Conference object.
     """
-    submission1_name = conf.field_names['submission1']
-    submission2_name = conf.field_names['submission2']
-    conference_url = web_url_for('conference_results', meeting=conf.endpoint)
+    submission1_name = conf.field_names["submission1"]
+    submission2_name = conf.field_names["submission2"]
+    conference_url = web_url_for("conference_results", meeting=conf.endpoint)
     abstract_node_content_type_id = ContentType.objects.get_for_model(AbstractNode).id
     osf_user_content_type_id = ContentType.objects.get_for_model(OSFUser).id
 
@@ -235,7 +231,8 @@ def conference_submissions_sql(conf):
                    AND osf_abstractnode.is_public = TRUE
                    AND AUTHOR_GUID IS NOT NULL)
             ORDER BY osf_abstractnode.created DESC;
-            """, [
+            """,
+            [
                 submission1_name,
                 submission1_name,
                 submission2_name,
@@ -245,33 +242,35 @@ def conference_submissions_sql(conf):
                 osf_user_content_type_id,
                 abstract_node_content_type_id,
                 conf.id,
-            ]
+            ],
         )
         rows = cursor.fetchall()
         return [row[0] for row in rows]
 
+
 def redirect_to_meetings(**kwargs):
-    return redirect('/meetings/')
+    return redirect("/meetings/")
 
 
 def serialize_conference(conf):
     return {
-        'active': conf.active,
-        'admins': list(conf.admins.all().values_list('guids___id', flat=True)),
-        'end_date': conf.end_date,
-        'endpoint': conf.endpoint,
-        'field_names': conf.field_names,
-        'info_url': conf.info_url,
-        'is_meeting': conf.is_meeting,
-        'location': conf.location,
-        'logo_url': conf.logo_url,
-        'name': conf.name,
-        'num_submissions': conf.valid_submissions.count(),
-        'poster': conf.poster,
-        'public_projects': conf.public_projects,
-        'start_date': conf.start_date,
-        'talk': conf.talk,
+        "active": conf.active,
+        "admins": list(conf.admins.all().values_list("guids___id", flat=True)),
+        "end_date": conf.end_date,
+        "endpoint": conf.endpoint,
+        "field_names": conf.field_names,
+        "info_url": conf.info_url,
+        "is_meeting": conf.is_meeting,
+        "location": conf.location,
+        "logo_url": conf.logo_url,
+        "name": conf.name,
+        "num_submissions": conf.valid_submissions.count(),
+        "poster": conf.poster,
+        "public_projects": conf.public_projects,
+        "start_date": conf.start_date,
+        "talk": conf.talk,
     }
+
 
 @ember_flag_is_active(features.EMBER_MEETING_DETAIL)
 def conference_results(meeting):
@@ -286,23 +285,24 @@ def conference_results(meeting):
     data = conference_data(meeting)
 
     return {
-        'data': data,
-        'label': meeting,
-        'meeting': serialize_conference(conf),
+        "data": data,
+        "label": meeting,
+        "meeting": serialize_conference(conf),
         # Needed in order to use base.mako namespace
-        'settings': settings,
+        "settings": settings,
     }
 
 
 def redirect_to_conference_results(meeting):
-    return redirect('/meetings/{}'.format(meeting))
+    return redirect("/meetings/{}".format(meeting))
 
 
 def conference_submissions(**kwargs):
     """
     This view previously cached submissions count on num_submissions field.
     """
-    return {'success': True}
+    return {"success": True}
+
 
 @ember_flag_is_active(features.EMBER_MEETINGS)
 def conference_view(**kwargs):
@@ -310,16 +310,22 @@ def conference_view(**kwargs):
     for conf in Conference.objects.all():
         if len(conf.valid_submissions) < settings.CONFERENCE_MIN_COUNT:
             continue
-        if (hasattr(conf, 'is_meeting') and (conf.is_meeting is False)):
+        if hasattr(conf, "is_meeting") and (conf.is_meeting is False):
             continue
-        meetings.append({
-            'name': conf.name,
-            'location': conf.location,
-            'end_date': conf.end_date.strftime('%b %d, %Y') if conf.end_date else None,
-            'start_date': conf.start_date.strftime('%b %d, %Y') if conf.start_date else None,
-            'url': web_url_for('conference_results', meeting=conf.endpoint),
-            'count': conf.valid_submissions.count(),
-        })
+        meetings.append(
+            {
+                "name": conf.name,
+                "location": conf.location,
+                "end_date": conf.end_date.strftime("%b %d, %Y")
+                if conf.end_date
+                else None,
+                "start_date": conf.start_date.strftime("%b %d, %Y")
+                if conf.start_date
+                else None,
+                "url": web_url_for("conference_results", meeting=conf.endpoint),
+                "count": conf.valid_submissions.count(),
+            }
+        )
 
-    meetings.sort(key=lambda meeting: meeting['count'], reverse=True)
-    return {'meetings': meetings}
+    meetings.sort(key=lambda meeting: meeting["count"], reverse=True)
+    return {"meetings": meetings}

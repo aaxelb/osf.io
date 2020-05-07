@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0043_set_share_title'),
-        ('osf', '0045_add_view_subject_permissions'),
+        ("osf", "0043_set_share_title"),
+        ("osf", "0045_add_view_subject_permissions"),
     ]
 
-    operations = [
-    ]
+    operations = []

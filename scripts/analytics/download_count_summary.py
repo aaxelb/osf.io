@@ -12,30 +12,33 @@ from osf.models import PageCounter
 
 
 class DownloadCountSummary(SummaryAnalytics):
-
     @property
     def collection_name(self):
-        return 'download_count_summary'
+        return "download_count_summary"
 
     def get_events(self, date):
         super(DownloadCountSummary, self).get_events(date)
 
-        timestamp_datetime = datetime(date.year, date.month, date.day).replace(tzinfo=pytz.UTC)
-        return [{
-                'keen': {
-                    'timestamp': timestamp_datetime.isoformat()
+        timestamp_datetime = datetime(date.year, date.month, date.day).replace(
+            tzinfo=pytz.UTC
+        )
+        return [
+            {
+                "keen": {"timestamp": timestamp_datetime.isoformat()},
+                "files": {
+                    "total": int(
+                        PageCounter.get_all_downloads_on_date(timestamp_datetime) or 0
+                    )
                 },
-                'files': {
-                    'total': int(PageCounter.get_all_downloads_on_date(timestamp_datetime) or 0)
-                },
-        }]
+            }
+        ]
 
 
 def get_class():
     return DownloadCountSummary
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     init_app()
 
     download_count_summary = DownloadCountSummary()

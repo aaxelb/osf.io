@@ -12,9 +12,12 @@ from osf.models import Subject
 from framework.auth.oauth_scopes import CoreScopes
 
 
-class TaxonomyList(DeprecatedView, JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
+class TaxonomyList(
+    DeprecatedView, JSONAPIBaseView, generics.ListAPIView, ListFilterMixin
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/taxonomies_list).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -24,11 +27,11 @@ class TaxonomyList(DeprecatedView, JSONAPIBaseView, generics.ListAPIView, ListFi
     required_write_scopes = [CoreScopes.NULL]
     serializer_class = TaxonomySerializer
     pagination_class = NoMaxPageSizePagination
-    view_category = 'taxonomies'
-    view_name = 'taxonomy-list'
-    max_version = '2.5'
+    view_category = "taxonomies"
+    view_name = "taxonomy-list"
+    max_version = "2.5"
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     def get_default_queryset(self):
         return optimize_subject_query(Subject.objects.all())
@@ -39,23 +42,24 @@ class TaxonomyList(DeprecatedView, JSONAPIBaseView, generics.ListAPIView, ListFi
     # overrides FilterMixin
     def postprocess_query_param(self, key, field_name, operation):
         # TODO: Queries on 'parents' should be deprecated
-        if field_name == 'parents':
-            if operation['value'] not in (list(), tuple()):
-                operation['source_field_name'] = 'parent___id'
+        if field_name == "parents":
+            if operation["value"] not in (list(), tuple()):
+                operation["source_field_name"] = "parent___id"
             else:
-                if len(operation['value']) > 1:
-                    operation['source_field_name'] = 'parent___id__in'
-                elif len(operation['value']) == 1:
-                    operation['source_field_name'] == 'parent___id'
-                    operation['value'] = operation['value'][0]
+                if len(operation["value"]) > 1:
+                    operation["source_field_name"] = "parent___id__in"
+                elif len(operation["value"]) == 1:
+                    operation["source_field_name"] == "parent___id"
+                    operation["value"] = operation["value"][0]
                 else:
-                    operation['source_field_name'] = 'parent__isnull'
-                    operation['value'] = True
+                    operation["source_field_name"] = "parent__isnull"
+                    operation["value"] = True
 
 
 class TaxonomyDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/taxonomies_read).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -64,11 +68,13 @@ class TaxonomyDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     required_read_scopes = [CoreScopes.ALWAYS_PUBLIC]
     required_write_scopes = [CoreScopes.NULL]
     serializer_class = TaxonomySerializer
-    view_category = 'taxonomies'
-    view_name = 'taxonomy-detail'
+    view_category = "taxonomies"
+    view_name = "taxonomy-detail"
 
     def get_object(self):
         try:
-            return optimize_subject_query(Subject.objects).get(_id=self.kwargs['taxonomy_id'])
+            return optimize_subject_query(Subject.objects).get(
+                _id=self.kwargs["taxonomy_id"]
+            )
         except ObjectDoesNotExist:
             raise NotFound

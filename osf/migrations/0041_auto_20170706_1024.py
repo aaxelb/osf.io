@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0040_merge_20170619_0922'),
+        ("osf", "0040_merge_20170619_0922"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subject',
-            name='highlighted',
+            model_name="subject",
+            name="highlighted",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='subject',
-            name='text',
+            model_name="subject",
+            name="text",
             field=models.CharField(db_index=True, max_length=256),
         ),
     ]

@@ -8,24 +8,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0117_auto_20180625_0810'),
+        ("osf", "0117_auto_20180625_0810"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RegistrationProvider',
-            fields=[
-            ],
+            name="RegistrationProvider",
+            fields=[],
             options={
-                'indexes': [],
-                'proxy': True,
-                'permissions': (('view_registrationprovider', 'Can view registration provider details'),),
+                "indexes": [],
+                "proxy": True,
+                "permissions": (
+                    (
+                        "view_registrationprovider",
+                        "Can view registration provider details",
+                    ),
+                ),
             },
-            bases=('osf.abstractprovider',),
+            bases=("osf.abstractprovider",),
         ),
         migrations.AlterField(
-            model_name='abstractprovider',
-            name='type',
-            field=models.CharField(choices=[('osf.collectionprovider', 'collection provider'), ('osf.registrationprovider', 'registration provider'), ('osf.preprintprovider', 'preprint provider')], db_index=True, max_length=255),
+            model_name="abstractprovider",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("osf.collectionprovider", "collection provider"),
+                    ("osf.registrationprovider", "registration provider"),
+                    ("osf.preprintprovider", "preprint provider"),
+                ],
+                db_index=True,
+                max_length=255,
+            ),
         ),
     ]

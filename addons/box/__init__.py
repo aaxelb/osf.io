@@ -1,1 +1,1 @@
-default_app_config = 'addons.box.apps.BoxAddonAppConfig'
+default_app_config = "addons.box.apps.BoxAddonAppConfig"

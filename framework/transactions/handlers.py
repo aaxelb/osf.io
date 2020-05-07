@@ -10,17 +10,20 @@ from werkzeug.local import LocalProxy
 
 
 LOCK_ERROR_CODE = http_status.HTTP_400_BAD_REQUEST
-NO_AUTO_TRANSACTION_ATTR = '_no_auto_transaction'
+NO_AUTO_TRANSACTION_ATTR = "_no_auto_transaction"
 
 logger = logging.getLogger(__name__)
+
 
 def _get_current_atomic():
     if has_request_context():
         ctx = _request_ctx_stack.top
-        return getattr(ctx, 'current_atomic', None)
+        return getattr(ctx, "current_atomic", None)
     return None
 
+
 current_atomic = LocalProxy(_get_current_atomic)
+
 
 def no_auto_transaction(func):
     setattr(func, NO_AUTO_TRANSACTION_ATTR, True)
@@ -45,6 +48,7 @@ def transaction_before_request():
     atomic = transaction.atomic()
     atomic.__enter__()
     ctx.current_atomic = atomic
+
 
 def transaction_after_request(response, base_status_code_error=500):
     """Teardown transaction after handling the request. Rollback if an
@@ -75,7 +79,7 @@ def transaction_teardown_request(error=None):
 
 
 handlers = {
-    'before_request': transaction_before_request,
-    'after_request': transaction_after_request,
-    'teardown_request': transaction_teardown_request,
+    "before_request": transaction_before_request,
+    "after_request": transaction_after_request,
+    "teardown_request": transaction_teardown_request,
 }

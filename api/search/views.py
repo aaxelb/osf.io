@@ -19,7 +19,13 @@ from api.institutions.serializers import InstitutionSerializer
 from api.collections.serializers import CollectionSubmissionSerializer
 
 from framework.auth.oauth_scopes import CoreScopes
-from osf.models import Institution, BaseFileNode, AbstractNode, OSFUser, CollectionSubmission
+from osf.models import (
+    Institution,
+    BaseFileNode,
+    AbstractNode,
+    OSFUser,
+    CollectionSubmission,
+)
 
 from website.search import search
 from website.search.exceptions import MalformedQueryError
@@ -46,23 +52,30 @@ class BaseSearchView(JSONAPIBaseView, generics.ListCreateAPIView):
 
     def __init__(self):
         super(BaseSearchView, self).__init__()
-        self.doc_type = getattr(self, 'doc_type', None)
+        self.doc_type = getattr(self, "doc_type", None)
 
     def get_parsers(self):
-        if self.request.method == 'POST':
-            return (SearchParser(), )
+        if self.request.method == "POST":
+            return (SearchParser(),)
         return super(BaseSearchView, self).get_parsers()
 
     def get_queryset(self, query=None):
-        page = int(self.request.query_params.get('page', '1'))
-        page_size = min(int(self.request.query_params.get('page[size]', REST_FRAMEWORK['PAGE_SIZE'])), MAX_PAGE_SIZE)
+        page = int(self.request.query_params.get("page", "1"))
+        page_size = min(
+            int(
+                self.request.query_params.get("page[size]", REST_FRAMEWORK["PAGE_SIZE"])
+            ),
+            MAX_PAGE_SIZE,
+        )
         start = (page - 1) * page_size
         if query:
             # Parser has built query, but needs paging info
-            query['from'] = start
-            query['size'] = page_size
+            query["from"] = start
+            query["size"] = page_size
         else:
-            query = build_query(self.request.query_params.get('q', '*'), start=start, size=page_size)
+            query = build_query(
+                self.request.query_params.get("q", "*"), start=start, size=page_size
+            )
         try:
             results = search.search(query, doc_type=self.doc_type, raw=True)
         except MalformedQueryError as e:
@@ -102,8 +115,8 @@ class Search(BaseSearchView):
 
     serializer_class = SearchSerializer
 
-    view_category = 'search'
-    view_name = 'search-search'
+    view_category = "search"
+    view_name = "search-search"
 
 
 class SearchComponents(BaseSearchView):
@@ -216,9 +229,9 @@ class SearchComponents(BaseSearchView):
     model_class = AbstractNode
     serializer_class = NodeSerializer
 
-    doc_type = 'component'
-    view_category = 'search'
-    view_name = 'search-component'
+    doc_type = "component"
+    view_category = "search"
+    view_name = "search-component"
 
 
 class SearchFiles(BaseSearchView):
@@ -329,9 +342,9 @@ class SearchFiles(BaseSearchView):
     model_class = BaseFileNode
     serializer_class = FileSerializer
 
-    doc_type = 'file'
-    view_category = 'search'
-    view_name = 'search-file'
+    doc_type = "file"
+    view_category = "search"
+    view_name = "search-file"
 
 
 class SearchProjects(BaseSearchView):
@@ -445,9 +458,9 @@ class SearchProjects(BaseSearchView):
     model_class = AbstractNode
     serializer_class = NodeSerializer
 
-    doc_type = 'project'
-    view_category = 'search'
-    view_name = 'search-project'
+    doc_type = "project"
+    view_category = "search"
+    view_name = "search-project"
 
 
 class SearchRegistrations(BaseSearchView):
@@ -534,9 +547,9 @@ class SearchRegistrations(BaseSearchView):
     model_class = AbstractNode
     serializer_class = RegistrationSerializer
 
-    doc_type = 'registration'
-    view_category = 'search'
-    view_name = 'search-registration'
+    doc_type = "registration"
+    view_category = "search"
+    view_name = "search-registration"
 
 
 class SearchUsers(BaseSearchView):
@@ -598,9 +611,9 @@ class SearchUsers(BaseSearchView):
     model_class = OSFUser
     serializer_class = UserSerializer
 
-    doc_type = 'user'
-    view_category = 'search'
-    view_name = 'search-user'
+    doc_type = "user"
+    view_category = "search"
+    view_name = "search-user"
 
 
 class SearchInstitutions(BaseSearchView):
@@ -641,9 +654,9 @@ class SearchInstitutions(BaseSearchView):
     model_class = Institution
     serializer_class = InstitutionSerializer
 
-    doc_type = 'institution'
-    view_category = 'search'
-    view_name = 'search-institution'
+    doc_type = "institution"
+    view_category = "search"
+    view_name = "search-institution"
 
 
 class SearchCollections(BaseSearchView):
@@ -653,21 +666,21 @@ class SearchCollections(BaseSearchView):
     model_class = CollectionSubmission
     serializer_class = CollectionSubmissionSerializer
 
-    doc_type = 'collectionSubmission'
-    view_category = 'search'
-    view_name = 'search-collected-metadata'
+    doc_type = "collectionSubmission"
+    view_category = "search"
+    view_name = "search-collected-metadata"
 
     @property
     def search_fields(self):
         return [
-            'abstract',
-            'collectedType',
-            'contributors.fullname',
-            'status',
-            'subjects',
-            'provider',
-            'title',
-            'tags',
+            "abstract",
+            "collectedType",
+            "contributors.fullname",
+            "status",
+            "subjects",
+            "provider",
+            "title",
+            "tags",
         ]
 
     def create(self, request, *args, **kwargs):

@@ -11,6 +11,8 @@ from framework.auth import Auth
 
 
 identity = lambda value: value
+
+
 class Delta(object):
     def __init__(self, getter, checker=None):
         self.getter = getter
@@ -18,7 +20,6 @@ class Delta(object):
 
 
 class AssertDeltas(object):
-
     def __init__(self, *deltas):
         self.deltas = deltas
         self.original = []
@@ -33,14 +34,13 @@ class AssertDeltas(object):
 
 
 class StorageTestCase(OsfTestCase):
-
     def setUp(self):
         super(StorageTestCase, self).setUp()
 
         self.project = ProjectFactory()
         self.node = self.project
         self.user = self.project.creator
-        self.node_settings = self.project.get_addon('osfstorage')
+        self.node_settings = self.project.get_addon("osfstorage")
         self.auth_obj = Auth(user=self.project.creator)
 
         # Refresh records from database; necessary for comparing dates
@@ -49,7 +49,7 @@ class StorageTestCase(OsfTestCase):
 
 
 def recursively_create_file(settings, path):
-    path = path.split('/')
+    path = path.split("/")
     final = path.pop(-1)
     current = settings.get_root()
     for subpath in path:
@@ -58,7 +58,7 @@ def recursively_create_file(settings, path):
 
 
 def recursively_create_folder(settings, path):
-    path = path.split('/')
+    path = path.split("/")
     final = path.pop(-1)
     current = settings.root_node
     for subpath in path:
@@ -68,21 +68,19 @@ def recursively_create_folder(settings, path):
 
 def make_payload(user, name, **kwargs):
     payload = {
-        'user': user._id,
-        'name': name,
-        'hashes': {'base64': '=='},
-        'worker': {
-            'uname': 'testmachine'
+        "user": user._id,
+        "name": name,
+        "hashes": {"base64": "=="},
+        "worker": {"uname": "testmachine"},
+        "settings": {
+            "provider": "filesystem",
+            storage_settings.WATERBUTLER_RESOURCE: "blah",
         },
-        'settings': {
-            'provider': 'filesystem',
-            storage_settings.WATERBUTLER_RESOURCE: 'blah',
-        },
-        'metadata': {
-            'size': 123,
-            'name': 'file',
-            'provider': 'filesystem',
-            'modified': 'Mon, 16 Feb 2015 18:45:34 GMT'
+        "metadata": {
+            "size": 123,
+            "name": "file",
+            "provider": "filesystem",
+            "modified": "Mon, 16 Feb 2015 18:45:34 GMT",
         },
     }
     payload.update(kwargs)

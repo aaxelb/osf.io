@@ -13,24 +13,40 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('osf', '0001_initial'),
-        ('addons_wiki', '0001_initial'),
+        ("osf", "0001_initial"),
+        ("addons_wiki", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nodewikipage',
-            name='node',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='osf.AbstractNode'),
+            model_name="nodewikipage",
+            name="node",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="osf.AbstractNode",
+            ),
         ),
         migrations.AddField(
-            model_name='nodewikipage',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="nodewikipage",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='owner',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addons_wiki_node_settings', to='osf.AbstractNode'),
+            model_name="nodesettings",
+            name="owner",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addons_wiki_node_settings",
+                to="osf.AbstractNode",
+            ),
         ),
     ]

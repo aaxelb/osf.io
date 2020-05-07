@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0125_auto_20180808_1942'),
+        ("osf", "0125_auto_20180808_1942"),
     ]
 
     operations = [
@@ -31,7 +31,8 @@ class Migration(migrations.Migration):
                 )
                 WHERE AG0.name LIKE 'reviews_%';
                 """
-            ], [
+            ],
+            [
                 """
                 UPDATE auth_group AG0
                 SET name = (
@@ -41,6 +42,6 @@ class Migration(migrations.Migration):
                 )
                 WHERE AG0.name LIKE 'reviews_%';
                 """
-            ]
+            ],
         )
     ]

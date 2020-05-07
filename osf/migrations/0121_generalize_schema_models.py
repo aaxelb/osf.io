@@ -8,12 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0120_merge_20180716_1457'),
+        ("osf", "0120_merge_20180716_1457"),
     ]
 
     operations = [
-        migrations.RenameModel(
-            old_name='MetaSchema',
-            new_name='RegistrationSchema',
-        ),
+        migrations.RenameModel(old_name="MetaSchema", new_name="RegistrationSchema",),
     ]

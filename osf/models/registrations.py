@@ -23,8 +23,12 @@ from website import settings
 from website.archiver import ARCHIVER_INITIATED
 
 from osf.models import (
-    OSFUser, RegistrationSchema, Node,
-    Retraction, Embargo, DraftRegistrationApproval,
+    OSFUser,
+    RegistrationSchema,
+    Node,
+    Retraction,
+    Embargo,
+    DraftRegistrationApproval,
     EmbargoTerminationApproval,
     DraftRegistrationContributor,
 )
@@ -51,55 +55,83 @@ logger = logging.getLogger(__name__)
 class Registration(AbstractNode):
 
     WRITABLE_WHITELIST = [
-        'article_doi',
-        'description',
-        'is_public',
-        'node_license',
-        'category',
+        "article_doi",
+        "description",
+        "is_public",
+        "node_license",
+        "category",
     ]
-    provider = models.ForeignKey('RegistrationProvider', related_name='registrations', null=True)
+    provider = models.ForeignKey(
+        "RegistrationProvider", related_name="registrations", null=True
+    )
     registered_date = NonNaiveDateTimeField(db_index=True, null=True, blank=True)
 
     # This is a NullBooleanField because of inheritance issues with using a BooleanField
     # TODO: Update to BooleanField(default=False, null=True) when Django is updated to >=2.1
     external_registration = models.NullBooleanField(default=False)
-    registered_user = models.ForeignKey(OSFUser,
-                                        related_name='related_to',
-                                        on_delete=models.SET_NULL,
-                                        null=True, blank=True)
+    registered_user = models.ForeignKey(
+        OSFUser,
+        related_name="related_to",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     # TODO: Consider making this a FK, as there can be one per Registration
     registered_schema = models.ManyToManyField(RegistrationSchema)
 
     registered_meta = DateTimeAwareJSONField(default=dict, blank=True)
-    registered_from = models.ForeignKey('self',
-                                        related_name='registrations',
-                                        on_delete=models.SET_NULL,
-                                        null=True, blank=True)
+    registered_from = models.ForeignKey(
+        "self",
+        related_name="registrations",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     # Sanctions
-    registration_approval = models.ForeignKey('RegistrationApproval',
-                                            related_name='registrations',
-                                            null=True, blank=True,
-                                            on_delete=models.SET_NULL)
-    retraction = models.ForeignKey('Retraction',
-                                related_name='registrations',
-                                null=True, blank=True,
-                                on_delete=models.SET_NULL)
-    embargo = models.ForeignKey('Embargo',
-                                related_name='registrations',
-                                null=True, blank=True,
-                                on_delete=models.SET_NULL)
-    embargo_termination_approval = models.ForeignKey('EmbargoTerminationApproval',
-                                                    related_name='registrations',
-                                                    null=True, blank=True,
-                                                    on_delete=models.SET_NULL)
+    registration_approval = models.ForeignKey(
+        "RegistrationApproval",
+        related_name="registrations",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    retraction = models.ForeignKey(
+        "Retraction",
+        related_name="registrations",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    embargo = models.ForeignKey(
+        "Embargo",
+        related_name="registrations",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    embargo_termination_approval = models.ForeignKey(
+        "EmbargoTerminationApproval",
+        related_name="registrations",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     files_count = models.PositiveIntegerField(blank=True, null=True)
 
     @staticmethod
     def find_failed_registrations():
         expired_if_before = timezone.now() - settings.ARCHIVE_TIMEOUT_TIMEDELTA
-        node_id_list = ArchiveJob.objects.filter(sent=False, datetime_initiated__lt=expired_if_before, status=ARCHIVER_INITIATED).values_list('dst_node', flat=True)
-        root_nodes_id = AbstractNode.objects.filter(id__in=node_id_list).values_list('root', flat=True).distinct()
+        node_id_list = ArchiveJob.objects.filter(
+            sent=False,
+            datetime_initiated__lt=expired_if_before,
+            status=ARCHIVER_INITIATED,
+        ).values_list("dst_node", flat=True)
+        root_nodes_id = (
+            AbstractNode.objects.filter(id__in=node_id_list)
+            .values_list("root", flat=True)
+            .distinct()
+        )
         stuck_regs = AbstractNode.objects.filter(id__in=root_nodes_id, is_deleted=False)
         return stuck_regs
 
@@ -147,10 +179,10 @@ class Registration(AbstractNode):
     def sanction(self):
         root = self._dirty_root
         sanction = (
-            root.embargo_termination_approval or
-            root.retraction or
-            root.embargo or
-            root.registration_approval
+            root.embargo_termination_approval
+            or root.retraction
+            or root.embargo
+            or root.registration_approval
         )
         if sanction:
             return sanction
@@ -246,27 +278,31 @@ class Registration(AbstractNode):
         return self.root
 
     def date_withdrawn(self):
-        return getattr(self.root.retraction, 'date_retracted', None)
+        return getattr(self.root.retraction, "date_retracted", None)
 
     @property
     def withdrawal_justification(self):
-        return getattr(self.root.retraction, 'justification', None)
+        return getattr(self.root.retraction, "justification", None)
 
-    def _initiate_embargo(self, user, end_date, for_existing_registration=False,
-                          notify_initiator_on_complete=False):
+    def _initiate_embargo(
+        self,
+        user,
+        end_date,
+        for_existing_registration=False,
+        notify_initiator_on_complete=False,
+    ):
         """Initiates the retraction process for a registration
         :param user: User who initiated the retraction
         :param end_date: Date when the registration should be made public
         """
         end_date_midnight = datetime.datetime.combine(
-            end_date,
-            datetime.datetime.min.time()
+            end_date, datetime.datetime.min.time()
         ).replace(tzinfo=end_date.tzinfo)
         self.embargo = Embargo.objects.create(
             initiated_by=user,
             end_date=end_date_midnight,
             for_existing_registration=for_existing_registration,
-            notify_initiator_on_complete=notify_initiator_on_complete
+            notify_initiator_on_complete=notify_initiator_on_complete,
         )
         self.save()  # Set foreign field reference Node.embargo
         admins = self.get_admin_contributors_recursive(unique_users=True)
@@ -275,8 +311,13 @@ class Registration(AbstractNode):
         self.embargo.save()  # Save embargo's approval_state
         return self.embargo
 
-    def embargo_registration(self, user, end_date, for_existing_registration=False,
-                             notify_initiator_on_complete=False):
+    def embargo_registration(
+        self,
+        user,
+        end_date,
+        for_existing_registration=False,
+        notify_initiator_on_complete=False,
+    ):
         """Enter registration into an embargo period at end of which, it will
         be made public
         :param user: User initiating the embargo
@@ -286,42 +327,53 @@ class Registration(AbstractNode):
         :raises: ValidationError if end_date is not within time constraints
         """
         if not self.is_admin_contributor(user):
-            raise PermissionsError('Only admins may embargo a registration')
+            raise PermissionsError("Only admins may embargo a registration")
         if not self._is_embargo_date_valid(end_date):
             if (end_date - timezone.now()) >= settings.EMBARGO_END_DATE_MIN:
-                raise ValidationError('Registrations can only be embargoed for up to four years.')
-            raise ValidationError('Embargo end date must be at least three days in the future.')
+                raise ValidationError(
+                    "Registrations can only be embargoed for up to four years."
+                )
+            raise ValidationError(
+                "Embargo end date must be at least three days in the future."
+            )
 
-        embargo = self._initiate_embargo(user, end_date,
-                                         for_existing_registration=for_existing_registration,
-                                         notify_initiator_on_complete=notify_initiator_on_complete)
+        embargo = self._initiate_embargo(
+            user,
+            end_date,
+            for_existing_registration=for_existing_registration,
+            notify_initiator_on_complete=notify_initiator_on_complete,
+        )
 
         self.registered_from.add_log(
             action=NodeLog.EMBARGO_INITIATED,
             params={
-                'node': self.registered_from._id,
-                'registration': self._id,
-                'embargo_id': embargo._id,
+                "node": self.registered_from._id,
+                "registration": self._id,
+                "embargo_id": embargo._id,
             },
             auth=Auth(user),
             save=True,
         )
         if self.is_public:
-            self.set_privacy('private', Auth(user))
+            self.set_privacy("private", Auth(user))
 
     def request_embargo_termination(self, auth):
         """Initiates an EmbargoTerminationApproval to lift this Embargoed Registration's
         embargo early."""
         if not self.is_embargoed:
-            raise NodeStateError('This node is not under active embargo')
+            raise NodeStateError("This node is not under active embargo")
         if not self.root == self:
-            raise NodeStateError('Only the root of an embargoed registration can request termination')
+            raise NodeStateError(
+                "Only the root of an embargoed registration can request termination"
+            )
 
         approval = EmbargoTerminationApproval(
-            initiated_by=auth.user,
-            embargoed_registration=self,
+            initiated_by=auth.user, embargoed_registration=self,
         )
-        admins = [admin for admin in self.root.get_admin_contributors_recursive(unique_users=True)]
+        admins = [
+            admin
+            for admin in self.root.get_admin_contributors_recursive(unique_users=True)
+        ]
         for (admin, node) in admins:
             approval.add_authorizer(admin, node=node)
         approval.save()
@@ -335,26 +387,21 @@ class Registration(AbstractNode):
         Adds a log to the registered_from Node.
         """
         if not self.is_embargoed:
-            raise NodeStateError('This node is not under active embargo')
+            raise NodeStateError("This node is not under active embargo")
 
         self.registered_from.add_log(
             action=NodeLog.EMBARGO_TERMINATED,
             params={
-                'project': self._id,
-                'node': self.registered_from._id,
-                'registration': self._id,
+                "project": self._id,
+                "node": self.registered_from._id,
+                "registration": self._id,
             },
             auth=None,
-            save=True
+            save=True,
         )
         self.embargo.mark_as_completed()
         for node in self.node_and_primary_descendants():
-            node.set_privacy(
-                self.PUBLIC,
-                auth=None,
-                log=False,
-                save=True
-            )
+            node.set_privacy(self.PUBLIC, auth=None, log=False, save=True)
         return True
 
     def get_contributor_registration_response_keys(self):
@@ -364,8 +411,8 @@ class Registration(AbstractNode):
         :returns QuerySet
         """
         return self.registration_schema.schema_blocks.filter(
-            block_type='contributors-input', registration_response_key__isnull=False,
-        ).values_list('registration_response_key', flat=True)
+            block_type="contributors-input", registration_response_key__isnull=False,
+        ).values_list("registration_response_key", flat=True)
 
     def copy_registered_meta_and_registration_responses(self, draft, save=True):
         """
@@ -380,14 +427,14 @@ class Registration(AbstractNode):
         registration_metadata = draft.registration_metadata
         registration_responses = draft.registration_responses
 
-        bibliographic_contributors = ', '.join(
-            draft.branched_from.visible_contributors.values_list('fullname', flat=True)
+        bibliographic_contributors = ", ".join(
+            draft.branched_from.visible_contributors.values_list("fullname", flat=True)
         )
         contributor_keys = self.get_contributor_registration_response_keys()
 
         for key in contributor_keys:
             if key in registration_metadata:
-                registration_metadata[key]['value'] = bibliographic_contributors
+                registration_metadata[key]["value"] = bibliographic_contributors
             if key in registration_responses:
                 registration_responses[key] = bibliographic_contributors
 
@@ -405,7 +452,7 @@ class Registration(AbstractNode):
         self.retraction = Retraction.objects.create(
             initiated_by=user,
             justification=justification or None,  # make empty strings None
-            state=Retraction.UNAPPROVED
+            state=Retraction.UNAPPROVED,
         )
         self.save()
         admins = self.get_admin_contributors_recursive(unique_users=True)
@@ -419,19 +466,25 @@ class Registration(AbstractNode):
         and associate it with the respective registration.
         """
 
-        if not self.is_public and not (self.embargo_end_date or self.is_pending_embargo):
-            raise NodeStateError('Only public or embargoed registrations may be withdrawn.')
+        if not self.is_public and not (
+            self.embargo_end_date or self.is_pending_embargo
+        ):
+            raise NodeStateError(
+                "Only public or embargoed registrations may be withdrawn."
+            )
 
         if self.root_id != self.id:
-            raise NodeStateError('Withdrawal of non-parent registrations is not permitted.')
+            raise NodeStateError(
+                "Withdrawal of non-parent registrations is not permitted."
+            )
 
         retraction = self._initiate_retraction(user, justification)
         self.registered_from.add_log(
             action=NodeLog.RETRACTION_INITIATED,
             params={
-                'node': self.registered_from._id,
-                'registration': self._id,
-                'retraction_id': retraction._id,
+                "node": self.registered_from._id,
+                "registration": self._id,
+                "retraction_id": retraction._id,
             },
             auth=Auth(user),
         )
@@ -441,15 +494,17 @@ class Registration(AbstractNode):
         return retraction
 
     def delete_registration_tree(self, save=False):
-        logger.debug('Marking registration {} as deleted'.format(self._id))
+        logger.debug("Marking registration {} as deleted".format(self._id))
         self.is_deleted = True
         self.deleted = timezone.now()
-        for draft_registration in DraftRegistration.objects.filter(registered_node=self):
+        for draft_registration in DraftRegistration.objects.filter(
+            registered_node=self
+        ):
             # Allow draft registration to be submitted
             if draft_registration.approval:
                 draft_registration.approval = None
                 draft_registration.save()
-        if not getattr(self.embargo, 'for_existing_registration', False):
+        if not getattr(self.embargo, "for_existing_registration", False):
             self.registered_from = None
         if save:
             self.save()
@@ -460,7 +515,7 @@ class Registration(AbstractNode):
     def update_files_count(self):
         # Updates registration files_count at archival success or
         # at the end of forced (manual) archive for restarted (stuck or failed) registrations.
-        field = AbstractNode._meta.get_field('modified')
+        field = AbstractNode._meta.get_field("modified")
         field.auto_now = False
         self.files_count = self.files.filter(deleted_on__isnull=True).count()
         self.save()
@@ -470,31 +525,30 @@ class Registration(AbstractNode):
         if self.retraction is None:
             super(Registration, self).add_tag(tag, auth, save, log, system)
         else:
-            raise NodeStateError('Cannot add tags to withdrawn registrations.')
+            raise NodeStateError("Cannot add tags to withdrawn registrations.")
 
     def add_tags(self, tags, auth=None, save=True, log=True, system=False):
         if self.retraction is None:
             super(Registration, self).add_tags(tags, auth, save, log, system)
         else:
-            raise NodeStateError('Cannot add tags to withdrawn registrations.')
+            raise NodeStateError("Cannot add tags to withdrawn registrations.")
 
     def remove_tag(self, tag, auth, save=True):
         if self.retraction is None:
             super(Registration, self).remove_tag(tag, auth, save)
         else:
-            raise NodeStateError('Cannot remove tags of withdrawn registrations.')
+            raise NodeStateError("Cannot remove tags of withdrawn registrations.")
 
     def remove_tags(self, tags, auth, save=True):
         if self.retraction is None:
             super(Registration, self).remove_tags(tags, auth, save)
         else:
-            raise NodeStateError('Cannot remove tags of withdrawn registrations.')
+            raise NodeStateError("Cannot remove tags of withdrawn registrations.")
 
     class Meta:
         # custom permissions for use in the OSF Admin App
-        permissions = (
-            ('view_registration', 'Can view registration details'),
-        )
+        permissions = (("view_registration", "Can view registration details"),)
+
 
 class DraftRegistrationLog(ObjectIDMixin, BaseModel):
     """ Simple log to show status changes for DraftRegistrations
@@ -504,80 +558,112 @@ class DraftRegistrationLog(ObjectIDMixin, BaseModel):
     field - action - simple action to track what happened
     field - user - user who did the action
     """
+
     date = NonNaiveDateTimeField(default=timezone.now)
     action = models.CharField(max_length=255)
-    draft = models.ForeignKey('DraftRegistration', related_name='logs',
-                              null=True, blank=True, on_delete=models.CASCADE)
-    user = models.ForeignKey('OSFUser', db_index=True, null=True, blank=True, on_delete=models.CASCADE)
+    draft = models.ForeignKey(
+        "DraftRegistration",
+        related_name="logs",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        "OSFUser", db_index=True, null=True, blank=True, on_delete=models.CASCADE
+    )
     params = DateTimeAwareJSONField(default=dict)
 
-    SUBMITTED = 'submitted'
-    REGISTERED = 'registered'
-    APPROVED = 'approved'
-    REJECTED = 'rejected'
+    SUBMITTED = "submitted"
+    REGISTERED = "registered"
+    APPROVED = "approved"
+    REJECTED = "rejected"
 
-    EDITED_TITLE = 'edit_title'
-    EDITED_DESCRIPTION = 'edit_description'
-    CATEGORY_UPDATED = 'category_updated'
+    EDITED_TITLE = "edit_title"
+    EDITED_DESCRIPTION = "edit_description"
+    CATEGORY_UPDATED = "category_updated"
 
-    CONTRIB_ADDED = 'contributor_added'
-    CONTRIB_REMOVED = 'contributor_removed'
-    CONTRIB_REORDERED = 'contributors_reordered'
-    PERMISSIONS_UPDATED = 'permissions_updated'
+    CONTRIB_ADDED = "contributor_added"
+    CONTRIB_REMOVED = "contributor_removed"
+    CONTRIB_REORDERED = "contributors_reordered"
+    PERMISSIONS_UPDATED = "permissions_updated"
 
-    MADE_CONTRIBUTOR_VISIBLE = 'made_contributor_visible'
-    MADE_CONTRIBUTOR_INVISIBLE = 'made_contributor_invisible'
+    MADE_CONTRIBUTOR_VISIBLE = "made_contributor_visible"
+    MADE_CONTRIBUTOR_INVISIBLE = "made_contributor_invisible"
 
-    AFFILIATED_INSTITUTION_ADDED = 'affiliated_institution_added'
-    AFFILIATED_INSTITUTION_REMOVED = 'affiliated_institution_removed'
+    AFFILIATED_INSTITUTION_ADDED = "affiliated_institution_added"
+    AFFILIATED_INSTITUTION_REMOVED = "affiliated_institution_removed"
 
-    CHANGED_LICENSE = 'license_changed'
+    CHANGED_LICENSE = "license_changed"
 
-    TAG_ADDED = 'tag_added'
-    TAG_REMOVED = 'tag_removed'
+    TAG_ADDED = "tag_added"
+    TAG_REMOVED = "tag_removed"
 
     def __repr__(self):
-        return ('<DraftRegistrationLog({self.action!r}, date={self.date!r}), '
-                'user={self.user!r} '
-                'with id {self._id!r}>').format(self=self)
+        return (
+            "<DraftRegistrationLog({self.action!r}, date={self.date!r}), "
+            "user={self.user!r} "
+            "with id {self._id!r}>"
+        ).format(self=self)
 
     class Meta:
-        ordering = ['-created']
-        get_latest_by = 'created'
+        ordering = ["-created"]
+        get_latest_by = "created"
 
 
-class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMixin,
-        BaseModel, Loggable, EditableFieldsMixin, GuardianMixin):
+class DraftRegistration(
+    ObjectIDMixin,
+    RegistrationResponseMixin,
+    DirtyFieldsMixin,
+    BaseModel,
+    Loggable,
+    EditableFieldsMixin,
+    GuardianMixin,
+):
     # Fields that are writable by DraftRegistration.update
     WRITABLE_WHITELIST = [
-        'title',
-        'description',
-        'category',
-        'node_license',
+        "title",
+        "description",
+        "category",
+        "node_license",
     ]
 
-    URL_TEMPLATE = settings.DOMAIN + 'project/{node_id}/drafts/{draft_id}'
+    URL_TEMPLATE = settings.DOMAIN + "project/{node_id}/drafts/{draft_id}"
 
     # Overrides EditableFieldsMixin to make title not required
-    title = models.TextField(validators=[validate_title], blank=True, default='')
+    title = models.TextField(validators=[validate_title], blank=True, default="")
 
-    _contributors = models.ManyToManyField(OSFUser,
-                                           through=DraftRegistrationContributor,
-                                           related_name='draft_registrations')
-    affiliated_institutions = models.ManyToManyField('Institution', related_name='draft_registrations')
-    node_license = models.ForeignKey('NodeLicenseRecord', related_name='draft_registrations',
-                                     on_delete=models.SET_NULL, null=True, blank=True)
+    _contributors = models.ManyToManyField(
+        OSFUser,
+        through=DraftRegistrationContributor,
+        related_name="draft_registrations",
+    )
+    affiliated_institutions = models.ManyToManyField(
+        "Institution", related_name="draft_registrations"
+    )
+    node_license = models.ForeignKey(
+        "NodeLicenseRecord",
+        related_name="draft_registrations",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     datetime_initiated = NonNaiveDateTimeField(auto_now_add=True)
     datetime_updated = NonNaiveDateTimeField(auto_now=True)
     deleted = NonNaiveDateTimeField(null=True, blank=True)
 
     # Original Node a draft registration is associated with
-    branched_from = models.ForeignKey('AbstractNode', related_name='registered_draft',
-                                      null=True, on_delete=models.CASCADE)
+    branched_from = models.ForeignKey(
+        "AbstractNode",
+        related_name="registered_draft",
+        null=True,
+        on_delete=models.CASCADE,
+    )
 
-    initiator = models.ForeignKey('OSFUser', null=True, on_delete=models.CASCADE)
-    provider = models.ForeignKey('RegistrationProvider', related_name='draft_registrations', null=True)
+    initiator = models.ForeignKey("OSFUser", null=True, on_delete=models.CASCADE)
+    provider = models.ForeignKey(
+        "RegistrationProvider", related_name="draft_registrations", null=True
+    )
 
     # Dictionary field mapping question id to a question's comments and answer
     # {
@@ -594,11 +680,20 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     #   }
     # }
     registration_metadata = DateTimeAwareJSONField(default=dict, blank=True)
-    registration_schema = models.ForeignKey('RegistrationSchema', null=True, on_delete=models.CASCADE)
-    registered_node = models.ForeignKey('Registration', null=True, blank=True,
-                                        related_name='draft_registration', on_delete=models.CASCADE)
+    registration_schema = models.ForeignKey(
+        "RegistrationSchema", null=True, on_delete=models.CASCADE
+    )
+    registered_node = models.ForeignKey(
+        "Registration",
+        null=True,
+        blank=True,
+        related_name="draft_registration",
+        on_delete=models.CASCADE,
+    )
 
-    approval = models.ForeignKey('DraftRegistrationApproval', null=True, blank=True, on_delete=models.CASCADE)
+    approval = models.ForeignKey(
+        "DraftRegistrationApproval", null=True, blank=True, on_delete=models.CASCADE
+    )
 
     # Dictionary field mapping extra fields defined in the RegistrationSchema.schema to their
     # values. Defaults should be provided in the schema (e.g. 'paymentSent': false),
@@ -608,32 +703,42 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     notes = models.TextField(blank=True)
 
     # For ContributorMixin
-    guardian_object_type = 'draft_registration'
+    guardian_object_type = "draft_registration"
 
-    READ_DRAFT_REGISTRATION = 'read_{}'.format(guardian_object_type)
-    WRITE_DRAFT_REGISTRATION = 'write_{}'.format(guardian_object_type)
-    ADMIN_DRAFT_REGISTRATION = 'admin_{}'.format(guardian_object_type)
+    READ_DRAFT_REGISTRATION = "read_{}".format(guardian_object_type)
+    WRITE_DRAFT_REGISTRATION = "write_{}".format(guardian_object_type)
+    ADMIN_DRAFT_REGISTRATION = "admin_{}".format(guardian_object_type)
 
     # For ContributorMixin
-    base_perms = [READ_DRAFT_REGISTRATION, WRITE_DRAFT_REGISTRATION, ADMIN_DRAFT_REGISTRATION]
+    base_perms = [
+        READ_DRAFT_REGISTRATION,
+        WRITE_DRAFT_REGISTRATION,
+        ADMIN_DRAFT_REGISTRATION,
+    ]
 
     groups = {
-        'read': (READ_DRAFT_REGISTRATION,),
-        'write': (READ_DRAFT_REGISTRATION, WRITE_DRAFT_REGISTRATION,),
-        'admin': (READ_DRAFT_REGISTRATION, WRITE_DRAFT_REGISTRATION, ADMIN_DRAFT_REGISTRATION,)
+        "read": (READ_DRAFT_REGISTRATION,),
+        "write": (READ_DRAFT_REGISTRATION, WRITE_DRAFT_REGISTRATION,),
+        "admin": (
+            READ_DRAFT_REGISTRATION,
+            WRITE_DRAFT_REGISTRATION,
+            ADMIN_DRAFT_REGISTRATION,
+        ),
     }
-    group_format = 'draft_registration_{self.id}_{group}'
+    group_format = "draft_registration_{self.id}_{group}"
 
     class Meta:
         permissions = (
-            ('read_draft_registration', 'Can read the draft registration'),
-            ('write_draft_registration', 'Can edit the draft registration'),
-            ('admin_draft_registration', 'Can manage the draft registration'),
+            ("read_draft_registration", "Can read the draft registration"),
+            ("write_draft_registration", "Can edit the draft registration"),
+            ("admin_draft_registration", "Can manage the draft registration"),
         )
 
     def __repr__(self):
-        return ('<DraftRegistration(branched_from={self.branched_from!r}) '
-                'with id {self._id!r}>').format(self=self)
+        return (
+            "<DraftRegistration(branched_from={self.branched_from!r}) "
+            "with id {self._id!r}>"
+        ).format(self=self)
 
     def get_registration_metadata(self, schema):
         # Overrides RegistrationResponseMixin
@@ -652,7 +757,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         meta_schema = self.registration_schema
         if meta_schema:
             schema = meta_schema.schema
-            flags = schema.get('flags', {})
+            flags = schema.get("flags", {})
             dirty = False
             for flag, value in flags.items():
                 if flag not in self._metaschema_flags:
@@ -676,8 +781,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     @property
     def url(self):
         return self.URL_TEMPLATE.format(
-            node_id=self.branched_from._id,
-            draft_id=self._id
+            node_id=self.branched_from._id, draft_id=self._id
         )
 
     @property
@@ -693,10 +797,10 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         # Old draft registration URL - user new endpoints, through draft registration
         node = self.branched_from
         branched_type = self.branched_from_type
-        if branched_type == 'DraftNode':
-            path = '/draft_registrations/{}/'.format(self._id)
-        elif branched_type == 'Node':
-            path = '/nodes/{}/draft_registrations/{}/'.format(node._id, self._id)
+        if branched_type == "DraftNode":
+            path = "/draft_registrations/{}/".format(self._id)
+        elif branched_type == "Node":
+            path = "/nodes/{}/draft_registrations/{}/".format(node._id, self._id)
         return api_v2_url(path)
 
     # used by django and DRF
@@ -709,7 +813,11 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
 
     @property
     def is_pending_review(self):
-        return self.approval.is_pending_approval if (self.requires_approval and self.approval) else False
+        return (
+            self.approval.is_pending_approval
+            if (self.requires_approval and self.approval)
+            else False
+        )
 
     @property
     def is_approved(self):
@@ -734,7 +842,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     @property
     def status_logs(self):
         """ List of logs associated with this node"""
-        return self.logs.all().order_by('date')
+        return self.logs.all().order_by("date")
 
     @property
     def log_class(self):
@@ -762,7 +870,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     @property
     def contributor_kwargs(self):
         # Override for ContributorMixin
-        return {'draft_registration': self}
+        return {"draft_registration": self}
 
     @property
     def contributor_set(self):
@@ -772,14 +880,18 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     @property
     def order_by_contributor_field(self):
         # Property needed for ContributorMixin
-        return 'draftregistrationcontributor___order'
+        return "draftregistrationcontributor___order"
 
     @property
     def admin_contributor_or_group_member_ids(self):
         # Overrides ContributorMixin
         # Draft Registrations don't have parents or group members at the moment, so this is just admin group member ids
         # Called when removing project subscriptions
-        return self.get_group(ADMIN).user_set.filter(is_active=True).values_list('guids___id', flat=True)
+        return (
+            self.get_group(ADMIN)
+            .user_set.filter(is_active=True)
+            .values_list("guids___id", flat=True)
+        )
 
     @property
     def creator(self):
@@ -796,7 +908,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     def log_params(self):
         # Override for EditableFieldsMixin
         return {
-            'draft_registration': self._id,
+            "draft_registration": self._id,
         }
 
     @property
@@ -804,24 +916,24 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         # Override for ContributorMixin
         return OSFUser.objects.filter(
             draftregistrationcontributor__draft_registration=self,
-            draftregistrationcontributor__visible=True
+            draftregistrationcontributor__visible=True,
         ).order_by(self.order_by_contributor_field)
 
     @property
     def contributor_email_template(self):
         # Override for ContributorMixin
-        return 'draft_registration'
+        return "draft_registration"
 
     @property
     def institutions_url(self):
         # For NodeInstitutionsRelationshipSerializer
-        path = '/draft_registrations/{}/institutions/'.format(self._id)
+        path = "/draft_registrations/{}/institutions/".format(self._id)
         return api_v2_url(path)
 
     @property
     def institutions_relationship_url(self):
         # For NodeInstitutionsRelationshipSerializer
-        path = '/draft_registrations/{}/relationships/institutions/'.format(self._id)
+        path = "/draft_registrations/{}/relationships/institutions/".format(self._id)
         return api_v2_url(path)
 
     def update_search(self):
@@ -845,11 +957,11 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         :returns: Whether user has permission to edit this draft_registration.
         """
         if not auth and not user:
-            raise ValueError('Must pass either `auth` or `user`')
+            raise ValueError("Must pass either `auth` or `user`")
         if auth and user:
-            raise ValueError('Cannot pass both `auth` and `user`')
+            raise ValueError("Cannot pass both `auth` and `user`")
         user = user or auth.user
-        return (user and self.has_permission(user, WRITE))
+        return user and self.has_permission(user, WRITE)
 
     def get_addons(self):
         # Override for ContributorMixin, Draft Registrations don't have addons
@@ -859,12 +971,9 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
     def add_tag_log(self, tag, auth):
         self.add_log(
             action=DraftRegistrationLog.TAG_ADDED,
-            params={
-                'draft_registration': self._id,
-                'tag': tag.name
-            },
+            params={"draft_registration": self._id, "tag": tag.name},
             auth=auth,
-            save=False
+            save=False,
         )
 
     @property
@@ -885,16 +994,16 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         names for the tags, for compatibility with v1. Eventually, we can just return the
         QuerySet.
         """
-        return self.all_tags.filter(system=True).values_list('name', flat=True)
+        return self.all_tags.filter(system=True).values_list("name", flat=True)
 
     @classmethod
     def create_from_node(cls, user, schema, node=None, data=None, provider=None):
         if not provider:
-            provider = RegistrationProvider.load('osf')
+            provider = RegistrationProvider.load("osf")
 
         if not node:
             # If no node provided, a DraftNode is created for you
-            node = DraftNode.objects.create(creator=user, title='Untitled')
+            node = DraftNode.objects.create(creator=user, title="Untitled")
 
         if not (isinstance(node, Node) or isinstance(node, DraftNode)):
             raise DraftRegistrationStateError()
@@ -923,7 +1032,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         """
 
         contribs = []
-        current_contributors = self.contributor_set.values_list('user_id', flat=True)
+        current_contributors = self.contributor_set.values_list("user_id", flat=True)
         for contrib in resource.contributor_set.all():
             if contrib.user.id not in current_contributors:
                 permission = contrib.permission
@@ -931,7 +1040,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
                     draft_registration=self,
                     _order=contrib._order,
                     visible=contrib.visible,
-                    user=contrib.user
+                    user=contrib.user,
                 )
                 contribs.append(new_contrib)
                 self.add_permission(contrib.user, permission, save=True)
@@ -945,19 +1054,18 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
                 old_value = self.registration_metadata.get(question_id)
                 if old_value:
                     old_comments = {
-                        comment['created']: comment
-                        for comment in old_value.get('comments', [])
+                        comment["created"]: comment
+                        for comment in old_value.get("comments", [])
                     }
                     new_comments = {
-                        comment['created']: comment
-                        for comment in value.get('comments', [])
+                        comment["created"]: comment
+                        for comment in value.get("comments", [])
                     }
                     old_comments.update(new_comments)
-                    metadata[question_id]['comments'] = sorted(
-                        old_comments.values(),
-                        key=lambda c: c['created']
+                    metadata[question_id]["comments"] = sorted(
+                        old_comments.values(), key=lambda c: c["created"]
                     )
-                    if old_value.get('value') != value.get('value'):
+                    if old_value.get("value") != value.get("value"):
                         changes.append(question_id)
                 else:
                     changes.append(question_id)
@@ -980,9 +1088,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         return
 
     def submit_for_review(self, initiated_by, meta, save=False):
-        approval = DraftRegistrationApproval(
-            meta=meta
-        )
+        approval = DraftRegistrationApproval(meta=meta)
         approval.save()
         self.approval = approval
         self.add_status_log(initiated_by, DraftRegistrationLog.SUBMITTED)
@@ -993,7 +1099,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         node = self.branched_from
 
         if not self.title:
-            raise NodeStateError('Draft Registration must have title to be registered')
+            raise NodeStateError("Draft Registration must have title to be registered")
 
         # Create the registration
         register = node.register_node(
@@ -1001,7 +1107,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
             auth=auth,
             draft_registration=self,
             child_ids=child_ids,
-            provider=self.provider
+            provider=self.provider,
         )
         self.registered_node = register
         self.add_status_log(auth.user, DraftRegistrationLog.REGISTERED)
@@ -1021,9 +1127,7 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         self.approval.save()
 
     def add_status_log(self, user, action):
-        params = {
-            'draft_registration': self._id,
-        },
+        params = ({"draft_registration": self._id,},)
         log = DraftRegistrationLog(action=action, user=user, draft=self, params=params)
         log.save()
 
@@ -1045,12 +1149,9 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         """
         user = auth.user if auth else None
 
-        params['draft_registration'] = params.get('draft_registration') or self._id
+        params["draft_registration"] = params.get("draft_registration") or self._id
 
-        log = DraftRegistrationLog(
-            action=action, user=user,
-            params=params, draft=self
-        )
+        log = DraftRegistrationLog(action=action, user=user, params=params, draft=self)
         log.save()
         return log
 
@@ -1061,8 +1162,8 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         pass
 
     def save(self, *args, **kwargs):
-        if 'old_subjects' in kwargs.keys():
-            kwargs.pop('old_subjects')
+        if "old_subjects" in kwargs.keys():
+            kwargs.pop("old_subjects")
         return super(DraftRegistration, self).save(*args, **kwargs)
 
     def update(self, fields, auth=None, save=True):
@@ -1076,21 +1177,22 @@ class DraftRegistration(ObjectIDMixin, RegistrationResponseMixin, DirtyFieldsMix
         for key, value in fields.items():
             if key not in self.WRITABLE_WHITELIST:
                 continue
-            if key == 'title':
+            if key == "title":
                 self.set_title(title=value, auth=auth, save=False, allow_blank=True)
-            elif key == 'description':
+            elif key == "description":
                 self.set_description(description=value, auth=auth, save=False)
-            elif key == 'category':
+            elif key == "category":
                 self.set_category(category=value, auth=auth, save=False)
-            elif key == 'node_license':
+            elif key == "node_license":
                 self.set_node_license(
                     {
-                        'id': value.get('id'),
-                        'year': value.get('year'),
-                        'copyrightHolders': value.get('copyrightHolders') or value.get('copyright_holders', [])
+                        "id": value.get("id"),
+                        "year": value.get("year"),
+                        "copyrightHolders": value.get("copyrightHolders")
+                        or value.get("copyright_holders", []),
                     },
                     auth,
-                    save=save
+                    save=save,
                 )
         if save:
             updated = self.get_dirty_fields()
@@ -1104,6 +1206,7 @@ class DraftRegistrationUserObjectPermission(UserObjectPermissionBase):
     Direct Foreign Key Table for guardian - User models - we typically add object
     perms directly to Django groups instead of users, so this will be used infrequently
     """
+
     content_object = models.ForeignKey(DraftRegistration, on_delete=models.CASCADE)
 
 
@@ -1115,16 +1218,15 @@ class DraftRegistrationGroupObjectPermission(GroupObjectPermissionBase):
     are created for the draft reg. The "write" group has write/read perms to the draft reg.
     Those links are stored here:  content_object_id (draft_registration_id), group_id, permission_id
     """
+
     content_object = models.ForeignKey(DraftRegistration, on_delete=models.CASCADE)
 
 
-@receiver(post_save, sender='osf.DraftRegistration')
+@receiver(post_save, sender="osf.DraftRegistration")
 def create_django_groups_for_draft_registration(sender, instance, created, **kwargs):
     if created:
         instance.update_group_permissions()
         DraftRegistrationContributor.objects.get_or_create(
-            user=instance.initiator,
-            draft_registration=instance,
-            visible=True,
+            user=instance.initiator, draft_registration=instance, visible=True,
         )
         instance.add_permission(instance.initiator, ADMIN)

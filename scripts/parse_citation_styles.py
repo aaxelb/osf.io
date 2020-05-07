@@ -25,8 +25,10 @@ from lxml import etree
 
 from website import settings
 from website.app import setup_django
+
 setup_django()
 from osf.models.citation import CitationStyle
+
 
 def main():
 
@@ -36,31 +38,33 @@ def main():
     total = 0
 
     for style_file in get_style_files(settings.CITATION_STYLES_PATH):
-        with open(style_file, 'r') as f:
+        with open(style_file, "r") as f:
             try:
                 root = etree.parse(f).getroot()
             except etree.XMLSyntaxError:
                 continue
             total += 1
             namespace = root.nsmap.get(None)
-            selector = '{{{ns}}}info/{{{ns}}}'.format(ns=namespace)
+            selector = "{{{ns}}}info/{{{ns}}}".format(ns=namespace)
 
             # Required
             fields = {
-                '_id': os.path.splitext(os.path.basename(style_file))[0],
-                'title': root.find(selector + 'title').text,
-                'has_bibliography': True if root.find(
-                    '{{{ns}}}{tag}'.format(ns=namespace, tag='bibliography')) is not None else False
+                "_id": os.path.splitext(os.path.basename(style_file))[0],
+                "title": root.find(selector + "title").text,
+                "has_bibliography": True
+                if root.find("{{{ns}}}{tag}".format(ns=namespace, tag="bibliography"))
+                is not None
+                else False,
             }
 
             # Optional
             try:
-                fields['short_title'] = root.find(selector + 'title-short').text
+                fields["short_title"] = root.find(selector + "title-short").text
             except AttributeError:
                 pass
 
             try:
-                fields['summary'] = root.find(selector + 'summary').text
+                fields["summary"] = root.find(selector + "summary").text
             except AttributeError:
                 pass
 
@@ -75,6 +79,6 @@ def get_style_files(path):
     return (f for f in files if os.path.isfile(f))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     total = main()
-    print('Parsed {} styles'.format(total))
+    print("Parsed {} styles".format(total))

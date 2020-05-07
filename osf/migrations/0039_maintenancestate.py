@@ -9,16 +9,24 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0038_ensure_schemas'),
+        ("osf", "0038_ensure_schemas"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MaintenanceState',
+            name="MaintenanceState",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start', osf.utils.fields.NonNaiveDateTimeField()),
-                ('end', osf.utils.fields.NonNaiveDateTimeField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start", osf.utils.fields.NonNaiveDateTimeField()),
+                ("end", osf.utils.fields.NonNaiveDateTimeField()),
             ],
         ),
     ]

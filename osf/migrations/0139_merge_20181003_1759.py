@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0135_user_settings_waffles'),
-        ('osf', '0138_remove_node_preprint_fields'),
+        ("osf", "0135_user_settings_waffles"),
+        ("osf", "0138_remove_node_preprint_fields"),
     ]
 
-    operations = [
-    ]
+    operations = []

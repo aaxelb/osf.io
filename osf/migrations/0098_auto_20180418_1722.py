@@ -9,18 +9,18 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0097_merge_20180416_1533'),
+        ("osf", "0097_merge_20180416_1533"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='osfuser',
-            name='change_password_last_attempt',
+            model_name="osfuser",
+            name="change_password_last_attempt",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='osfuser',
-            name='old_password_invalid_attempts',
+            model_name="osfuser",
+            name="old_password_invalid_attempts",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

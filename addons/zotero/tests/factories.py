@@ -11,11 +11,11 @@ from addons.zotero import models
 
 
 class ZoteroAccountFactory(ExternalAccountFactory):
-    provider = 'zotero'
-    provider_id = Sequence(lambda n: 'id-{0}'.format(n))
-    provider_name = 'Fake Provider'
-    oauth_key = Sequence(lambda n: 'key-{0}'.format(n))
-    oauth_secret = Sequence(lambda n: 'secret-{0}'.format(n))
+    provider = "zotero"
+    provider_id = Sequence(lambda n: "id-{0}".format(n))
+    provider_name = "Fake Provider"
+    oauth_key = Sequence(lambda n: "key-{0}".format(n))
+    oauth_secret = Sequence(lambda n: "secret-{0}".format(n))
     expires_at = timezone.now() + relativedelta(days=1)
 
 

@@ -12,13 +12,14 @@ from website.archiver import (
     ARCHIVER_INITIATED,
     ARCHIVER_SUCCESS,
     ARCHIVER_FAILURE,
-    ARCHIVER_FAILURE_STATUSES
+    ARCHIVER_FAILURE_STATUSES,
 )
 
 
 class ArchiveTarget(ObjectIDMixin, BaseModel):
     """Stores the results of archiving a single addon
     """
+
     # addon_short_name of target addon
     name = models.CharField(max_length=2048)
 
@@ -35,36 +36,45 @@ class ArchiveTarget(ObjectIDMixin, BaseModel):
     errors = ArrayField(models.TextField(), default=list, blank=True)
 
     def __repr__(self):
-        return '<{0}(_id={1}, name={2}, status={3})>'.format(
-            self.__class__.__name__,
-            self._id,
-            self.name,
-            self.status
+        return "<{0}(_id={1}, name={2}, status={3})>".format(
+            self.__class__.__name__, self._id, self.name, self.status
         )
 
 
 class ArchiveJob(ObjectIDMixin, BaseModel):
 
     # whether or not the ArchiveJob is complete (success or fail)
-    done = models.BooleanField(default=False, verbose_name='completed')
+    done = models.BooleanField(default=False, verbose_name="completed")
     # whether or not emails have been sent for this ArchiveJob
-    sent = models.BooleanField(default=False, verbose_name='emails sent')
+    sent = models.BooleanField(default=False, verbose_name="emails sent")
     status = models.CharField(max_length=40, default=ARCHIVER_INITIATED)
-    datetime_initiated = NonNaiveDateTimeField(default=timezone.now, verbose_name='initiated at')
+    datetime_initiated = NonNaiveDateTimeField(
+        default=timezone.now, verbose_name="initiated at"
+    )
 
-    dst_node = models.ForeignKey('Registration', related_name='archive_jobs',
-                                 verbose_name='destination node', null=True,
-                                 blank=True, on_delete=models.CASCADE)
-    src_node = models.ForeignKey('Node', verbose_name='source node', null=True,
-                                 blank=True, on_delete=models.CASCADE)
-    initiator = models.ForeignKey('OSFUser', null=True, on_delete=models.CASCADE)
+    dst_node = models.ForeignKey(
+        "Registration",
+        related_name="archive_jobs",
+        verbose_name="destination node",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    src_node = models.ForeignKey(
+        "Node",
+        verbose_name="source node",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    initiator = models.ForeignKey("OSFUser", null=True, on_delete=models.CASCADE)
 
-    target_addons = models.ManyToManyField('ArchiveTarget')
+    target_addons = models.ManyToManyField("ArchiveTarget")
 
     def __repr__(self):
         return (
-            '<{ClassName}(_id={self._id}, done={self.done}, '
-            ' status={self.status}, src_node={self.src_node}, dst_node={self.dst_node})>'
+            "<{ClassName}(_id={self._id}, done={self.done}, "
+            " status={self.status}, src_node={self.src_node}, dst_node={self.dst_node})>"
         ).format(ClassName=self.__class__.__name__, self=self)
 
     @property
@@ -82,10 +92,13 @@ class ArchiveJob(ObjectIDMixin, BaseModel):
 
     @property
     def pending(self):
-        return any([
-            target for target in self.target_addons.all()
-            if target.status not in (ARCHIVER_SUCCESS, ARCHIVER_FAILURE)
-        ])
+        return any(
+            [
+                target
+                for target in self.target_addons.all()
+                if target.status not in (ARCHIVER_SUCCESS, ARCHIVER_FAILURE)
+            ]
+        )
 
     def info(self):
         return self.src_node, self.dst_node, self.initiator
@@ -93,10 +106,10 @@ class ArchiveJob(ObjectIDMixin, BaseModel):
     def target_info(self):
         return [
             {
-                'name': target.name,
-                'status': target.status,
-                'stat_result': target.stat_result,
-                'errors': target.errors
+                "name": target.name,
+                "status": target.status,
+                "stat_result": target.stat_result,
+                "errors": target.errors,
             }
             for target in self.target_addons.all()
         ]
@@ -106,10 +119,7 @@ class ArchiveJob(ObjectIDMixin, BaseModel):
             return False
         if not self.children:
             return True
-        return all([
-            child.archive_tree_finished()
-            for child in self.children
-        ])
+        return all([child.archive_tree_finished() for child in self.children])
 
     def _fail_above(self):
         """Marks all ArchiveJob instances attached to Nodes above this as failed
@@ -146,16 +156,22 @@ class ArchiveJob(ObjectIDMixin, BaseModel):
 
     def set_targets(self):
         addons = []
-        for addon in [self.src_node.get_addon(name)
-                      for name in settings.ADDONS_ARCHIVABLE
-                      if settings.ADDONS_ARCHIVABLE[name] != 'none']:
-            if not addon or not isinstance(addon, BaseStorageAddon) or not addon.complete:
+        for addon in [
+            self.src_node.get_addon(name)
+            for name in settings.ADDONS_ARCHIVABLE
+            if settings.ADDONS_ARCHIVABLE[name] != "none"
+        ]:
+            if (
+                not addon
+                or not isinstance(addon, BaseStorageAddon)
+                or not addon.complete
+            ):
                 continue
-            archive_errors = getattr(addon, 'archive_errors', None)
+            archive_errors = getattr(addon, "archive_errors", None)
             if not archive_errors or (archive_errors and not archive_errors()):
-                if addon.config.short_name == 'dataverse':
-                    addons.append(addon.config.short_name + '-draft')
-                    addons.append(addon.config.short_name + '-published')
+                if addon.config.short_name == "dataverse":
+                    addons.append(addon.config.short_name + "-draft")
+                    addons.append(addon.config.short_name + "-published")
                 else:
                     addons.append(addon.config.short_name)
         for addon in addons:

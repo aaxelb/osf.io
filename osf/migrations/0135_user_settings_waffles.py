@@ -20,7 +20,7 @@ USER_SETTINGS_FLAGS = [
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0134_abstractnode_custom_citation'),
+        ("osf", "0134_abstractnode_custom_citation"),
     ]
 
     operations = [

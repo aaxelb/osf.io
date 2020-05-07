@@ -15,15 +15,13 @@ logger = logging.getLogger(__name__)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0175_pagecounter_schema'),
+        ("osf", "0175_pagecounter_schema"),
     ]
 
     if DEBUG_MODE:
-        operations = [
-            migrations.RunSQL(FORWARD_SQL, REVERSE_SQL)
-        ]
+        operations = [migrations.RunSQL(FORWARD_SQL, REVERSE_SQL)]
     else:
         operations = []
         logger.info(
-            'The automatic migration only runs in DEBUG_MODE. Use management command migrate_pagecount_data instead'
+            "The automatic migration only runs in DEBUG_MODE. Use management command migrate_pagecount_data instead"
         )

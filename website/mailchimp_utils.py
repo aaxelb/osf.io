@@ -14,21 +14,21 @@ from website import settings
 def get_mailchimp_api():
     if not settings.MAILCHIMP_API_KEY:
         raise mailchimp.InvalidApiKeyError(
-            'An API key is required to connect to Mailchimp.'
+            "An API key is required to connect to Mailchimp."
         )
     return mailchimp.Mailchimp(settings.MAILCHIMP_API_KEY)
 
 
 def get_list_id_from_name(list_name):
     m = get_mailchimp_api()
-    mailing_list = m.lists.list(filters={'list_name': list_name})
-    return mailing_list['data'][0]['id']
+    mailing_list = m.lists.list(filters={"list_name": list_name})
+    return mailing_list["data"][0]["id"]
 
 
 def get_list_name_from_id(list_id):
     m = get_mailchimp_api()
-    mailing_list = m.lists.list(filters={'list_id': list_id})
-    return mailing_list['data'][0]['name']
+    mailing_list = m.lists.list(filters={"list_id": list_id})
+    return mailing_list["data"][0]["name"]
 
 
 @queued_task
@@ -45,11 +45,8 @@ def subscribe_mailchimp(list_name, user_id):
     try:
         m.lists.subscribe(
             id=list_id,
-            email={'email': user.username},
-            merge_vars={
-                'fname': user.given_name,
-                'lname': user.family_name,
-            },
+            email={"email": user.username},
+            merge_vars={"fname": user.given_name, "lname": user.family_name,},
             double_optin=False,
             update_existing=True,
         )
@@ -81,8 +78,9 @@ def unsubscribe_mailchimp(list_name, user_id, username=None, send_goodbye=True):
     # and allow update mailing_list user field
     try:
         m.lists.unsubscribe(
-            id=list_id, email={'email': username or user.username},
-            send_goodbye=send_goodbye
+            id=list_id,
+            email={"email": username or user.username},
+            send_goodbye=send_goodbye,
         )
     except mailchimp.ListNotSubscribedError:
         pass
@@ -95,13 +93,20 @@ def unsubscribe_mailchimp(list_name, user_id, username=None, send_goodbye=True):
     user.mailchimp_mailing_lists[list_name] = False
     user.save()
 
+
 @queued_task
 @app.task
 @transaction.atomic
 def unsubscribe_mailchimp_async(list_name, user_id, username=None, send_goodbye=True):
     """ Same args as unsubscribe_mailchimp, used to have the task be run asynchronously
     """
-    unsubscribe_mailchimp(list_name=list_name, user_id=user_id, username=username, send_goodbye=send_goodbye)
+    unsubscribe_mailchimp(
+        list_name=list_name,
+        user_id=user_id,
+        username=username,
+        send_goodbye=send_goodbye,
+    )
+
 
 @user_confirmed.connect
 def subscribe_on_confirm(user):

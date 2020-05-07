@@ -8,13 +8,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0081_alter_abstractprovider_permissions'),
+        ("osf", "0081_alter_abstractprovider_permissions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='abstractprovider',
-            name='preprint_word',
-            field=models.CharField(choices=[('preprint', 'Preprint'), ('paper', 'Paper'), ('thesis', 'Thesis'), ('work', 'Work'), ('none', 'None')], default='preprint', max_length=10, null=True),
+            model_name="abstractprovider",
+            name="preprint_word",
+            field=models.CharField(
+                choices=[
+                    ("preprint", "Preprint"),
+                    ("paper", "Paper"),
+                    ("thesis", "Thesis"),
+                    ("work", "Work"),
+                    ("none", "None"),
+                ],
+                default="preprint",
+                max_length=10,
+                null=True,
+            ),
         ),
     ]

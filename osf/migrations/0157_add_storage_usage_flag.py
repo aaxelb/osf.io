@@ -8,7 +8,7 @@ from osf.utils.migrations import AddWaffleFlags
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('osf', '0156_create_cache_table'),
+        ("osf", "0156_create_cache_table"),
     ]
 
     operations = [

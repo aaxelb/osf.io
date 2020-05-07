@@ -15,10 +15,9 @@ logging.basicConfig(level=logging.INFO)
 
 
 class UserDomainEvents(EventAnalytics):
-
     @property
     def collection_name(self):
-        return 'user_domain_events'
+        return "user_domain_events"
 
     def get_events(self, date):
         """ Get all node logs from a given date for a 24 hour period,
@@ -29,24 +28,32 @@ class UserDomainEvents(EventAnalytics):
         # In the end, turn the date back into a datetime at midnight for queries
         date = datetime(date.year, date.month, date.day).replace(tzinfo=pytz.UTC)
 
-        logger.info('Gathering user domains between {} and {}'.format(
-            date, (date + timedelta(days=1)).isoformat()
-        ))
-        user_query = (Q(date_confirmed__lt=date + timedelta(days=1)) &
-                      Q(date_confirmed__gte=date) &
-                      Q(username__isnull=False))
+        logger.info(
+            "Gathering user domains between {} and {}".format(
+                date, (date + timedelta(days=1)).isoformat()
+            )
+        )
+        user_query = (
+            Q(date_confirmed__lt=date + timedelta(days=1))
+            & Q(date_confirmed__gte=date)
+            & Q(username__isnull=False)
+        )
         users = paginated(OSFUser, query=user_query)
         user_domain_events = []
         for user in users:
             user_date = user.date_confirmed.replace(tzinfo=pytz.UTC)
             event = {
-                'keen': {'timestamp': user_date.isoformat()},
-                'date': user_date.isoformat(),
-                'domain': user.username.split('@')[-1]
+                "keen": {"timestamp": user_date.isoformat()},
+                "date": user_date.isoformat(),
+                "domain": user.username.split("@")[-1],
             }
             user_domain_events.append(event)
 
-        logger.info('User domains collected. {} users and their email domains.'.format(len(user_domain_events)))
+        logger.info(
+            "User domains collected. {} users and their email domains.".format(
+                len(user_domain_events)
+            )
+        )
         return user_domain_events
 
 
@@ -54,7 +61,7 @@ def get_class():
     return UserDomainEvents
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     init_app()
     user_domain_events = UserDomainEvents()
     args = user_domain_events.parse_args()

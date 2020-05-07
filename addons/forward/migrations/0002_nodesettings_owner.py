@@ -11,14 +11,20 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('osf', '0001_initial'),
-        ('addons_forward', '0001_initial'),
+        ("osf", "0001_initial"),
+        ("addons_forward", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nodesettings',
-            name='owner',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='addons_forward_node_settings', to='osf.AbstractNode'),
+            model_name="nodesettings",
+            name="owner",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="addons_forward_node_settings",
+                to="osf.AbstractNode",
+            ),
         ),
     ]

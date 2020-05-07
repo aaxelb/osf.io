@@ -12,7 +12,7 @@ logger = logging.getLogger(__file__)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0141_merge_20181023_1526'),
+        ("osf", "0141_merge_20181023_1526"),
     ]
 
     operations = [

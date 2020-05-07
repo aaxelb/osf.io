@@ -20,18 +20,20 @@ from admin_tests.mixins.providers import (
 
 pytestmark = pytest.mark.django_db
 
+
 @pytest.fixture()
 def user():
     return AuthUserFactory()
 
+
 @pytest.fixture()
 def req(user):
-    req = RequestFactory().get('/fake_path')
+    req = RequestFactory().get("/fake_path")
     req.user = user
     return req
 
-class TestRegistrationProviderList(ProviderListMixinBase):
 
+class TestRegistrationProviderList(ProviderListMixinBase):
     @pytest.fixture()
     def provider_factory(self):
         return RegistrationProviderFactory
@@ -47,7 +49,6 @@ class TestRegistrationProviderList(ProviderListMixinBase):
 
 
 class TestProcessCustomTaxonomy(ProcessCustomTaxonomyMixinBase):
-
     @pytest.fixture()
     def provider_factory(self):
         return RegistrationProviderFactory
@@ -59,7 +60,6 @@ class TestProcessCustomTaxonomy(ProcessCustomTaxonomyMixinBase):
 
 
 class TestRegistrationProviderDisplay(ProviderDisplayMixinBase):
-
     @pytest.fixture()
     def provider_factory(self):
         return RegistrationProviderFactory
@@ -76,11 +76,11 @@ class TestRegistrationProviderDisplay(ProviderDisplayMixinBase):
     def view(self, req, provider):
         plain_view = views.RegistrationProviderDisplay()
         view = setup_view(plain_view, req)
-        view.kwargs = {'registration_provider_id': provider.id}
+        view.kwargs = {"registration_provider_id": provider.id}
         return view
 
-class TestCreateRegistrationProvider(CreateProviderMixinBase):
 
+class TestCreateRegistrationProvider(CreateProviderMixinBase):
     @pytest.fixture()
     def provider_factory(self):
         return RegistrationProviderFactory
@@ -89,12 +89,11 @@ class TestCreateRegistrationProvider(CreateProviderMixinBase):
     def view(self, req, provider):
         plain_view = views.CreateRegistrationProvider()
         view = setup_form_view(plain_view, req, form=RegistrationProviderForm())
-        view.kwargs = {'registration_provider_id': provider.id}
+        view.kwargs = {"registration_provider_id": provider.id}
         return view
 
 
 class TestDeleteRegistrationProvider(DeleteProviderMixinBase):
-
     @pytest.fixture()
     def provider_factory(self):
         return RegistrationProviderFactory
@@ -103,5 +102,5 @@ class TestDeleteRegistrationProvider(DeleteProviderMixinBase):
     def view(self, req, provider):
         view = views.DeleteRegistrationProvider()
         view = setup_view(view, req)
-        view.kwargs = {'registration_provider_id': provider.id}
+        view.kwargs = {"registration_provider_id": provider.id}
         return view

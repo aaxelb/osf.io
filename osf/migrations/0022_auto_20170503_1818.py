@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0021_unique_notificationsettings__ids'),
+        ("osf", "0021_unique_notificationsettings__ids"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='notificationsubscription',
-            name='_id',
+            model_name="notificationsubscription",
+            name="_id",
             field=models.CharField(db_index=True, max_length=50, unique=True),
         ),
     ]

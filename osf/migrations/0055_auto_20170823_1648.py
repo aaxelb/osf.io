@@ -8,15 +8,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0054_auto_20170823_1555'),
+        ("osf", "0054_auto_20170823_1555"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='abstractnode',
-            name='alternative_citations',
+            model_name="abstractnode", name="alternative_citations",
         ),
-        migrations.DeleteModel(
-            name='AlternativeCitation',
-        ),
+        migrations.DeleteModel(name="AlternativeCitation",),
     ]

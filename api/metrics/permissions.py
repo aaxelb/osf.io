@@ -4,24 +4,23 @@ from osf.models import Institution
 
 
 class IsPreprintMetricsUser(permissions.BasePermission):
-
     def has_permission(self, request, view):
         user = request.user
-        if user.system_tags.filter(name='preprint_metrics').exists():
+        if user.system_tags.filter(name="preprint_metrics").exists():
             return True
         return False
 
 
 class IsInstitutionalMetricsUser(permissions.BasePermission):
 
-    acceptable_models = (Institution, )
+    acceptable_models = (Institution,)
 
     def has_object_permission(self, request, view, obj):
         user = request.user
         assert_resource_type(obj, self.acceptable_models)
         if not user:
             return False
-        if user.has_perm('view_institutional_metrics', obj):
+        if user.has_perm("view_institutional_metrics", obj):
             return True
         return False
 

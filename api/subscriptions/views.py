@@ -14,8 +14,8 @@ from osf.models import NotificationSubscription
 
 
 class SubscriptionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
-    view_name = 'notification-subscription-list'
-    view_category = 'notification-subscriptions'
+    view_name = "notification-subscription-list"
+    view_category = "notification-subscriptions"
     serializer_class = SubscriptionSerializer
     model_class = NotificationSubscription
     permission_classes = (
@@ -28,15 +28,17 @@ class SubscriptionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
 
     def get_default_queryset(self):
         user = self.request.user
-        return NotificationSubscription.objects.filter(Q(none=user) | Q(email_digest=user) | Q(email_transactional=user))
+        return NotificationSubscription.objects.filter(
+            Q(none=user) | Q(email_digest=user) | Q(email_transactional=user)
+        )
 
     def get_queryset(self):
         return self.get_queryset_from_request()
 
 
 class SubscriptionDetail(JSONAPIBaseView, generics.RetrieveUpdateAPIView):
-    view_name = 'notification-subscription-detail'
-    view_category = 'notification-subscriptions'
+    view_name = "notification-subscription-detail"
+    view_category = "notification-subscriptions"
     serializer_class = SubscriptionSerializer
     permission_classes = (
         drf_permissions.IsAuthenticated,
@@ -48,7 +50,7 @@ class SubscriptionDetail(JSONAPIBaseView, generics.RetrieveUpdateAPIView):
     required_write_scopes = [CoreScopes.SUBSCRIPTIONS_WRITE]
 
     def get_object(self):
-        subscription_id = self.kwargs['subscription_id']
+        subscription_id = self.kwargs["subscription_id"]
         try:
             obj = NotificationSubscription.objects.get(_id=subscription_id)
         except ObjectDoesNotExist:

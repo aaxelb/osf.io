@@ -9,18 +9,28 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0133_merge_20180920_1604'),
+        ("osf", "0133_merge_20180920_1604"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractnode',
-            name='provider',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='registrations', to='osf.RegistrationProvider'),
+            model_name="abstractnode",
+            name="provider",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="registrations",
+                to="osf.RegistrationProvider",
+            ),
         ),
         migrations.AddField(
-            model_name='draftregistration',
-            name='provider',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='draft_registrations', to='osf.RegistrationProvider'),
+            model_name="draftregistration",
+            name="provider",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="draft_registrations",
+                to="osf.RegistrationProvider",
+            ),
         ),
     ]

@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0113_add_view_collectionprovider_to_admin_perm'),
-        ('osf', '0112_ensure_schemas'),
+        ("osf", "0113_add_view_collectionprovider_to_admin_perm"),
+        ("osf", "0112_ensure_schemas"),
     ]
 
-    operations = [
-    ]
+    operations = []

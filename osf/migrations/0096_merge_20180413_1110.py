@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0095_abstractprovider_allow_commenting'),
-        ('osf', '0095_ensure_licenses'),
+        ("osf", "0095_abstractprovider_allow_commenting"),
+        ("osf", "0095_ensure_licenses"),
     ]
 
-    operations = [
-    ]
+    operations = []

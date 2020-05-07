@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0096_ensure_schemas'),
-        ('osf', '0096_modify_noderequestaction_noderequest'),
+        ("osf", "0096_ensure_schemas"),
+        ("osf", "0096_modify_noderequestaction_noderequest"),
     ]
 
-    operations = [
-    ]
+    operations = []

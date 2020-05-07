@@ -13,7 +13,7 @@ from admin.base.utils import osf_staff_check
 @user_passes_test(osf_staff_check)
 def home(request):
     context = {}
-    return render(request, 'home.html', context)
+    return render(request, "home.html", context)
 
 
 class GuidFormView(FormView):
@@ -26,12 +26,12 @@ class GuidFormView(FormView):
         super(GuidFormView, self).__init__()
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault('view', self)
-        kwargs.setdefault('form', self.get_form())
+        kwargs.setdefault("view", self)
+        kwargs.setdefault("form", self.get_form())
         return kwargs
 
     def form_valid(self, form):
-        self.guid = form.cleaned_data.get('guid').strip()
+        self.guid = form.cleaned_data.get("guid").strip()
         return super(GuidFormView, self).form_valid(form)
 
     @property
@@ -49,7 +49,7 @@ class GuidView(DetailView):
                 AttributeError(
                     '{} with id "{}" not found.'.format(
                         self.context_object_name.title(),
-                        kwargs.get('guid') or kwargs.get('id')
+                        kwargs.get("guid") or kwargs.get("id"),
                     )
-                )
+                ),
             )

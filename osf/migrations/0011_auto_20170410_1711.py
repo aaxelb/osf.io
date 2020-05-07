@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0010_update_osfuser_permissions'),
+        ("osf", "0010_update_osfuser_permissions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='fileversion',
-            name='size',
+            model_name="fileversion",
+            name="size",
             field=models.BigIntegerField(blank=True, default=-1, null=True),
         ),
     ]

@@ -15,23 +15,26 @@ logger = logging.getLogger(__name__)
 
 def _get_client():
     return akismet.AkismetClient(
-        apikey=settings.AKISMET_APIKEY,
-        website=settings.DOMAIN,
-        verify=True
+        apikey=settings.AKISMET_APIKEY, website=settings.DOMAIN, verify=True
     )
 
 
 def _validate_reports(value, *args, **kwargs):
     from osf.models import OSFUser
+
     for key, val in value.items():
         if not OSFUser.load(key):
-            raise ValidationValueError('Keys must be user IDs')
+            raise ValidationValueError("Keys must be user IDs")
         if not isinstance(val, dict):
-            raise ValidationTypeError('Values must be dictionaries')
-        if ('category' not in val or 'text' not in val or 'date' not in val or 'retracted' not in val):
+            raise ValidationTypeError("Values must be dictionaries")
+        if (
+            "category" not in val
+            or "text" not in val
+            or "date" not in val
+            or "retracted" not in val
+        ):
             raise ValidationValueError(
-                ('Values must include `date`, `category`, ',
-                 '`text`, `retracted` keys')
+                ("Values must include `date`, `category`, ", "`text`, `retracted` keys")
             )
 
 
@@ -53,7 +56,9 @@ class SpamMixin(models.Model):
     # SPAM_UPDATE_FIELDS = {
     #     'spam_status',
     # }
-    spam_status = models.IntegerField(default=SpamStatus.UNKNOWN, null=True, blank=True, db_index=True)
+    spam_status = models.IntegerField(
+        default=SpamStatus.UNKNOWN, null=True, blank=True, db_index=True
+    )
     spam_pro_tip = models.CharField(default=None, null=True, blank=True, max_length=200)
     # Data representing the original spam indication
     # - author: author name
@@ -64,7 +69,9 @@ class SpamMixin(models.Model):
     #   - User-Agent: user agent from request
     #   - Referer: referrer header from request (typo +1, rtd)
     spam_data = DateTimeAwareJSONField(default=dict, blank=True)
-    date_last_reported = NonNaiveDateTimeField(default=None, null=True, blank=True, db_index=True)
+    date_last_reported = NonNaiveDateTimeField(
+        default=None, null=True, blank=True, db_index=True
+    )
 
     # Reports is a dict of reports keyed on reporting user
     # Each report is a dictionary including:
@@ -85,7 +92,7 @@ class SpamMixin(models.Model):
         if self.spam_status != SpamStatus.FLAGGED:
             return
         for report in self.reports.values():
-            if not report.get('retracted', True):
+            if not report.get("retracted", True):
                 return
         self.spam_status = SpamStatus.UNKNOWN
         if save:
@@ -108,15 +115,15 @@ class SpamMixin(models.Model):
         :raises ValueError: if user is reporting self
         """
         if user == self.user:
-            raise ValueError('User cannot report self.')
+            raise ValueError("User cannot report self.")
         self.flag_spam()
         date = timezone.now()
-        report = {'date': date, 'retracted': False}
+        report = {"date": date, "retracted": False}
         report.update(kwargs)
-        if 'text' not in report:
-            report['text'] = None
+        if "text" not in report:
+            report["text"] = None
         self.reports[user._id] = report
-        self.date_last_reported = report['date']
+        self.date_last_reported = report["date"]
         if save:
             self.save()
 
@@ -130,30 +137,31 @@ class SpamMixin(models.Model):
         :param save: Save changes
         """
         if user._id in self.reports:
-            if not self.reports[user._id]['retracted']:
-                self.reports[user._id]['retracted'] = True
+            if not self.reports[user._id]["retracted"]:
+                self.reports[user._id]["retracted"] = True
                 self.remove_flag()
         else:
-            raise ValueError('User has not reported this content')
+            raise ValueError("User has not reported this content")
         if save:
             self.save()
 
     def confirm_ham(self, save=False):
         # not all mixins will implement check spam pre-req, only submit ham when it was incorrectly flagged
         if (
-            settings.SPAM_CHECK_ENABLED and
-            self.spam_data and self.spam_status in [SpamStatus.FLAGGED, SpamStatus.SPAM]
+            settings.SPAM_CHECK_ENABLED
+            and self.spam_data
+            and self.spam_status in [SpamStatus.FLAGGED, SpamStatus.SPAM]
         ):
             client = _get_client()
             client.submit_ham(
-                user_ip=self.spam_data['headers']['Remote-Addr'],
-                user_agent=self.spam_data['headers'].get('User-Agent'),
-                referrer=self.spam_data['headers'].get('Referer'),
-                comment_content=self.spam_data['content'],
-                comment_author=self.spam_data['author'],
-                comment_author_email=self.spam_data['author_email'],
+                user_ip=self.spam_data["headers"]["Remote-Addr"],
+                user_agent=self.spam_data["headers"].get("User-Agent"),
+                referrer=self.spam_data["headers"].get("Referer"),
+                comment_content=self.spam_data["content"],
+                comment_author=self.spam_data["author"],
+                comment_author_email=self.spam_data["author_email"],
             )
-            logger.info('confirm_ham update sent')
+            logger.info("confirm_ham update sent")
         self.spam_status = SpamStatus.HAM
         if save:
             self.save()
@@ -161,19 +169,20 @@ class SpamMixin(models.Model):
     def confirm_spam(self, save=False):
         # not all mixins will implement check spam pre-req, only submit spam when it was incorrectly flagged
         if (
-            settings.SPAM_CHECK_ENABLED and
-            self.spam_data and self.spam_status in [SpamStatus.UNKNOWN, SpamStatus.HAM]
+            settings.SPAM_CHECK_ENABLED
+            and self.spam_data
+            and self.spam_status in [SpamStatus.UNKNOWN, SpamStatus.HAM]
         ):
             client = _get_client()
             client.submit_spam(
-                user_ip=self.spam_data['headers']['Remote-Addr'],
-                user_agent=self.spam_data['headers'].get('User-Agent'),
-                referrer=self.spam_data['headers'].get('Referer'),
-                comment_content=self.spam_data['content'],
-                comment_author=self.spam_data['author'],
-                comment_author_email=self.spam_data['author_email'],
+                user_ip=self.spam_data["headers"]["Remote-Addr"],
+                user_agent=self.spam_data["headers"].get("User-Agent"),
+                referrer=self.spam_data["headers"].get("Referer"),
+                comment_content=self.spam_data["content"],
+                comment_author=self.spam_data["author"],
+                comment_author_email=self.spam_data["author_email"],
             )
-            logger.info('confirm_spam update sent')
+            logger.info("confirm_spam update sent")
         self.spam_status = SpamStatus.SPAM
         if save:
             self.save()
@@ -183,16 +192,18 @@ class SpamMixin(models.Model):
         """Must return is_spam"""
         pass
 
-    def do_check_spam(self, author, author_email, content, request_headers, update=True):
+    def do_check_spam(
+        self, author, author_email, content, request_headers, update=True
+    ):
         if self.spam_status == SpamStatus.HAM:
             return False
         if self.is_spammy:
             return True
 
         client = _get_client()
-        remote_addr = request_headers['Remote-Addr']
-        user_agent = request_headers.get('User-Agent')
-        referer = request_headers.get('Referer')
+        remote_addr = request_headers["Remote-Addr"]
+        user_agent = request_headers.get("User-Agent")
+        referer = request_headers.get("Referer")
         try:
             is_spam, pro_tip = client.check_comment(
                 user_ip=remote_addr,
@@ -200,21 +211,21 @@ class SpamMixin(models.Model):
                 referrer=referer,
                 comment_content=content,
                 comment_author=author,
-                comment_author_email=author_email
+                comment_author_email=author_email,
             )
         except akismet.AkismetClientError:
-            logger.exception('Error performing SPAM check')
+            logger.exception("Error performing SPAM check")
             return False
         if update:
             self.spam_pro_tip = pro_tip
-            self.spam_data['headers'] = {
-                'Remote-Addr': remote_addr,
-                'User-Agent': user_agent,
-                'Referer': referer,
+            self.spam_data["headers"] = {
+                "Remote-Addr": remote_addr,
+                "User-Agent": user_agent,
+                "Referer": referer,
             }
-            self.spam_data['content'] = content
-            self.spam_data['author'] = author
-            self.spam_data['author_email'] = author_email
+            self.spam_data["content"] = content
+            self.spam_data["author"] = author
+            self.spam_data["author_email"] = author_email
             if is_spam:
                 self.flag_spam()
         return is_spam

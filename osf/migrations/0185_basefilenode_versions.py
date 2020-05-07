@@ -8,13 +8,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0184_remove_basefilenode_versions'),
+        ("osf", "0184_remove_basefilenode_versions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='basefilenode',
-            name='versions',
-            field=models.ManyToManyField(through='osf.BaseFileVersionsThrough', to='osf.FileVersion'),
+            model_name="basefilenode",
+            name="versions",
+            field=models.ManyToManyField(
+                through="osf.BaseFileVersionsThrough", to="osf.FileVersion"
+            ),
         ),
     ]

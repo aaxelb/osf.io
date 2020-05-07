@@ -6,14 +6,15 @@ from osf_tests.factories import UserFactory, ProjectFactory, ExternalAccountFact
 
 from addons.dataverse.models import UserSettings, NodeSettings
 
-class DataverseAccountFactory(ExternalAccountFactory):
-    provider = 'dataverse'
-    provider_name = 'Dataverse'
 
-    provider_id = factory.Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = factory.Sequence(lambda n: 'key-{0}'.format(n))
-    display_name = 'foo.bar.baz'
-    oauth_secret = 'doremi-abc-123'
+class DataverseAccountFactory(ExternalAccountFactory):
+    provider = "dataverse"
+    provider_name = "Dataverse"
+
+    provider_id = factory.Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = factory.Sequence(lambda n: "key-{0}".format(n))
+    display_name = "foo.bar.baz"
+    oauth_secret = "doremi-abc-123"
 
 
 class DataverseUserSettingsFactory(DjangoModelFactory):

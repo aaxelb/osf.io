@@ -14,6 +14,7 @@ from osf.models.oauth import ApiOAuth2Scope
 class ScopeDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     """Private endpoint for gathering scope information. Do not expect this to be stable.
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -24,9 +25,9 @@ class ScopeDetail(JSONAPIBaseView, generics.RetrieveAPIView):
     required_write_scopes = [CoreScopes.NULL]
 
     serializer_class = ScopeSerializer
-    view_category = 'scopes'
-    view_name = 'scope-detail'
-    lookup_url_kwarg = 'scope_id'
+    view_category = "scopes"
+    view_name = "scope-detail"
+    lookup_url_kwarg = "scope_id"
 
     # overrides RetrieveAPIView
     def get_object(self):
@@ -43,6 +44,7 @@ class ScopeDetail(JSONAPIBaseView, generics.RetrieveAPIView):
 class ScopeList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
     """Private endpoint for gathering scope information. Do not expect this to be stable.
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -54,10 +56,10 @@ class ScopeList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
 
     pagination_class = MaxSizePagination
     serializer_class = ScopeSerializer
-    view_category = 'scopes'
-    view_name = 'scope-list'
+    view_category = "scopes"
+    view_name = "scope-list"
 
-    ordering = ('id', )  # default ordering
+    ordering = ("id",)  # default ordering
 
     def get_default_queryset(self):
         return ApiOAuth2Scope.objects.filter(is_public=True)

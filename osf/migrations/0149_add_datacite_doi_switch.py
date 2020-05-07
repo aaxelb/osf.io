@@ -9,9 +9,9 @@ from osf.utils.migrations import AddWaffleSwitches
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0148_merge_20181213_2253'),
+        ("osf", "0148_merge_20181213_2253"),
     ]
 
     operations = [
-        AddWaffleSwitches(['disable_datacite_dois'], active=False),
+        AddWaffleSwitches(["disable_datacite_dois"], active=False),
     ]

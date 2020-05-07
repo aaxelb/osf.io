@@ -3,9 +3,8 @@ import pytest
 from api.base.settings.defaults import API_BASE
 from api_tests.subjects.mixins import SubjectsListMixin
 from osf.utils.permissions import WRITE, READ
-from osf_tests.factories import (
-    ProjectFactory,
-)
+from osf_tests.factories import ProjectFactory
+
 
 class TestNodeSubjectsList(SubjectsListMixin):
     @pytest.fixture()
@@ -18,4 +17,4 @@ class TestNodeSubjectsList(SubjectsListMixin):
 
     @pytest.fixture()
     def url(self, resource):
-        return '/{}nodes/{}/subjects/'.format(API_BASE, resource._id)
+        return "/{}nodes/{}/subjects/".format(API_BASE, resource._id)

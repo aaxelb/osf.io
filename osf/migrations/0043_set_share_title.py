@@ -9,36 +9,38 @@ from django.db import migrations
 
 # _id => share_title
 SHARE_TITLES = {
-    'osf': 'OSF',
-    'lawarxiv': 'LawArXiv',
-    'mindrxiv': 'MindRxiv',
-    'bitss': 'BITSS',
-    'agrixiv': 'AgriXiv',
-    'engrxiv': 'engrXiv',
-    'lissa': 'LIS Scholarship Archive',
-    'psyarxiv': 'PsyArXiv',
-    'socarxiv': 'SocArXiv',
+    "osf": "OSF",
+    "lawarxiv": "LawArXiv",
+    "mindrxiv": "MindRxiv",
+    "bitss": "BITSS",
+    "agrixiv": "AgriXiv",
+    "engrxiv": "engrXiv",
+    "lissa": "LIS Scholarship Archive",
+    "psyarxiv": "PsyArXiv",
+    "socarxiv": "SocArXiv",
 }
 
+
 def set_share_titles(state, *args, **kwargs):
-    PreprintProvider = state.get_model('osf', 'preprintprovider')
+    PreprintProvider = state.get_model("osf", "preprintprovider")
     for provider in PreprintProvider.objects.filter(_id__in=list(SHARE_TITLES.keys())):
         provider.share_title = SHARE_TITLES[provider._id]
         provider.save()
 
 
 def unset_share_titles(state, *args, **kwargs):
-    PreprintProvider = state.get_model('osf', 'preprintprovider')
-    PreprintProvider.objects.filter(_id__in=list(SHARE_TITLES.keys())).update(share_title='')
+    PreprintProvider = state.get_model("osf", "preprintprovider")
+    PreprintProvider.objects.filter(_id__in=list(SHARE_TITLES.keys())).update(
+        share_title=""
+    )
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0042_preprintprovider_share_title'),
+        ("osf", "0042_preprintprovider_share_title"),
     ]
 
     operations = [
-        migrations.RunPython(
-            set_share_titles, unset_share_titles
-        ),
+        migrations.RunPython(set_share_titles, unset_share_titles),
     ]

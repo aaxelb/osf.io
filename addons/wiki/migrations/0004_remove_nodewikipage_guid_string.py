@@ -8,12 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_wiki', '0003_auto_20170403_2228'),
+        ("addons_wiki", "0003_auto_20170403_2228"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='nodewikipage',
-            name='guid_string',
-        ),
+        migrations.RemoveField(model_name="nodewikipage", name="guid_string",),
     ]

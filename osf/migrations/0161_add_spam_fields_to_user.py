@@ -10,24 +10,28 @@ import osf.utils.fields
 
 
 TAG_MAP = {
-    'spam_flagged': osf.models.spam.SpamStatus.FLAGGED,
-    'spam_confirmed': osf.models.spam.SpamStatus.SPAM,
-    'ham_confirmed': osf.models.spam.SpamStatus.HAM
+    "spam_flagged": osf.models.spam.SpamStatus.FLAGGED,
+    "spam_confirmed": osf.models.spam.SpamStatus.SPAM,
+    "ham_confirmed": osf.models.spam.SpamStatus.HAM,
 }
 
+
 def add_spam_status_to_tagged_users(state, schema):
-    OSFUser = state.get_model('osf', 'osfuser')
-    users_with_tag = OSFUser.objects.filter(tags__name__in=TAG_MAP.keys()).prefetch_related('tags')
+    OSFUser = state.get_model("osf", "osfuser")
+    users_with_tag = OSFUser.objects.filter(
+        tags__name__in=TAG_MAP.keys()
+    ).prefetch_related("tags")
     users_to_update = []
     for user in users_with_tag:
         for tag, value in TAG_MAP.items():
             if user.tags.filter(system=True, name=tag).exists():
                 user.spam_status = value
         users_to_update.append(user)
-    bulk_update(users_to_update, update_fields=['spam_status'])
+    bulk_update(users_to_update, update_fields=["spam_status"])
+
 
 def remove_spam_status_from_tagged_users(state, schema):
-    OSFUser = state.get_model('osf', 'osfuser')
+    OSFUser = state.get_model("osf", "osfuser")
     users_with_tag = OSFUser.objects.filter(tags__name__in=TAG_MAP.keys())
     users_with_tag.update(spam_status=None)
 
@@ -35,34 +39,49 @@ def remove_spam_status_from_tagged_users(state, schema):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0160_merge_20190408_1618'),
+        ("osf", "0160_merge_20190408_1618"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='osfuser',
-            name='date_last_reported',
-            field=osf.utils.fields.NonNaiveDateTimeField(blank=True, db_index=True, default=None, null=True),
+            model_name="osfuser",
+            name="date_last_reported",
+            field=osf.utils.fields.NonNaiveDateTimeField(
+                blank=True, db_index=True, default=None, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='osfuser',
-            name='reports',
-            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(blank=True, default=dict, encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder, validators=[osf.models.spam._validate_reports]),
+            model_name="osfuser",
+            name="reports",
+            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(
+                blank=True,
+                default=dict,
+                encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder,
+                validators=[osf.models.spam._validate_reports],
+            ),
         ),
         migrations.AddField(
-            model_name='osfuser',
-            name='spam_data',
-            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(blank=True, default=dict, encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder),
+            model_name="osfuser",
+            name="spam_data",
+            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(
+                blank=True,
+                default=dict,
+                encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder,
+            ),
         ),
         migrations.AddField(
-            model_name='osfuser',
-            name='spam_pro_tip',
+            model_name="osfuser",
+            name="spam_pro_tip",
             field=models.CharField(blank=True, default=None, max_length=200, null=True),
         ),
         migrations.AddField(
-            model_name='osfuser',
-            name='spam_status',
-            field=models.IntegerField(blank=True, db_index=True, default=None, null=True),
+            model_name="osfuser",
+            name="spam_status",
+            field=models.IntegerField(
+                blank=True, db_index=True, default=None, null=True
+            ),
         ),
-        migrations.RunPython(add_spam_status_to_tagged_users, remove_spam_status_from_tagged_users),
+        migrations.RunPython(
+            add_spam_status_to_tagged_users, remove_spam_status_from_tagged_users
+        ),
     ]

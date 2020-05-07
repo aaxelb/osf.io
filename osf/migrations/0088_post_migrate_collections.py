@@ -8,17 +8,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0087_migrate_collections_data'),
+        ("osf", "0087_migrate_collections_data"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='abstractnode',
-            name='is_bookmark_collection',
+            model_name="abstractnode", name="is_bookmark_collection",
         ),
         migrations.AlterField(
-            model_name='abstractnode',
-            name='type',
-            field=models.CharField(choices=[('osf.node', 'node'), ('osf.registration', 'registration'), ('osf.quickfilesnode', 'quick files node')], db_index=True, max_length=255),
+            model_name="abstractnode",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("osf.node", "node"),
+                    ("osf.registration", "registration"),
+                    ("osf.quickfilesnode", "quick files node"),
+                ],
+                db_index=True,
+                max_length=255,
+            ),
         ),
     ]

@@ -10,12 +10,14 @@ from website import settings
 
 if not settings.DEBUG_MODE:
     from gevent import monkey
+
     monkey.patch_all()
     # PATCH: avoid deadlock on getaddrinfo, this patch is necessary while waiting for
     # the final gevent 1.1 release (https://github.com/gevent/gevent/issues/349)
     #  'foo'.encode('idna')  # noqa
 
     from psycogreen.gevent import patch_psycopg  # noqa
+
     patch_psycopg()
 
 
@@ -23,7 +25,7 @@ import os  # noqa
 from django.core.wsgi import get_wsgi_application  # noqa
 from website.app import init_app  # noqa
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'admin.base.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "admin.base.settings")
 
 init_app(set_backends=True, routes=False, attach_request_handlers=False)
 

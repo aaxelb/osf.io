@@ -6,16 +6,16 @@ from django.db import migrations
 
 
 def update_metaschema_active(*args, **kwargs):
-    MetaSchema = args[0].get_model('osf', 'metaschema')
+    MetaSchema = args[0].get_model("osf", "metaschema")
     MetaSchema.objects.filter(schema_version__lt=2).update(active=False)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0054_add_file_version_indices'),
+        ("osf", "0054_add_file_version_indices"),
     ]
 
     operations = [
-        migrations.RunPython(update_metaschema_active, ),
+        migrations.RunPython(update_metaschema_active,),
     ]

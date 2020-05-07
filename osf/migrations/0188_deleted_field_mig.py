@@ -9,33 +9,33 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0187_remove_outdated_contributor_permissions'),
+        ("osf", "0187_remove_outdated_contributor_permissions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractnode',
-            name='deleted',
+            model_name="abstractnode",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='basefilenode',
-            name='deleted',
+            model_name="basefilenode",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='comment',
-            name='deleted',
+            model_name="comment",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='privatelink',
-            name='deleted',
+            model_name="privatelink",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='institution',
-            name='deleted',
+            model_name="institution",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
     ]

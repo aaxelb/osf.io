@@ -6,17 +6,22 @@ from django.db import migrations
 
 
 EMBER_WAFFLE_PAGES = [
-    'dashboard',
-    'home',
+    "dashboard",
+    "home",
 ]
 
+
 def format_ember_waffle_flag_name(page):
-    return 'ember_{}_page'.format(page)
+    return "ember_{}_page".format(page)
+
 
 def add_ember_waffle_flags(state, schema):
     for page in EMBER_WAFFLE_PAGES:
-        Flag.objects.get_or_create(name=format_ember_waffle_flag_name(page), everyone=False)
+        Flag.objects.get_or_create(
+            name=format_ember_waffle_flag_name(page), everyone=False
+        )
     return
+
 
 def remove_waffle_flags(state, schema):
     pages = [format_ember_waffle_flag_name(page) for page in EMBER_WAFFLE_PAGES]
@@ -27,9 +32,7 @@ def remove_waffle_flags(state, schema):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0120_merge_20180716_1457'),
+        ("osf", "0120_merge_20180716_1457"),
     ]
 
-    operations = [
-        migrations.RunPython(remove_waffle_flags, add_ember_waffle_flags)
-    ]
+    operations = [migrations.RunPython(remove_waffle_flags, add_ember_waffle_flags)]

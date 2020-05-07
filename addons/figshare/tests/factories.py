@@ -8,10 +8,11 @@ from osf_tests.factories import UserFactory, ProjectFactory, ExternalAccountFact
 
 from addons.figshare.models import UserSettings, NodeSettings
 
+
 class FigshareAccountFactory(ExternalAccountFactory):
-    provider = 'figshare'
-    provider_id = factory.Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = factory.Sequence(lambda n: 'key-{0}'.format(n))
+    provider = "figshare"
+    provider_id = factory.Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = factory.Sequence(lambda n: "key-{0}".format(n))
     expires_at = timezone.now() + relativedelta(seconds=3600)
 
 

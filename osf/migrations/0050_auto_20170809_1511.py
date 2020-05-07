@@ -8,18 +8,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0049_preprintprovider_preprint_word'),
+        ("osf", "0049_preprintprovider_preprint_word"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='maintenancestate',
-            name='level',
-            field=models.IntegerField(choices=[(1, 'info'), (2, 'warning'), (3, 'danger')], default=1),
+            model_name="maintenancestate",
+            name="level",
+            field=models.IntegerField(
+                choices=[(1, "info"), (2, "warning"), (3, "danger")], default=1
+            ),
         ),
         migrations.AddField(
-            model_name='maintenancestate',
-            name='message',
+            model_name="maintenancestate",
+            name="message",
             field=models.TextField(blank=True),
         ),
     ]

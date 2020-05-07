@@ -8,9 +8,8 @@ from admin.base.forms import ImportFileForm
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.urls('admin.base.urls')
+@pytest.mark.urls("admin.base.urls")
 class ProviderListMixinBase:
-
     @pytest.fixture()
     def provider_factory():
         raise NotImplementedError
@@ -46,13 +45,14 @@ class ProviderListMixinBase:
         view.object_list = view.get_queryset()
         res = view.get_context_data()
         assert isinstance(res, dict)
-        assert len(res['{}_providers'.format(provider_one.readable_type)]) == 2
-        assert isinstance(res['{}_providers'.format(provider_one.readable_type)][0], provider_class)
+        assert len(res["{}_providers".format(provider_one.readable_type)]) == 2
+        assert isinstance(
+            res["{}_providers".format(provider_one.readable_type)][0], provider_class
+        )
 
 
-@pytest.mark.urls('admin.base.urls')
+@pytest.mark.urls("admin.base.urls")
 class ProcessCustomTaxonomyMixinBase:
-
     @pytest.fixture()
     def provider_factory():
         raise NotImplementedError
@@ -94,50 +94,78 @@ class ProcessCustomTaxonomyMixinBase:
         return SubjectFactory(parent=subject_three)
 
     def test_process_taxonomy_changes_subjects(
-            self, provider, view, user, req, subject_one,
-            subject_one_a, subject_two, subject_two_a, subject_three_a):
+        self,
+        provider,
+        view,
+        user,
+        req,
+        subject_one,
+        subject_one_a,
+        subject_two,
+        subject_two_a,
+        subject_three_a,
+    ):
 
         custom_taxonomy = {
-            'include': [subject_one.text, subject_three_a.text],
-            'exclude': [subject_one_a.text],
-            'custom': {
-                'Changed Subject Name': {'parent': subject_two.text, 'bepress': subject_two_a.text},
-                subject_two.text: {'parent': '', 'bepress': subject_two.text}
-            }
+            "include": [subject_one.text, subject_three_a.text],
+            "exclude": [subject_one_a.text],
+            "custom": {
+                "Changed Subject Name": {
+                    "parent": subject_two.text,
+                    "bepress": subject_two_a.text,
+                },
+                subject_two.text: {"parent": "", "bepress": subject_two.text},
+            },
         }
         req.POST = {
-            'custom_taxonomy_json': json.dumps(custom_taxonomy),
-            'provider_id': provider.id
+            "custom_taxonomy_json": json.dumps(custom_taxonomy),
+            "provider_id": provider.id,
         }
 
         view.post(req)
 
-        actual_provider_subjects = set(provider.subjects.all().values_list('text', flat=True))
-        expected_subjects = set([subject_one.text, subject_two.text, subject_three_a.text, 'Changed Subject Name'])
+        actual_provider_subjects = set(
+            provider.subjects.all().values_list("text", flat=True)
+        )
+        expected_subjects = set(
+            [
+                subject_one.text,
+                subject_two.text,
+                subject_three_a.text,
+                "Changed Subject Name",
+            ]
+        )
 
         assert actual_provider_subjects == expected_subjects
-        assert provider.subjects.get(text='Changed Subject Name').parent.text == subject_two.text
+        assert (
+            provider.subjects.get(text="Changed Subject Name").parent.text
+            == subject_two.text
+        )
 
-    def test_process_taxonomy_invalid_returns_feedback(self, req, view, provider, subject_two, subject_two_a):
+    def test_process_taxonomy_invalid_returns_feedback(
+        self, req, view, provider, subject_two, subject_two_a
+    ):
         custom_taxonomy = {
-            'include': [],
-            'exclude': [],
-            'custom': {
-                'Changed Subject Name': {'parent': subject_two.text, 'bepress': subject_two_a.text},
-            }
+            "include": [],
+            "exclude": [],
+            "custom": {
+                "Changed Subject Name": {
+                    "parent": subject_two.text,
+                    "bepress": subject_two_a.text,
+                },
+            },
         }
         req.POST = {
-            'custom_taxonomy_json': json.dumps(custom_taxonomy),
-            'provider_id': provider.id
+            "custom_taxonomy_json": json.dumps(custom_taxonomy),
+            "provider_id": provider.id,
         }
 
         with pytest.raises(AssertionError):
             view.post(req)
 
 
-@pytest.mark.urls('admin.base.urls')
+@pytest.mark.urls("admin.base.urls")
 class ProviderDisplayMixinBase:
-
     @pytest.fixture()
     def provider_factory(self):
         raise NotImplementedError
@@ -166,19 +194,21 @@ class ProviderDisplayMixinBase:
     def test_context_data(self, view, provider, provider_class, form_class):
         res = view.get_context_data()
         assert isinstance(res, dict)
-        assert isinstance(res['{}_provider'.format(provider.readable_type)], dict)
-        assert res['{}_provider'.format(provider.readable_type)]['name'] == provider.name
+        assert isinstance(res["{}_provider".format(provider.readable_type)], dict)
+        assert (
+            res["{}_provider".format(provider.readable_type)]["name"] == provider.name
+        )
 
-        assert isinstance(res['form'], form_class)
-        assert isinstance(res['import_form'], ImportFileForm)
+        assert isinstance(res["form"], form_class)
+        assert isinstance(res["import_form"], ImportFileForm)
 
     def test_get(self, view, req):
         res = view.get(req)
         assert res.status_code == 200
 
-@pytest.mark.urls('admin.base.urls')
-class CreateProviderMixinBase:
 
+@pytest.mark.urls("admin.base.urls")
+class CreateProviderMixinBase:
     @pytest.fixture()
     def provider_factory(self):
         raise NotImplementedError
@@ -195,16 +225,15 @@ class CreateProviderMixinBase:
         view.object = provider
         res = view.get_context_data()
         assert isinstance(res, dict)
-        assert isinstance(res['import_form'], ImportFileForm)
+        assert isinstance(res["import_form"], ImportFileForm)
 
     def test_get_view(self, view, req):
         res = view.get(req)
         assert res.status_code == 200
 
 
-@pytest.mark.urls('admin.base.urls')
+@pytest.mark.urls("admin.base.urls")
 class DeleteProviderMixinBase:
-
     @pytest.fixture()
     def provider_factory(self):
         raise NotImplementedError

@@ -44,36 +44,35 @@ class TestSpamListView(AdminTestCase):
         self.comment_1.report_abuse(
             user=self.user_2,
             save=True,
-            category='spam',
-            date=date - timedelta(seconds=5)
+            category="spam",
+            date=date - timedelta(seconds=5),
         )
         self.comment_2.report_abuse(
             user=self.user_2,
             save=True,
-            category='spam',
-            date=date - timedelta(seconds=4)
+            category="spam",
+            date=date - timedelta(seconds=4),
         )
         self.comment_3.report_abuse(
             user=self.user_2,
             save=True,
-            category='spam',
-            date=date - timedelta(seconds=3)
+            category="spam",
+            date=date - timedelta(seconds=3),
         )
         self.comment_4.report_abuse(
             user=self.user_2,
             save=True,
-            category='spam',
-            date=date - timedelta(seconds=2)
+            category="spam",
+            date=date - timedelta(seconds=2),
         )
         self.comment_5.report_abuse(
             user=self.user_1,
             save=True,
-            category='spam',
-            date=date - timedelta(seconds=1)
+            category="spam",
+            date=date - timedelta(seconds=1),
         )
-        self.comment_6.report_abuse(user=self.user_1, save=True,
-                                    category='spam')
-        self.request = RequestFactory().get('/fake_path')
+        self.comment_6.report_abuse(user=self.user_1, save=True, category="spam")
+        self.request = RequestFactory().get("/fake_path")
         self.view = SpamList()
         self.view = setup_view(self.view, self.request, user_id=self.user_1._id)
 
@@ -87,58 +86,55 @@ class TestSpamListView(AdminTestCase):
             self.comment_4._id,
             self.comment_3._id,
             self.comment_2._id,
-            self.comment_1._id
+            self.comment_1._id,
         ]
         nt.assert_list_equal(should_be, response_list)
 
     def test_get_context_data(self):
         self.view.object_list = self.view.get_queryset()
         res = self.view.get_context_data()
-        nt.assert_is_instance(res['spam'], list)
-        nt.assert_is_instance(res['spam'][0], dict)
-        nt.assert_equal(res['status'], '1')
-        nt.assert_equal(res['page_number'], 1)
+        nt.assert_is_instance(res["spam"], list)
+        nt.assert_is_instance(res["spam"][0], dict)
+        nt.assert_equal(res["status"], "1")
+        nt.assert_equal(res["page_number"], 1)
 
 
 class TestSpamDetail(AdminTestCase):
     def setUp(self):
         super(TestSpamDetail, self).setUp()
         self.comment = CommentFactory()
-        self.comment.report_abuse(user=AuthUserFactory(), save=True,
-                                  category='spam')
-        self.request = RequestFactory().post('/fake_path')
+        self.comment.report_abuse(user=AuthUserFactory(), save=True, category="spam")
+        self.request = RequestFactory().post("/fake_path")
         self.request.user = UserFactory()
 
     def test_confirm_spam(self):
-        form_data = {'confirm': str(SpamStatus.SPAM)}
+        form_data = {"confirm": str(SpamStatus.SPAM)}
         form = ConfirmForm(data=form_data)
         nt.assert_true(form.is_valid())
         view = SpamDetail()
-        view = setup_form_view(
-            view, self.request, form, spam_id=self.comment._id)
+        view = setup_form_view(view, self.request, form, spam_id=self.comment._id)
         with transaction.atomic():
             view.form_valid(form)
-        obj = AdminLogEntry.objects.latest(field_name='action_time')
+        obj = AdminLogEntry.objects.latest(field_name="action_time")
         nt.assert_equal(obj.object_id, self.comment._id)
-        nt.assert_in('Confirmed SPAM:', obj.message())
+        nt.assert_in("Confirmed SPAM:", obj.message())
 
     def test_confirm_ham(self):
-        form_data = {'confirm': str(SpamStatus.HAM)}
+        form_data = {"confirm": str(SpamStatus.HAM)}
         form = ConfirmForm(data=form_data)
         nt.assert_true(form.is_valid())
         view = SpamDetail()
-        view = setup_form_view(
-            view, self.request, form, spam_id=self.comment._id)
+        view = setup_form_view(view, self.request, form, spam_id=self.comment._id)
         with transaction.atomic():
             view.form_valid(form)
-        obj = AdminLogEntry.objects.latest(field_name='action_time')
+        obj = AdminLogEntry.objects.latest(field_name="action_time")
         nt.assert_equal(obj.object_id, self.comment._id)
-        nt.assert_in('Confirmed HAM:', obj.message())
+        nt.assert_in("Confirmed HAM:", obj.message())
 
     def test_form_valid_bad_id(self):
         form = ConfirmForm()
         view = SpamDetail()
-        view = setup_form_view(view, self.request, form, spam_id='a1')
+        view = setup_form_view(view, self.request, form, spam_id="a1")
         with nt.assert_raises(Http404):
             view.form_valid(form)
 
@@ -146,16 +142,16 @@ class TestSpamDetail(AdminTestCase):
         view = SpamDetail()
         view = setup_view(view, self.request, spam_id=self.comment._id)
         res = view.get_context_data()
-        nt.assert_equal(res['status'], '1')
-        nt.assert_equal(res['page_number'], '1')
-        nt.assert_is_instance(res['comment'], dict)
-        nt.assert_equal(res['SPAM_STATUS'].UNKNOWN, SpamStatus.UNKNOWN)
-        nt.assert_equal(res['SPAM_STATUS'].SPAM, SpamStatus.SPAM)
-        nt.assert_equal(res['SPAM_STATUS'].HAM, SpamStatus.HAM)
-        nt.assert_equal(res['SPAM_STATUS'].FLAGGED, SpamStatus.FLAGGED)
+        nt.assert_equal(res["status"], "1")
+        nt.assert_equal(res["page_number"], "1")
+        nt.assert_is_instance(res["comment"], dict)
+        nt.assert_equal(res["SPAM_STATUS"].UNKNOWN, SpamStatus.UNKNOWN)
+        nt.assert_equal(res["SPAM_STATUS"].SPAM, SpamStatus.SPAM)
+        nt.assert_equal(res["SPAM_STATUS"].HAM, SpamStatus.HAM)
+        nt.assert_equal(res["SPAM_STATUS"].FLAGGED, SpamStatus.FLAGGED)
 
     def test_get_context_data_bad_id(self):
-        view = setup_view(SpamDetail(), self.request, spam_id='a1')
+        view = setup_view(SpamDetail(), self.request, spam_id="a1")
         with nt.assert_raises(Http404):
             view.get_context_data()
 
@@ -164,13 +160,12 @@ class TestEmailView(AdminTestCase):
     def setUp(self):
         super(TestEmailView, self).setUp()
         self.comment = CommentFactory()
-        self.comment.report_abuse(user=AuthUserFactory(), save=True,
-                                  category='spam')
-        self.request = RequestFactory().post('/fake_path')
+        self.comment.report_abuse(user=AuthUserFactory(), save=True, category="spam")
+        self.request = RequestFactory().post("/fake_path")
         self.request.user = UserFactory()
 
     def test_get_object_bad_id(self):
-        view = setup_view(EmailView(), self.request, spam_id='a1')
+        view = setup_view(EmailView(), self.request, spam_id="a1")
         with nt.assert_raises(Http404):
             view.get_object()
 
@@ -192,19 +187,13 @@ class TestUserSpamListView(AdminTestCase):
         self.comment_4 = CommentFactory(node=self.project, user=self.user_1)
         self.comment_5 = CommentFactory(node=self.project, user=self.user_2)
         self.comment_6 = CommentFactory(node=self.project, user=self.user_2)
-        self.comment_1.report_abuse(user=self.user_2, save=True,
-                                    category='spam')
-        self.comment_2.report_abuse(user=self.user_2, save=True,
-                                    category='spam')
-        self.comment_3.report_abuse(user=self.user_2, save=True,
-                                    category='spam')
-        self.comment_4.report_abuse(user=self.user_2, save=True,
-                                    category='spam')
-        self.comment_5.report_abuse(user=self.user_1, save=True,
-                                    category='spam')
-        self.comment_6.report_abuse(user=self.user_1, save=True,
-                                    category='spam')
-        self.request = RequestFactory().get('/fake_path')
+        self.comment_1.report_abuse(user=self.user_2, save=True, category="spam")
+        self.comment_2.report_abuse(user=self.user_2, save=True, category="spam")
+        self.comment_3.report_abuse(user=self.user_2, save=True, category="spam")
+        self.comment_4.report_abuse(user=self.user_2, save=True, category="spam")
+        self.comment_5.report_abuse(user=self.user_1, save=True, category="spam")
+        self.comment_6.report_abuse(user=self.user_1, save=True, category="spam")
+        self.request = RequestFactory().get("/fake_path")
         self.view = UserSpamList()
         self.view = setup_view(self.view, self.request, user_id=self.user_1._id)
 
@@ -215,8 +204,8 @@ class TestUserSpamListView(AdminTestCase):
     def test_get_context_data(self):
         self.view.object_list = self.view.get_queryset()
         res = self.view.get_context_data()
-        nt.assert_is_instance(res['spam'], list)
-        nt.assert_is_instance(res['spam'][0], dict)
-        nt.assert_equal(res['status'], '1')
-        nt.assert_equal(res['page_number'], 1)
-        nt.assert_equal(res['user_id'], self.user_1._id)
+        nt.assert_is_instance(res["spam"], list)
+        nt.assert_is_instance(res["spam"][0], dict)
+        nt.assert_equal(res["status"], "1")
+        nt.assert_equal(res["page_number"], 1)
+        nt.assert_equal(res["user_id"], self.user_1._id)

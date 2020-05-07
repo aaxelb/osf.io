@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0129_remove_osfuser_is_claimed'),
-        ('osf', '0139_merge_20181019_0412'),
+        ("osf", "0129_remove_osfuser_is_claimed"),
+        ("osf", "0139_merge_20181019_0412"),
     ]
 
-    operations = [
-    ]
+    operations = []

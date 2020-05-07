@@ -19,13 +19,14 @@ class Command(BaseCommand):
     """
     Strip trailing whitespace from osf_subject.text
     """
+
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
-            '--dry',
-            action='store_true',
-            dest='dry_run',
-            help='Run migration and roll back changes to db',
+            "--dry",
+            action="store_true",
+            dest="dry_run",
+            help="Run migration and roll back changes to db",
         )
 
     def handle(self, *args, **options):
@@ -39,16 +40,16 @@ class Command(BaseCommand):
         SET text = TRIM(TRAILING FROM text, ' ')
         WHERE text LIKE '% ';
         """
-        dry_run = options.get('dry_run', False)
+        dry_run = options.get("dry_run", False)
         if not dry_run:
             script_utils.add_file_logger(logger, __file__)
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute(sql_select)
                 rows = cursor.fetchall()
-                logger.info('Preparing to update {} rows:'.format(len(rows)))
+                logger.info("Preparing to update {} rows:".format(len(rows)))
                 for row in rows:
-                    logger.info('\tSubject {} -- {}'.format(row[0], row[1]))
+                    logger.info("\tSubject {} -- {}".format(row[0], row[1]))
                 cursor.execute(sql_update)
             if dry_run:
-                raise RuntimeError('Dry run, transaction rolled back.')
+                raise RuntimeError("Dry run, transaction rolled back.")

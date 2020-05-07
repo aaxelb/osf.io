@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0121_remove_support_page_waffle_flag'),
-        ('osf', '0123_merge_20180803_1346'),
+        ("osf", "0121_remove_support_page_waffle_flag"),
+        ("osf", "0123_merge_20180803_1346"),
     ]
 
-    operations = [
-    ]
+    operations = []

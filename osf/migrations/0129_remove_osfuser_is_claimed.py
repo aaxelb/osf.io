@@ -8,12 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0128_merge_20180829_0012'),
+        ("osf", "0128_merge_20180829_0012"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='osfuser',
-            name='is_claimed',
-        ),
+        migrations.RemoveField(model_name="osfuser", name="is_claimed",),
     ]

@@ -8,61 +8,60 @@ from . import views
 
 # JSON endpoints
 api_routes = {
-    'rules': [
-
+    "rules": [
         #### Profile settings ###
-
         Rule(
-            [
-                '/settings/googledrive/accounts/',
-            ],
-            'get',
+            ["/settings/googledrive/accounts/",],
+            "get",
             views.googledrive_account_list,
             json_renderer,
-
         ),
-
         ##### Node settings #####
-
         Rule(
-            ['/project/<pid>/googledrive/folders/',
-             '/project/<pid>/node/<nid>/googledrive/folders/'],
-            'get',
+            [
+                "/project/<pid>/googledrive/folders/",
+                "/project/<pid>/node/<nid>/googledrive/folders/",
+            ],
+            "get",
             views.googledrive_folder_list,
-            json_renderer
+            json_renderer,
         ),
-
         Rule(
-            ['/project/<pid>/googledrive/config/',
-             '/project/<pid>/node/<nid>/googledrive/config/'],
-            'get',
+            [
+                "/project/<pid>/googledrive/config/",
+                "/project/<pid>/node/<nid>/googledrive/config/",
+            ],
+            "get",
             views.googledrive_get_config,
-            json_renderer
+            json_renderer,
         ),
-
         Rule(
-            ['/project/<pid>/googledrive/config/',
-             '/project/<pid>/node/<nid>/googledrive/config/'],
-            'put',
+            [
+                "/project/<pid>/googledrive/config/",
+                "/project/<pid>/node/<nid>/googledrive/config/",
+            ],
+            "put",
             views.googledrive_set_config,
-            json_renderer
+            json_renderer,
         ),
-
         Rule(
-            ['/project/<pid>/googledrive/config/',
-             '/project/<pid>/node/<nid>/googledrive/config/'],
-            'delete',
+            [
+                "/project/<pid>/googledrive/config/",
+                "/project/<pid>/node/<nid>/googledrive/config/",
+            ],
+            "delete",
             views.googledrive_deauthorize_node,
-            json_renderer
+            json_renderer,
         ),
-
         Rule(
-            ['/project/<pid>/googledrive/config/import-auth/',
-             '/project/<pid>/node/<nid>/googledrive/config/import-auth/'],
-            'put',
+            [
+                "/project/<pid>/googledrive/config/import-auth/",
+                "/project/<pid>/node/<nid>/googledrive/config/import-auth/",
+            ],
+            "put",
             views.googledrive_import_auth,
-            json_renderer
+            json_renderer,
         ),
     ],
-    'prefix': '/api/v1'
+    "prefix": "/api/v1",
 }

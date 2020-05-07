@@ -8,16 +8,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0014_merge'),
+        ("osf", "0014_merge"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='abstractnode',
-            options={'base_manager_name': 'objects'},
+            name="abstractnode", options={"base_manager_name": "objects"},
         ),
         migrations.AlterModelOptions(
-            name='basefilenode',
-            options={'base_manager_name': 'objects'},
+            name="basefilenode", options={"base_manager_name": "objects"},
         ),
     ]

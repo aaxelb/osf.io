@@ -13,9 +13,10 @@ from addons.base.tests.serializers import StorageAddonSerializerTestSuiteMixin
 
 pytestmark = pytest.mark.django_db
 
+
 class TestBitbucketSerializer(StorageAddonSerializerTestSuiteMixin, OsfTestCase):
 
-    addon_short_name = 'bitbucket'
+    addon_short_name = "bitbucket"
 
     Serializer = BitbucketSerializer
     ExternalAccountFactory = BitbucketAccountFactory

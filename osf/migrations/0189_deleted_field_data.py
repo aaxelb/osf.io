@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0188_deleted_field_mig'),
+        ("osf", "0188_deleted_field_mig"),
     ]
 
     if DEBUG_MODE:
@@ -35,10 +35,10 @@ class Migration(migrations.Migration):
             migrations.RunSQL(FORWARD_INSTITUTION, REVERSE_INSTITUTION),
             migrations.RunSQL(FORWARD_ABSTRACT_NODE, REVERSE_ABSTRACT_NODE),
             migrations.RunSQL(FORWARD_PRIVATE_LINK, REVERSE_PRIVATE_LINK),
-            migrations.RunSQL(FORWARD_COMMENT, REVERSE_COMMENT)
+            migrations.RunSQL(FORWARD_COMMENT, REVERSE_COMMENT),
         ]
     else:
         operations = []
         logger.info(
-            'The automatic migration only runs in DEBUG_MODE. Use management command migrate_deleted_date instead'
+            "The automatic migration only runs in DEBUG_MODE. Use management command migrate_deleted_date instead"
         )

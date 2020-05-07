@@ -5,10 +5,12 @@ from api.base.utils import get_user_auth
 from api.comments.serializers import CommentReport
 from osf.models import AbstractNode, Comment
 
-class CanCommentOrPublic(permissions.BasePermission):
 
+class CanCommentOrPublic(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        assert isinstance(obj, (AbstractNode, Comment)), 'obj must be a Node or Comment, got {}'.format(obj)
+        assert isinstance(
+            obj, (AbstractNode, Comment)
+        ), "obj must be a Node or Comment, got {}".format(obj)
         auth = get_user_auth(request)
         if isinstance(obj, Comment):
             node = obj.node
@@ -22,9 +24,8 @@ class CanCommentOrPublic(permissions.BasePermission):
 
 
 class CommentDetailPermissions(permissions.BasePermission):
-
     def has_object_permission(self, request, view, obj):
-        assert isinstance(obj, Comment), 'obj must be a Comment, got {}'.format(obj)
+        assert isinstance(obj, Comment), "obj must be a Comment, got {}".format(obj)
         auth = get_user_auth(request)
         comment = obj
         node = obj.node
@@ -40,7 +41,9 @@ class CommentReportsPermissions(permissions.BasePermission):
        can access the comment reports endpoint."""
 
     def has_object_permission(self, request, view, obj):
-        assert isinstance(obj, (Comment, CommentReport)), 'obj must be a Comment or Comment Report, got {}'.format(obj)
+        assert isinstance(
+            obj, (Comment, CommentReport)
+        ), "obj must be a Comment or Comment Report, got {}".format(obj)
         auth = get_user_auth(request)
         if isinstance(obj, Comment):
             node = obj.node

@@ -41,27 +41,33 @@ from .exceptions import (
 
 logger = logging.getLogger(__name__)
 
-SHAREJS_HOST = 'localhost'
+SHAREJS_HOST = "localhost"
 SHAREJS_PORT = 7007
-SHAREJS_URL = '{}:{}'.format(SHAREJS_HOST, SHAREJS_PORT)
+SHAREJS_URL = "{}:{}".format(SHAREJS_HOST, SHAREJS_PORT)
 
-SHAREJS_DB_NAME = 'sharejs'
-SHAREJS_DB_URL = 'mongodb://{}:{}/{}'.format(settings.DB_HOST, settings.DB_PORT, SHAREJS_DB_NAME)
+SHAREJS_DB_NAME = "sharejs"
+SHAREJS_DB_URL = "mongodb://{}:{}/{}".format(
+    settings.DB_HOST, settings.DB_PORT, SHAREJS_DB_NAME
+)
 
 # TODO: Change to release date for wiki change
-WIKI_CHANGE_DATE = datetime.datetime.utcfromtimestamp(1423760098).replace(tzinfo=pytz.utc)
+WIKI_CHANGE_DATE = datetime.datetime.utcfromtimestamp(1423760098).replace(
+    tzinfo=pytz.utc
+)
+
 
 def validate_page_name(value):
-    value = (value or '').strip()
+    value = (value or "").strip()
 
     if not value:
         # TODO: determine if this if possible anymore, deprecate if not
-        raise NameEmptyError('Page name cannot be blank.')
-    if value.find('/') != -1:
-        raise NameInvalidError('Page name cannot contain forward slashes.')
+        raise NameEmptyError("Page name cannot be blank.")
+    if value.find("/") != -1:
+        raise NameInvalidError("Page name cannot contain forward slashes.")
     if len(value) > 100:
-        raise NameMaximumLengthError('Page name cannot be greater than 100 characters.')
+        raise NameMaximumLengthError("Page name cannot be greater than 100 characters.")
     return True
+
 
 def build_html_output(content, node):
     return markdown.markdown(
@@ -69,17 +75,16 @@ def build_html_output(content, node):
         extensions=[
             wikilinks.WikiLinkExtension(
                 configs=[
-                    ('base_url', ''),
-                    ('end_url', ''),
-                    ('build_url', functools.partial(build_wiki_url, node))
+                    ("base_url", ""),
+                    ("end_url", ""),
+                    ("build_url", functools.partial(build_wiki_url, node)),
                 ]
             ),
             fenced_code.FencedCodeExtension(),
-            codehilite.CodeHiliteExtension(
-                [('css_class', 'highlight')]
-            )
-        ]
+            codehilite.CodeHiliteExtension([("css_class", "highlight")]),
+        ],
     )
+
 
 def render_content(content, node):
     html_output = build_html_output(content, node)
@@ -91,20 +96,19 @@ def render_content(content, node):
 
 
 def build_wiki_url(node, label, base, end):
-    return '/{pid}/wiki/{wname}/'.format(pid=node._id, wname=label)
+    return "/{pid}/wiki/{wname}/".format(pid=node._id, wname=label)
 
 
 class WikiVersionNodeManager(models.Manager):
-
     def get_for_node(self, node, name=None, version=None, id=None):
         if name:
             wiki_page = WikiPage.objects.get_for_node(node, name)
             if not wiki_page:
                 return None
 
-            if version == 'previous':
+            if version == "previous":
                 version = wiki_page.current_version_number - 1
-            elif version == 'current' or version is None:
+            elif version == "current" or version is None:
                 version = wiki_page.current_version_number
             elif not ((isinstance(version, int) or version.isdigit())):
                 return None
@@ -119,28 +123,39 @@ class WikiVersionNodeManager(models.Manager):
 class WikiVersion(ObjectIDMixin, BaseModel):
     objects = WikiVersionNodeManager()
 
-    user = models.ForeignKey('osf.OSFUser', null=True, blank=True, on_delete=models.CASCADE)
-    wiki_page = models.ForeignKey('WikiPage', null=True, blank=True, on_delete=models.CASCADE, related_name='versions')
-    content = models.TextField(default='', blank=True)
+    user = models.ForeignKey(
+        "osf.OSFUser", null=True, blank=True, on_delete=models.CASCADE
+    )
+    wiki_page = models.ForeignKey(
+        "WikiPage",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="versions",
+    )
+    content = models.TextField(default="", blank=True)
     identifier = models.IntegerField(default=1)
 
     @property
     def is_current(self):
-        return not self.wiki_page.deleted and self.id == self.wiki_page.versions.order_by('-created').first().id
+        return (
+            not self.wiki_page.deleted
+            and self.id == self.wiki_page.versions.order_by("-created").first().id
+        )
 
     def html(self, node):
         """The cleaned HTML of the page"""
         html_output = build_html_output(self.content, node=node)
         try:
             cleaner = Cleaner(
-                tags=settings.WIKI_WHITELIST['tags'],
-                attributes=settings.WIKI_WHITELIST['attributes'],
-                styles=settings.WIKI_WHITELIST['styles'],
-                filters=[partial(LinkifyFilter, callbacks=[nofollow, ])]
+                tags=settings.WIKI_WHITELIST["tags"],
+                attributes=settings.WIKI_WHITELIST["attributes"],
+                styles=settings.WIKI_WHITELIST["styles"],
+                filters=[partial(LinkifyFilter, callbacks=[nofollow,])],
             )
             return cleaner.clean(html_output)
         except TypeError:
-            logger.warning('Returning unlinkified content.')
+            logger.warning("Returning unlinkified content.")
             return render_content(self.content, node=node)
 
     def raw_text(self, node):
@@ -161,15 +176,17 @@ class WikiVersion(ObjectIDMixin, BaseModel):
         db = wiki_utils.share_db()
         sharejs_uuid = wiki_utils.get_sharejs_uuid(node, self.wiki_page.page_name)
 
-        doc_item = db['docs'].find_one({'_id': sharejs_uuid})
+        doc_item = db["docs"].find_one({"_id": sharejs_uuid})
         if doc_item:
-            sharejs_version = doc_item['_v']
-            sharejs_timestamp = doc_item['_m']['mtime']
+            sharejs_version = doc_item["_v"]
+            sharejs_timestamp = doc_item["_m"]["mtime"]
             sharejs_timestamp /= 1000  # Convert to appropriate units
-            sharejs_date = datetime.datetime.utcfromtimestamp(sharejs_timestamp).replace(tzinfo=pytz.utc)
+            sharejs_date = datetime.datetime.utcfromtimestamp(
+                sharejs_timestamp
+            ).replace(tzinfo=pytz.utc)
 
             if sharejs_version > 1 and sharejs_date > self.created:
-                return doc_item['_data']
+                return doc_item["_data"]
 
         return self.content
 
@@ -199,15 +216,17 @@ class WikiVersion(ObjectIDMixin, BaseModel):
         if not content:
             return
         is_spam = node.do_check_spam(
-            user.fullname,
-            user.username,
-            content,
-            request_headers
+            user.fullname, user.username, content, request_headers
         )
 
-        logger.info("Node ({}) '{}' smells like {} (tip: {})".format(
-            node._id, node.title.encode('utf-8'), 'SPAM' if is_spam else 'HAM', node.spam_pro_tip
-        ))
+        logger.info(
+            "Node ({}) '{}' smells like {} (tip: {})".format(
+                node._id,
+                node.title.encode("utf-8"),
+                "SPAM" if is_spam else "HAM",
+                node.spam_pro_tip,
+            )
+        )
         if is_spam:
             node._check_spam_user(user)
         return is_spam
@@ -217,7 +236,7 @@ class WikiVersion(ObjectIDMixin, BaseModel):
         content.append(self.raw_text(node))
         if not content:
             return None
-        return ' '.join(content)
+        return " ".join(content)
 
     def clone_version(self, wiki_page, user):
         """Clone a node wiki page.
@@ -232,25 +251,21 @@ class WikiVersion(ObjectIDMixin, BaseModel):
 
     @property
     def absolute_api_v2_url(self):
-        path = '/wiki_versions/{}/'.format(self._id)
+        path = "/wiki_versions/{}/".format(self._id)
         return api_v2_url(path)
 
     # used by django and DRF
     def get_absolute_url(self):
         return self.absolute_api_v2_url
 
-class WikiPageNodeManager(models.Manager):
 
+class WikiPageNodeManager(models.Manager):
     def create_for_node(self, node, name, content, auth):
         existing_wiki_page = WikiPage.objects.get_for_node(node, name)
         if existing_wiki_page:
-            raise NodeStateError('Wiki Page already exists.')
+            raise NodeStateError("Wiki Page already exists.")
 
-        wiki_page = WikiPage.objects.create(
-            node=node,
-            page_name=name,
-            user=auth.user
-        )
+        wiki_page = WikiPage.objects.create(node=node, page_name=name, user=auth.user)
         # Creates a WikiVersion object
         wiki_page.update(auth.user, content)
         return wiki_page
@@ -258,32 +273,46 @@ class WikiPageNodeManager(models.Manager):
     def get_for_node(self, node, name=None, id=None):
         if name:
             try:
-                name = (name or '').strip()
-                return WikiPage.objects.get(page_name__iexact=name, deleted__isnull=True, node=node)
+                name = (name or "").strip()
+                return WikiPage.objects.get(
+                    page_name__iexact=name, deleted__isnull=True, node=node
+                )
             except WikiPage.DoesNotExist:
                 return None
         return WikiPage.load(id)
 
     def get_wiki_pages_latest(self, node):
-        wiki_page_ids = node.wikis.filter(deleted__isnull=True).values_list('id', flat=True)
-        return WikiVersion.objects.annotate(name=F('wiki_page__page_name'), newest_version=Max('wiki_page__versions__identifier')).filter(identifier=F('newest_version'), wiki_page__id__in=wiki_page_ids)
+        wiki_page_ids = node.wikis.filter(deleted__isnull=True).values_list(
+            "id", flat=True
+        )
+        return WikiVersion.objects.annotate(
+            name=F("wiki_page__page_name"),
+            newest_version=Max("wiki_page__versions__identifier"),
+        ).filter(identifier=F("newest_version"), wiki_page__id__in=wiki_page_ids)
 
     def include_wiki_settings(self, node):
         """Check if node meets requirements to make publicly editable."""
         return node.get_descendants_recursive()
 
+
 class WikiPage(GuidMixin, BaseModel):
     objects = WikiPageNodeManager()
 
-    page_name = models.CharField(max_length=200, validators=[validate_page_name, ])
-    user = models.ForeignKey('osf.OSFUser', null=True, blank=True, on_delete=models.CASCADE)
-    node = models.ForeignKey('osf.AbstractNode', null=True, blank=True, on_delete=models.CASCADE, related_name='wikis')
+    page_name = models.CharField(max_length=200, validators=[validate_page_name,])
+    user = models.ForeignKey(
+        "osf.OSFUser", null=True, blank=True, on_delete=models.CASCADE
+    )
+    node = models.ForeignKey(
+        "osf.AbstractNode",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="wikis",
+    )
     deleted = NonNaiveDateTimeField(blank=True, null=True, db_index=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['page_name', 'node'])
-        ]
+        indexes = [models.Index(fields=["page_name", "node"])]
 
     def save(self, *args, **kwargs):
         rv = super(WikiPage, self).save(*args, **kwargs)
@@ -298,21 +327,26 @@ class WikiPage(GuidMixin, BaseModel):
         :param user: The user that is updating the wiki
         :param content: Latest content for wiki
         """
-        version = WikiVersion(user=user, wiki_page=self, content=content, identifier=self.current_version_number + 1)
+        version = WikiVersion(
+            user=user,
+            wiki_page=self,
+            content=content,
+            identifier=self.current_version_number + 1,
+        )
         version.save()
 
         self.node.add_log(
             action=NodeLog.WIKI_UPDATED,
             params={
-                'project': self.node.parent_id,
-                'node': self.node._primary_key,
-                'page': self.page_name,
-                'page_id': self._primary_key,
-                'version': version.identifier,
+                "project": self.node.parent_id,
+                "node": self.node._primary_key,
+                "page": self.page_name,
+                "page_id": self._primary_key,
+                "version": version.identifier,
             },
             auth=Auth(user),
             log_date=version.created,
-            save=True
+            save=True,
         )
         return version
 
@@ -329,9 +363,7 @@ class WikiPage(GuidMixin, BaseModel):
 
         sharejs_uuid = wiki_utils.get_sharejs_uuid(node, self.page_name)
         contributors = [user._id for user in node.contributors]
-        wiki_utils.broadcast_to_sharejs('reload',
-                                        sharejs_uuid,
-                                        data=contributors)
+        wiki_utils.broadcast_to_sharejs("reload", sharejs_uuid, data=contributors)
 
     def belongs_to_node(self, node_id):
         """Check whether the wiki is attached to the specified node."""
@@ -339,32 +371,37 @@ class WikiPage(GuidMixin, BaseModel):
 
     @property
     def current_version_number(self):
-        return self.versions.order_by('-created').values_list('identifier', flat=True).first() or 0
+        return (
+            self.versions.order_by("-created")
+            .values_list("identifier", flat=True)
+            .first()
+            or 0
+        )
 
     @property
     def url(self):
-        return u'{}wiki/{}/'.format(self.node.url, self.page_name)
+        return u"{}wiki/{}/".format(self.node.url, self.page_name)
 
     def get_version(self, version=None):
         if version:
-            ret = self.versions.filter(identifier=version).order_by('-created').first()
+            ret = self.versions.filter(identifier=version).order_by("-created").first()
             if not ret:
                 raise VersionNotFoundError(version)
             return ret
         else:
-            return self.versions.order_by('-created').first()
+            return self.versions.order_by("-created").first()
 
     def get_versions(self):
-        return self.versions.all().order_by('-created')
+        return self.versions.all().order_by("-created")
 
     @property
     def root_target_page(self):
         """The comment page type associated with WikiPages."""
-        return 'wiki'
+        return "wiki"
 
     @property
     def deep_url(self):
-        return u'{}wiki/{}/'.format(self.node.deep_url, self.page_name)
+        return u"{}wiki/{}/".format(self.node.deep_url, self.page_name)
 
     def clone_wiki_page(self, copy, user, save=True):
         """Clone a wiki page.
@@ -375,7 +412,7 @@ class WikiPage(GuidMixin, BaseModel):
         new_wiki_page.node = copy
         new_wiki_page.user = user
         new_wiki_page.save()
-        for version in self.versions.all().order_by('created'):
+        for version in self.versions.all().order_by("created"):
             new_version = version.clone_version(new_wiki_page, user)
             if save:
                 new_version.save()
@@ -399,13 +436,13 @@ class WikiPage(GuidMixin, BaseModel):
         return {}
 
     def get_extra_log_params(self, comment):
-        return {'wiki': {'name': self.page_name, 'url': comment.get_comment_page_url()}}
+        return {"wiki": {"name": self.page_name, "url": comment.get_comment_page_url()}}
 
     # For Comment API compatibility
     @property
     def target_type(self):
         """The object "type" used in the OSF v2 API."""
-        return 'wiki'
+        return "wiki"
 
     # used by django and DRF
     def get_absolute_url(self):
@@ -413,7 +450,7 @@ class WikiPage(GuidMixin, BaseModel):
 
     @property
     def absolute_api_v2_url(self):
-        path = '/wikis/{}/'.format(self._id)
+        path = "/wikis/{}/".format(self._id)
         return api_v2_url(path)
 
     def rename(self, new_name, auth):
@@ -423,18 +460,18 @@ class WikiPage(GuidMixin, BaseModel):
         :param new_name: A string, the new page's name, e.g. ``"My Renamed Page"``.
         :param auth: All the auth information including user, API key.
         """
-        new_name = (new_name or '').strip()
+        new_name = (new_name or "").strip()
         existing_wiki_page = WikiPage.objects.get_for_node(self.node, new_name)
         key = wiki_utils.to_mongo_key(self.page_name)
         new_key = wiki_utils.to_mongo_key(new_name)
 
-        if key == 'home':
-            raise PageCannotRenameError('Cannot rename wiki home page')
-        if (existing_wiki_page and not existing_wiki_page.deleted and key != new_key) or new_key == 'home':
+        if key == "home":
+            raise PageCannotRenameError("Cannot rename wiki home page")
+        if (
+            existing_wiki_page and not existing_wiki_page.deleted and key != new_key
+        ) or new_key == "home":
             raise PageConflictError(
-                'Page already exists with name {0}'.format(
-                    new_name,
-                )
+                "Page already exists with name {0}".format(new_name,)
             )
 
         # rename the page first in case we hit a validation exception.
@@ -445,18 +482,20 @@ class WikiPage(GuidMixin, BaseModel):
         # transfer the old page versions/current keys to the new name.
         if key != new_key:
             if key in self.node.wiki_private_uuids:
-                self.node.wiki_private_uuids[new_key] = self.node.wiki_private_uuids[key]
+                self.node.wiki_private_uuids[new_key] = self.node.wiki_private_uuids[
+                    key
+                ]
                 del self.node.wiki_private_uuids[key]
 
         self.node.add_log(
             action=NodeLog.WIKI_RENAMED,
             params={
-                'project': self.node.parent_id,
-                'node': self.node._primary_key,
-                'page': self.page_name,
-                'page_id': self._primary_key,
-                'old_page': old_name,
-                'version': self.current_version_number,
+                "project": self.node.parent_id,
+                "node": self.node._primary_key,
+                "page": self.page_name,
+                "page_id": self._primary_key,
+                "old_page": old_name,
+                "version": self.current_version_number,
             },
             auth=auth,
             save=True,
@@ -471,8 +510,8 @@ class WikiPage(GuidMixin, BaseModel):
 
         :param auth: All the auth information including user, API key.
         """
-        if self.page_name.lower() == 'home':
-            raise ValidationError('The home wiki page cannot be deleted.')
+        if self.page_name.lower() == "home":
+            raise ValidationError("The home wiki page cannot be deleted.")
         self.deleted = timezone.now()
 
         Comment.objects.filter(root_target=self.guids.first()).update(root_target=None)
@@ -480,10 +519,10 @@ class WikiPage(GuidMixin, BaseModel):
         self.node.add_log(
             action=NodeLog.WIKI_DELETED,
             params={
-                'project': self.node.parent_id,
-                'node': self.node._primary_key,
-                'page': self.page_name,
-                'page_id': self._primary_key,
+                "project": self.node.parent_id,
+                "node": self.node._primary_key,
+                "page": self.page_name,
+                "page_id": self._primary_key,
             },
             auth=auth,
             save=True,
@@ -511,21 +550,24 @@ class NodeSettings(BaseNodeSettings):
             if node.is_public:
                 self.is_publicly_editable = True
             else:
-                raise NodeStateError('Private components cannot be made publicly editable.')
+                raise NodeStateError(
+                    "Private components cannot be made publicly editable."
+                )
         elif not permissions and self.is_publicly_editable:
             self.is_publicly_editable = False
         else:
-            raise NodeStateError('Desired permission change is the same as current setting.')
+            raise NodeStateError(
+                "Desired permission change is the same as current setting."
+            )
 
         if log:
             node.add_log(
-                action=(NodeLog.MADE_WIKI_PUBLIC
-                        if self.is_publicly_editable
-                        else NodeLog.MADE_WIKI_PRIVATE),
-                params={
-                    'project': node.parent_id,
-                    'node': node._primary_key,
-                },
+                action=(
+                    NodeLog.MADE_WIKI_PUBLIC
+                    if self.is_publicly_editable
+                    else NodeLog.MADE_WIKI_PRIVATE
+                ),
+                params={"project": node.parent_id, "node": node._primary_key,},
                 auth=auth,
                 save=True,
             )
@@ -554,13 +596,11 @@ class NodeSettings(BaseNodeSettings):
         :return str: Alert message
 
         """
-        if permissions == 'private':
+        if permissions == "private":
             if self.is_publicly_editable:
                 self.set_editing(permissions=False, log=False)
-                return (
-                    'The wiki of {name} is now only editable by write contributors.'.format(
-                        name=node.title,
-                    )
+                return "The wiki of {name} is now only editable by write contributors.".format(
+                    name=node.title,
                 )
 
     def to_json(self, user):

@@ -9,13 +9,18 @@ import osf.models.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0073_citationstyle_has_bibliography'),
+        ("osf", "0073_citationstyle_has_bibliography"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='comment',
-            name='content',
-            field=models.TextField(validators=[osf.models.validators.CommentMaxLength(1000), osf.models.validators.string_required]),
+            model_name="comment",
+            name="content",
+            field=models.TextField(
+                validators=[
+                    osf.models.validators.CommentMaxLength(1000),
+                    osf.models.validators.string_required,
+                ]
+            ),
         ),
     ]

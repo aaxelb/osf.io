@@ -9,28 +9,40 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0174_add_ab_testing_home_page_version_b_flag'),
+        ("osf", "0174_add_ab_testing_home_page_version_b_flag"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pagecounter',
-            name='action',
+            model_name="pagecounter",
+            name="action",
             field=models.CharField(blank=True, null=True, max_length=128),
         ),
         migrations.AddField(
-            model_name='pagecounter',
-            name='file',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='pagecounters', to='osf.BaseFileNode'),
+            model_name="pagecounter",
+            name="file",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="pagecounters",
+                to="osf.BaseFileNode",
+            ),
         ),
         migrations.AddField(
-            model_name='pagecounter',
-            name='resource',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='pagecounters', to='osf.Guid'),
+            model_name="pagecounter",
+            name="resource",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="pagecounters",
+                to="osf.Guid",
+            ),
         ),
         migrations.AddField(
-            model_name='pagecounter',
-            name='version',
+            model_name="pagecounter",
+            name="version",
             field=models.IntegerField(blank=True, null=True),
         ),
     ]

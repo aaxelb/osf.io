@@ -16,10 +16,10 @@ def set_preprint_providers():
     """Populate `PreprintProvider` to test database for testing."""
 
     providers = {
-        'osf': 'Open Science Framework',
-        'socarxiv': 'SocArXiv',
-        'engrxiv': 'EngrXiv',
-        'psyarxiv': 'PsyArXiv',
+        "osf": "Open Science Framework",
+        "socarxiv": "SocArXiv",
+        "engrxiv": "EngrXiv",
+        "psyarxiv": "PsyArXiv",
     }
 
     for key, value in providers.items():
@@ -31,23 +31,24 @@ def set_preprint_providers():
 
 # tests for campaign initialization and update
 class TestCampaignInitialization(OsfTestCase):
-
     def setUp(self):
         super(TestCampaignInitialization, self).setUp()
         set_preprint_providers()
         self.campaign_lists = [
-            'prereg',
-            'erpc',
-            'institution',
-            'osf-preprints',
-            'socarxiv-preprints',
-            'engrxiv-preprints',
-            'psyarxiv-preprints',
-            'osf-registries',
-            'osf-registered-reports',
+            "prereg",
+            "erpc",
+            "institution",
+            "osf-preprints",
+            "socarxiv-preprints",
+            "engrxiv-preprints",
+            "psyarxiv-preprints",
+            "osf-registries",
+            "osf-registered-reports",
         ]
         self.refresh = timezone.now()
-        campaigns.CAMPAIGNS = None  # force campaign refresh now that preprint providers are populated
+        campaigns.CAMPAIGNS = (
+            None  # force campaign refresh now that preprint providers are populated
+        )
         campaigns.CAMPAIGNS_LAST_REFRESHED = self.refresh
 
     def test_get_campaigns_init(self):
@@ -73,26 +74,27 @@ class TestCampaignInitialization(OsfTestCase):
 
 # tests for campaign helper methods
 class TestCampaignMethods(OsfTestCase):
-
     def setUp(self):
         super(TestCampaignMethods, self).setUp()
         set_preprint_providers()
         self.campaign_lists = [
-            'prereg',
-            'erpc',
-            'institution',
-            'osf-preprints',
-            'socarxiv-preprints',
-            'engrxiv-preprints',
-            'psyarxiv-preprints',
+            "prereg",
+            "erpc",
+            "institution",
+            "osf-preprints",
+            "socarxiv-preprints",
+            "engrxiv-preprints",
+            "psyarxiv-preprints",
         ]
-        self.invalid_campaign = 'invalid_campaign'
-        campaigns.CAMPAIGNS = None  # force campaign refresh now that preprint providers are populated
+        self.invalid_campaign = "invalid_campaign"
+        campaigns.CAMPAIGNS = (
+            None  # force campaign refresh now that preprint providers are populated
+        )
 
     def test_is_institution_login(self):
         for campaign in self.campaign_lists:
             institution = campaigns.is_institution_login(campaign)
-            if campaign == 'institution':
+            if campaign == "institution":
                 assert_true(institution)
             else:
                 assert_false(institution)
@@ -102,7 +104,7 @@ class TestCampaignMethods(OsfTestCase):
     def test_is_native_login(self):
         for campaign in self.campaign_lists:
             native = campaigns.is_native_login(campaign)
-            if campaign == 'prereg' or campaign == 'erpc':
+            if campaign == "prereg" or campaign == "erpc":
                 assert_true(native)
             else:
                 assert_false(native)
@@ -112,7 +114,7 @@ class TestCampaignMethods(OsfTestCase):
     def test_is_proxy_login(self):
         for campaign in self.campaign_lists:
             proxy = campaigns.is_proxy_login(campaign)
-            if campaign.endswith('-preprints'):
+            if campaign.endswith("-preprints"):
                 assert_true(proxy)
             else:
                 assert_false(proxy)
@@ -155,71 +157,69 @@ class TestCampaignMethods(OsfTestCase):
 
     def test_campaign_for_user(self):
         user = factories.UserFactory()
-        user.add_system_tag(provider_source_tag('osf', 'preprint'))
+        user.add_system_tag(provider_source_tag("osf", "preprint"))
         user.save()
         campaign = campaigns.campaign_for_user(user)
-        assert_equal(campaign, 'osf-preprints')
+        assert_equal(campaign, "osf-preprints")
 
 
 # tests for prereg, erpc, which follow similar auth login/register logic
 class TestCampaignsAuthViews(OsfTestCase):
-
     def setUp(self):
         super(TestCampaignsAuthViews, self).setUp()
         self.campaigns = {
-            'prereg': {
-                'title_register': 'Preregistration Challenge',
-                'title_landing': 'Welcome to the Prereg Challenge!'
+            "prereg": {
+                "title_register": "Preregistration Challenge",
+                "title_landing": "Welcome to the Prereg Challenge!",
             },
-            'erpc': {
-                'title_register': 'Election Research Preacceptance Competition',
-                'title_landing': 'The Election Research Preacceptance Competition is Now Closed'
+            "erpc": {
+                "title_register": "Election Research Preacceptance Competition",
+                "title_landing": "The Election Research Preacceptance Competition is Now Closed",
             },
         }
         for key, value in self.campaigns.items():
-            value.update({'url_login': web_url_for('auth_login', campaign=key)})
-            value.update({'url_register': web_url_for('auth_register', campaign=key)})
-            value.update({'url_landing': campaigns.campaign_url_for(key)})
+            value.update({"url_login": web_url_for("auth_login", campaign=key)})
+            value.update({"url_register": web_url_for("auth_register", campaign=key)})
+            value.update({"url_landing": campaigns.campaign_url_for(key)})
         self.user = factories.AuthUserFactory()
 
     def test_campaign_register_view_logged_in(self):
         for key, value in self.campaigns.items():
-            resp = self.app.get(value['url_register'], auth=self.user.auth)
+            resp = self.app.get(value["url_register"], auth=self.user.auth)
             assert_equal(resp.status_code, http_status.HTTP_302_FOUND)
-            assert_equal(value['url_landing'], resp.headers['Location'])
+            assert_equal(value["url_landing"], resp.headers["Location"])
 
     def test_campaign_register_view_logged_out(self):
         for key, value in self.campaigns.items():
-            resp = self.app.get(value['url_register'])
+            resp = self.app.get(value["url_register"])
             assert_equal(resp.status_code, http_status.HTTP_200_OK)
-            assert_in(value['title_register'], resp)
+            assert_in(value["title_register"], resp)
 
     def test_campaign_login_logged_in(self):
         for key, value in self.campaigns.items():
-            resp = self.app.get(value['url_login'], auth=self.user.auth)
+            resp = self.app.get(value["url_login"], auth=self.user.auth)
             assert_equal(resp.status_code, http_status.HTTP_302_FOUND)
-            assert_in(value['url_landing'], resp.headers['Location'])
+            assert_in(value["url_landing"], resp.headers["Location"])
 
     def test_campaign_login_logged_out(self):
         for key, value in self.campaigns.items():
-            resp = self.app.get(value['url_login'])
+            resp = self.app.get(value["url_login"])
             assert_equal(resp.status_code, http_status.HTTP_302_FOUND)
-            assert_in(value['url_register'], resp.headers['Location'])
+            assert_in(value["url_register"], resp.headers["Location"])
 
     def test_campaign_landing_logged_in(self):
         for key, value in self.campaigns.items():
-            resp = self.app.get(value['url_landing'], auth=self.user.auth)
+            resp = self.app.get(value["url_landing"], auth=self.user.auth)
             assert_equal(resp.status_code, http_status.HTTP_200_OK)
 
     def test_auth_prereg_landing_page_logged_out(self):
         for key, value in self.campaigns.items():
-            resp = self.app.get(value['url_landing'])
+            resp = self.app.get(value["url_landing"])
             assert_equal(resp.status_code, http_status.HTTP_200_OK)
 
 
 # tests for registration through campaigns
 class TestRegistrationThroughCampaigns(OsfTestCase):
-
     def setUp(self):
         super(TestRegistrationThroughCampaigns, self).setUp()
         campaigns.get_campaigns()  # Set up global CAMPAIGNS
@@ -227,11 +227,11 @@ class TestRegistrationThroughCampaigns(OsfTestCase):
     def test_confirm_email_get_with_campaign(self):
         for key, value in campaigns.CAMPAIGNS.items():
             user = factories.UnconfirmedUserFactory()
-            user.add_system_tag(value.get('system_tag'))
+            user.add_system_tag(value.get("system_tag"))
             user.save()
             token = user.get_confirmation_token(user.username)
             kwargs = {
-                'uid': user._id,
+                "uid": user._id,
             }
             with self.app.app.test_request_context(), mock_auth(user):
                 res = auth_views.confirm_email_get(token, **kwargs)
@@ -241,27 +241,29 @@ class TestRegistrationThroughCampaigns(OsfTestCase):
 
 # tests for institution
 class TestCampaignsCASInstitutionLogin(OsfTestCase):
-
     def setUp(self):
         super(TestCampaignsCASInstitutionLogin, self).setUp()
-        self.url_login = web_url_for('auth_login', campaign='institution')
-        self.url_register = web_url_for('auth_register', campaign='institution')
-        self.service_url = web_url_for('dashboard', _absolute=True)
+        self.url_login = web_url_for("auth_login", campaign="institution")
+        self.url_register = web_url_for("auth_register", campaign="institution")
+        self.service_url = web_url_for("dashboard", _absolute=True)
 
     # go to CAS institution login page if not logged in
     def test_institution_not_logged_in(self):
         resp = self.app.get(self.url_login)
         assert_equal(resp.status_code, http_status.HTTP_302_FOUND)
-        assert_in(cas.get_login_url(self.service_url, campaign='institution'), resp.headers['Location'])
+        assert_in(
+            cas.get_login_url(self.service_url, campaign="institution"),
+            resp.headers["Location"],
+        )
         # register behave the same as login
         resp2 = self.app.get(self.url_register)
-        assert_equal(resp.headers['Location'], resp2.headers['Location'])
+        assert_equal(resp.headers["Location"], resp2.headers["Location"])
 
     # go to target page (service url_ if logged in
     def test_institution_logged_in(self):
         resp = self.app.get(self.url_login)
         assert_equal(resp.status_code, http_status.HTTP_302_FOUND)
-        assert_in(self.service_url, resp.headers['Location'])
+        assert_in(self.service_url, resp.headers["Location"])
         # register behave the same as login
         resp2 = self.app.get(self.url_register)
-        assert_equal(resp.headers['Location'], resp2.headers['Location'])
+        assert_equal(resp.headers["Location"], resp2.headers["Location"])

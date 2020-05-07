@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0003_auto_20170402_1611'),
+        ("osf", "0003_auto_20170402_1611"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractnode',
-            name='comment_level',
-            field=models.CharField(default='public', max_length=10),
+            model_name="abstractnode",
+            name="comment_level",
+            field=models.CharField(default="public", max_length=10),
         ),
     ]

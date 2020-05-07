@@ -13,7 +13,7 @@ from osf.utils.permissions import READ, WRITE, ADMIN
 class TestNodeBibliographicContributors:
     @pytest.fixture()
     def admin_contributor_bib(self):
-        return AuthUserFactory(given_name='Oranges')
+        return AuthUserFactory(given_name="Oranges")
 
     @pytest.fixture()
     def write_contributor_non_bib(self):
@@ -21,17 +21,17 @@ class TestNodeBibliographicContributors:
 
     @pytest.fixture()
     def read_contributor_bib(self):
-        return AuthUserFactory(given_name='Grapes')
+        return AuthUserFactory(given_name="Grapes")
 
     @pytest.fixture()
     def non_contributor(self):
         return AuthUserFactory()
 
     @pytest.fixture()
-    def project(self, admin_contributor_bib, write_contributor_non_bib, read_contributor_bib):
-        project = ProjectFactory(
-            creator=admin_contributor_bib
-        )
+    def project(
+        self, admin_contributor_bib, write_contributor_non_bib, read_contributor_bib
+    ):
+        project = ProjectFactory(creator=admin_contributor_bib)
         project.add_contributor(write_contributor_non_bib, WRITE, visible=False)
         project.add_contributor(read_contributor_bib, READ)
         project.save()
@@ -39,10 +39,18 @@ class TestNodeBibliographicContributors:
 
     @pytest.fixture()
     def url(self, project):
-        return '/{}nodes/{}/bibliographic_contributors/'.format(API_BASE, project._id)
+        return "/{}nodes/{}/bibliographic_contributors/".format(API_BASE, project._id)
 
-    def test_list_and_filter_bibliographic_contributors(self, app, url, project, admin_contributor_bib,
-            write_contributor_non_bib, read_contributor_bib, non_contributor):
+    def test_list_and_filter_bibliographic_contributors(
+        self,
+        app,
+        url,
+        project,
+        admin_contributor_bib,
+        write_contributor_non_bib,
+        read_contributor_bib,
+        non_contributor,
+    ):
 
         # Test GET unauthenticated
         res = app.get(url, expect_errors=True)
@@ -61,28 +69,32 @@ class TestNodeBibliographicContributors:
         assert res.status_code == 200
 
         # Test POST not allowed
-        res = app.post_json_api(url, auth=write_contributor_non_bib.auth, expect_errors=True)
+        res = app.post_json_api(
+            url, auth=write_contributor_non_bib.auth, expect_errors=True
+        )
         assert res.status_code == 405
 
         # Test GET contributor, only bibliographic contribs included
         res = app.get(url, auth=admin_contributor_bib.auth)
         assert res.status_code == 200
-        assert len(res.json['data']) == 2
-        actual = [contrib['id'].split('-')[1] for contrib in res.json['data']]
+        assert len(res.json["data"]) == 2
+        actual = [contrib["id"].split("-")[1] for contrib in res.json["data"]]
         assert admin_contributor_bib._id in actual
         assert write_contributor_non_bib._id not in actual
         assert read_contributor_bib._id in actual
 
         # Test filter contributors on perms
-        perm_filter = '{}?filter[permission]={}'.format(url, READ)
+        perm_filter = "{}?filter[permission]={}".format(url, READ)
         res = app.get(perm_filter, auth=admin_contributor_bib.auth)
         assert res.status_code == 200
-        assert res.content_type == 'application/vnd.api+json'
-        assert len(res.json['data']) == 2
+        assert res.content_type == "application/vnd.api+json"
+        assert len(res.json["data"]) == 2
 
-        perm_filter = '{}?filter[permission]={}'.format(url, ADMIN)
+        perm_filter = "{}?filter[permission]={}".format(url, ADMIN)
         res = app.get(perm_filter, auth=admin_contributor_bib.auth)
         assert res.status_code == 200
-        assert res.content_type == 'application/vnd.api+json'
-        assert len(res.json['data']) == 1
-        assert res.json['data'][0]['id'] == '{}-{}'.format(project._id, admin_contributor_bib._id)
+        assert res.content_type == "application/vnd.api+json"
+        assert len(res.json["data"]) == 1
+        assert res.json["data"][0]["id"] == "{}-{}".format(
+            project._id, admin_contributor_bib._id
+        )

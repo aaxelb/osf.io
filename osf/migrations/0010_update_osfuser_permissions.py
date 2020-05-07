@@ -8,12 +8,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0009_auto_20170406_1614'),
+        ("osf", "0009_auto_20170406_1614"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='osfuser',
-            options={'permissions': (('view_osfuser', 'Can view user details'),)},
+            name="osfuser",
+            options={"permissions": (("view_osfuser", "Can view user details"),)},
         ),
     ]

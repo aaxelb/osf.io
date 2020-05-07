@@ -8,10 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0078_add_banner_permissions'),
-        ('osf', '0077_add_maintenance_permissions'),
-        ('osf', '0077_ensure_schemas'),
+        ("osf", "0078_add_banner_permissions"),
+        ("osf", "0077_add_maintenance_permissions"),
+        ("osf", "0077_ensure_schemas"),
     ]
 
-    operations = [
-    ]
+    operations = []

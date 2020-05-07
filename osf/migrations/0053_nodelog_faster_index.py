@@ -8,14 +8,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0052_preprintprovider_share_publish_type'),
+        ("osf", "0052_preprintprovider_share_publish_type"),
     ]
 
     operations = [
-        migrations.RunSQL([
-            'CREATE INDEX nodelog__node_id_date_desc on osf_nodelog (node_id, date DESC);',
-            # 'VACUUM ANALYZE osf_nodelog;'  # Run this manually, requires ~3 min downtime
-        ], [
-            'DROP INDEX IF EXISTS nodelog__node_id_date_desc RESTRICT;',
-        ])
+        migrations.RunSQL(
+            [
+                "CREATE INDEX nodelog__node_id_date_desc on osf_nodelog (node_id, date DESC);",
+                # 'VACUUM ANALYZE osf_nodelog;'  # Run this manually, requires ~3 min downtime
+            ],
+            ["DROP INDEX IF EXISTS nodelog__node_id_date_desc RESTRICT;",],
+        )
     ]

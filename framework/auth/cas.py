@@ -30,8 +30,10 @@ class CasHTTPError(CasError):
         self.content = content
 
     def __repr__(self):
-        return ('CasHTTPError({self.message!r}, {self.code}, '
-                'headers={self.headers}, content={self.content!r})').format(self=self)
+        return (
+            "CasHTTPError({self.message!r}, {self.code}, "
+            "headers={self.headers}, content={self.content!r})"
+        ).format(self=self)
 
     __str__ = __repr__
 
@@ -59,7 +61,9 @@ class CasClient(object):
     def __init__(self, base_url):
         self.BASE_URL = base_url
 
-    def get_login_url(self, service_url, campaign=None, username=None, verification_key=None):
+    def get_login_url(
+        self, service_url, campaign=None, username=None, verification_key=None
+    ):
         """
         Get CAS login url with `service_url` as redirect location. There are three options:
         1. no additional parameters provided -> go to CAS login page
@@ -74,29 +78,29 @@ class CasClient(object):
         """
 
         url = furl.furl(self.BASE_URL)
-        url.path.segments.append('login')
-        url.args['service'] = service_url
+        url.path.segments.append("login")
+        url.args["service"] = service_url
         if campaign:
-            url.args['campaign'] = campaign
+            url.args["campaign"] = campaign
         elif username and verification_key:
-            url.args['username'] = username
-            url.args['verification_key'] = verification_key
+            url.args["username"] = username
+            url.args["verification_key"] = verification_key
         return url.url
 
     def get_logout_url(self, service_url):
         url = furl.furl(self.BASE_URL)
-        url.path.segments.append('logout')
-        url.args['service'] = service_url
+        url.path.segments.append("logout")
+        url.args["service"] = service_url
         return url.url
 
     def get_profile_url(self):
         url = furl.furl(self.BASE_URL)
-        url.path.segments.extend(('oauth2', 'profile',))
+        url.path.segments.extend(("oauth2", "profile",))
         return url.url
 
     def get_auth_token_revocation_url(self):
         url = furl.furl(self.BASE_URL)
-        url.path.segments.extend(('oauth2', 'revoke'))
+        url.path.segments.extend(("oauth2", "revoke"))
         return url.url
 
     def service_validate(self, ticket, service_url):
@@ -110,9 +114,9 @@ class CasClient(object):
         """
 
         url = furl.furl(self.BASE_URL)
-        url.path.segments.extend(('p3', 'serviceValidate',))
-        url.args['ticket'] = ticket
-        url.args['service'] = service_url
+        url.path.segments.extend(("p3", "serviceValidate",))
+        url.args["ticket"] = ticket
+        url.args["service"] = service_url
 
         resp = requests.get(url.url)
         if resp.status_code == 200:
@@ -131,7 +135,7 @@ class CasClient(object):
 
         url = self.get_profile_url()
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            "Authorization": "Bearer {}".format(access_token),
         }
         resp = requests.get(url, headers=headers)
         if resp.status_code == 200:
@@ -139,7 +143,7 @@ class CasClient(object):
         else:
             self._handle_error(resp)
 
-    def _handle_error(self, response, message='Unexpected response from CAS server'):
+    def _handle_error(self, response, message="Unexpected response from CAS server"):
         """Handle an error response from CAS."""
         raise CasHTTPError(
             code=response.status_code,
@@ -151,32 +155,38 @@ class CasClient(object):
     def _parse_service_validation(self, xml):
         resp = CasResponse()
         doc = etree.fromstring(xml)
-        auth_doc = doc.xpath('/cas:serviceResponse/*[1]', namespaces=doc.nsmap)[0]
-        resp.status = str(auth_doc.xpath('local-name()'))
-        if (resp.status == 'authenticationSuccess'):
+        auth_doc = doc.xpath("/cas:serviceResponse/*[1]", namespaces=doc.nsmap)[0]
+        resp.status = str(auth_doc.xpath("local-name()"))
+        if resp.status == "authenticationSuccess":
             resp.authenticated = True
-            resp.user = str(auth_doc.xpath('string(./cas:user)', namespaces=doc.nsmap))
-            attributes = auth_doc.xpath('./cas:attributes/*', namespaces=doc.nsmap)
+            resp.user = str(auth_doc.xpath("string(./cas:user)", namespaces=doc.nsmap))
+            attributes = auth_doc.xpath("./cas:attributes/*", namespaces=doc.nsmap)
             for attribute in attributes:
-                resp.attributes[str(attribute.xpath('local-name()'))] = str(attribute.text)
-            scopes = resp.attributes.get('accessTokenScope')
-            resp.attributes['accessTokenScope'] = set(scopes.split(' ') if scopes else [])
+                resp.attributes[str(attribute.xpath("local-name()"))] = str(
+                    attribute.text
+                )
+            scopes = resp.attributes.get("accessTokenScope")
+            resp.attributes["accessTokenScope"] = set(
+                scopes.split(" ") if scopes else []
+            )
         else:
             resp.authenticated = False
         return resp
 
     def _parse_profile(self, raw, access_token):
         data = json.loads(raw)
-        resp = CasResponse(authenticated=True, user=data['id'])
-        if data.get('attributes'):
-            resp.attributes.update(data['attributes'])
-        resp.attributes['accessToken'] = access_token
-        resp.attributes['accessTokenScope'] = set(data.get('scope', []))
+        resp = CasResponse(authenticated=True, user=data["id"])
+        if data.get("attributes"):
+            resp.attributes.update(data["attributes"])
+        resp.attributes["accessToken"] = access_token
+        resp.attributes["accessTokenScope"] = set(data.get("scope", []))
         return resp
 
     def revoke_application_tokens(self, client_id, client_secret):
         """Revoke all tokens associated with a given CAS client_id"""
-        return self.revoke_tokens(payload={'client_id': client_id, 'client_secret': client_secret})
+        return self.revoke_tokens(
+            payload={"client_id": client_id, "client_secret": client_secret}
+        )
 
     def revoke_tokens(self, payload):
         """Revoke a tokens based on payload"""
@@ -199,12 +209,12 @@ def parse_auth_header(header):
     """
 
     parts = header.split()
-    if parts[0].lower() != 'bearer':
-        raise CasTokenError('Unsupported authorization type')
+    if parts[0].lower() != "bearer":
+        raise CasTokenError("Unsupported authorization type")
     elif len(parts) == 1:
-        raise CasTokenError('Missing token')
+        raise CasTokenError("Missing token")
     elif len(parts) > 2:
-        raise CasTokenError('Token contains spaces')
+        raise CasTokenError("Token contains spaces")
     return parts[1]  # the token
 
 
@@ -224,7 +234,7 @@ def get_login_url(*args, **kwargs):
 
 
 def get_institution_target(redirect_url):
-    return '/login?service={}&auto=true'.format(quote(redirect_url, safe='~()*!.\''))
+    return "/login?service={}&auto=true".format(quote(redirect_url, safe="~()*!.'"))
 
 
 def get_logout_url(*args, **kwargs):
@@ -256,14 +266,14 @@ def make_response_from_ticket(ticket, service_url):
     service_furl = furl.furl(service_url)
     # `service_url` is guaranteed to be removed of `ticket` parameter, which has been pulled off in
     # `framework.sessions.before_request()`.
-    if 'ticket' in service_furl.args:
-        service_furl.args.pop('ticket')
+    if "ticket" in service_furl.args:
+        service_furl.args.pop("ticket")
     client = get_client()
     cas_resp = client.service_validate(ticket, service_furl.url)
     if cas_resp.authenticated:
         user, external_credential, action = get_user_from_cas_resp(cas_resp)
         # user found and authenticated
-        if user and action == 'authenticate':
+        if user and action == "authenticate":
             # if we successfully authenticate and a verification key is present, invalidate it
             if user.verification_key:
                 user.verification_key = None
@@ -275,35 +285,42 @@ def make_response_from_ticket(ticket, service_url):
             if external_credential:
                 user.verification_key = generate_verification_key()
                 user.save()
-                return redirect(get_logout_url(get_login_url(
-                    service_url,
-                    username=user.username,
-                    verification_key=user.verification_key
-                )))
+                return redirect(
+                    get_logout_url(
+                        get_login_url(
+                            service_url,
+                            username=user.username,
+                            verification_key=user.verification_key,
+                        )
+                    )
+                )
 
             # if user is authenticated by CAS
             # TODO [CAS-27]: Remove Access Token From Service Validation
             return authenticate(
                 user,
-                cas_resp.attributes.get('accessToken', ''),
-                redirect(service_furl.url)
+                cas_resp.attributes.get("accessToken", ""),
+                redirect(service_furl.url),
             )
         # first time login from external identity provider
-        if not user and external_credential and action == 'external_first_login':
+        if not user and external_credential and action == "external_first_login":
             from website.util import web_url_for
+
             # orcid attributes can be marked private and not shared, default to orcid otherwise
-            fullname = u'{} {}'.format(cas_resp.attributes.get('given-names', ''), cas_resp.attributes.get('family-name', '')).strip()
+            fullname = u"{} {}".format(
+                cas_resp.attributes.get("given-names", ""),
+                cas_resp.attributes.get("family-name", ""),
+            ).strip()
             # TODO [CAS-27]: Remove Access Token From Service Validation
             user = {
-                'external_id_provider': external_credential['provider'],
-                'external_id': external_credential['id'],
-                'fullname': fullname,
-                'access_token': cas_resp.attributes.get('accessToken', ''),
-                'service_url': service_furl.url,
+                "external_id_provider": external_credential["provider"],
+                "external_id": external_credential["id"],
+                "fullname": fullname,
+                "access_token": cas_resp.attributes.get("accessToken", ""),
+                "service_url": service_furl.url,
             }
             return external_first_login_authenticate(
-                user,
-                redirect(web_url_for('external_login_email_get'))
+                user, redirect(web_url_for("external_login_email_get"))
             )
     # Unauthorized: ticket could not be validated, or user does not exist.
     return redirect(service_furl.url)
@@ -319,11 +336,12 @@ def get_user_from_cas_resp(cas_resp):
     :return: the user, the external_credential, and the next action
     """
     from osf.models import OSFUser
+
     if cas_resp.user:
         user = OSFUser.load(cas_resp.user)
         # cas returns a valid OSF user id
         if user:
-            return user, None, 'authenticate'
+            return user, None, "authenticate"
         # cas does not return a valid OSF user id
         else:
             external_credential = validate_external_credential(cas_resp.user)
@@ -331,14 +349,16 @@ def get_user_from_cas_resp(cas_resp):
             if not external_credential:
                 return None, None, None
             # cas returns a valid external credential
-            user = get_user(external_id_provider=external_credential['provider'],
-                            external_id=external_credential['id'])
+            user = get_user(
+                external_id_provider=external_credential["provider"],
+                external_id=external_credential["id"],
+            )
             # existing user found
             if user:
-                return user, external_credential, 'authenticate'
+                return user, external_credential, "authenticate"
             # user first time login through external identity provider
             else:
-                return None, external_credential, 'external_first_login'
+                return None, external_credential, "external_first_login"
 
 
 def validate_external_credential(external_credential):
@@ -351,10 +371,10 @@ def validate_external_credential(external_credential):
 
     """
     # wrong format
-    if not external_credential or '#' not in external_credential:
+    if not external_credential or "#" not in external_credential:
         return False
 
-    profile_name, technical_id = external_credential.split('#', 1)
+    profile_name, technical_id = external_credential.split("#", 1)
 
     # invalid external identity provider
     if profile_name not in settings.EXTERNAL_IDENTITY_PROFILE:
@@ -367,6 +387,6 @@ def validate_external_credential(external_credential):
     provider = settings.EXTERNAL_IDENTITY_PROFILE[profile_name]
 
     return {
-        'provider': provider,
-        'id': technical_id,
+        "provider": provider,
+        "id": technical_id,
     }

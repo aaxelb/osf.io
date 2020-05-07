@@ -18,11 +18,11 @@ class RegionMixin(object):
     """
 
     serializer_class = RegionSerializer
-    region_lookup_url_kwarg = 'region_id'
+    region_lookup_url_kwarg = "region_id"
 
     def get_region(self):
         region_id = self.kwargs[self.region_lookup_url_kwarg]
-        if self.kwargs.get('is_embedded') is True:
+        if self.kwargs.get("is_embedded") is True:
             node_id, node = list(self.request.parents[Node].items())[0]
             try:
                 # use the annotated value if possible
@@ -34,9 +34,7 @@ class RegionMixin(object):
         try:
             reg = Region.objects.get(_id=region_id)
         except Region.DoesNotExist:
-            raise NotFound(
-                detail='No region matching that region_id could be found.',
-            )
+            raise NotFound(detail="No region matching that region_id could be found.",)
         self.check_object_permissions(self.request, reg)
         return reg
 
@@ -44,6 +42,7 @@ class RegionMixin(object):
 class RegionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
     """Undocumented endpoint. Subject to change.
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -55,10 +54,10 @@ class RegionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
     model_class = Region
 
     serializer_class = RegionSerializer
-    view_category = 'regions'
-    view_name = 'region-list'
+    view_category = "regions"
+    view_name = "region-list"
 
-    ordering = ('name', )
+    ordering = ("name",)
 
     def get_default_queryset(self):
         return Region.objects.all()
@@ -71,6 +70,7 @@ class RegionList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
 class RegionDetail(JSONAPIBaseView, generics.RetrieveAPIView, RegionMixin):
     """Undocumented endpoint. Subject to change.
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -81,10 +81,10 @@ class RegionDetail(JSONAPIBaseView, generics.RetrieveAPIView, RegionMixin):
     model_class = Region
 
     serializer_class = RegionSerializer
-    view_category = 'regions'
-    view_name = 'region-detail'
+    view_category = "regions"
+    view_name = "region-detail"
 
-    ordering = ('name', )
+    ordering = ("name",)
 
     def get_object(self):
         return self.get_region()

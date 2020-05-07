@@ -8,6 +8,7 @@ from tests.utils import make_drf_request_with_version
 
 pytestmark = pytest.mark.django_db
 
+
 class TestNodeLogSerializer:
 
     # Regression test for https://openscience.atlassian.net/browse/PLAT-758
@@ -21,23 +22,23 @@ class TestNodeLogSerializer:
         project = ProjectFactory()
         user = UserFactory()
         request = make_drf_request_with_version()
-        nr_data = {'nr_email': fake.email(), 'nr_name': fake.name()}
+        nr_data = {"nr_email": fake.email(), "nr_name": fake.name()}
         log = project.add_log(
             action=NodeLog.CONTRIB_ADDED,
             auth=Auth(project.creator),
             params={
-                'project': project._id,
-                'node': project._id,
-                'contributors': [user._id, nr_data],
-            }
+                "project": project._id,
+                "node": project._id,
+                "contributors": [user._id, nr_data],
+            },
         )
-        serialized = NodeLogSerializer(log, context={'request': request}).data
-        contributor_data = serialized['data']['attributes']['params']['contributors']
+        serialized = NodeLogSerializer(log, context={"request": request}).data
+        contributor_data = serialized["data"]["attributes"]["params"]["contributors"]
         # contributor_data will have two dicts:
         # the first will be the registered contrib, 2nd will be non-reg contrib
         reg_contributor_data, unreg_contributor_data = contributor_data
-        assert reg_contributor_data['id'] == user._id
-        assert reg_contributor_data['full_name'] == user.fullname
+        assert reg_contributor_data["id"] == user._id
+        assert reg_contributor_data["full_name"] == user.fullname
 
-        assert unreg_contributor_data['id'] is None
-        assert unreg_contributor_data['full_name'] == nr_data['nr_name']
+        assert unreg_contributor_data["id"] is None
+        assert unreg_contributor_data["full_name"] == nr_data["nr_name"]

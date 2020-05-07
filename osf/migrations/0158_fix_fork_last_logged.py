@@ -14,35 +14,42 @@ def untransfer_forked_date(state, schema):
 
     Revert the last logged date of nodes whose last log is forking to the previous log's date
     """
-    AbstractNode = state.get_model('osf', 'abstractnode')
-    newest = NodeLog.objects.filter(node=OuterRef('pk')).order_by('-date')
-    nodes = AbstractNode.objects.filter(is_fork=True, type='osf.node').annotate(latest_log=Subquery(newest.values('action')[:1])).filter(latest_log='node_forked')
+    AbstractNode = state.get_model("osf", "abstractnode")
+    newest = NodeLog.objects.filter(node=OuterRef("pk")).order_by("-date")
+    nodes = (
+        AbstractNode.objects.filter(is_fork=True, type="osf.node")
+        .annotate(latest_log=Subquery(newest.values("action")[:1]))
+        .filter(latest_log="node_forked")
+    )
     for node in nodes:
-        node.last_logged = node.logs.order_by('-date')[1].date
+        node.last_logged = node.logs.order_by("-date")[1].date
 
-    bulk_update(nodes, update_fields=['last_logged'])
+    bulk_update(nodes, update_fields=["last_logged"])
+
 
 def transfer_forked_date(state, schema):
     """
     If the most recent node log is forking, transfer that log's date to the node's last_logged field
     """
-    AbstractNode = state.get_model('osf', 'abstractnode')
-    newest = NodeLog.objects.filter(node=OuterRef('pk')).order_by('-date')
-    nodes = AbstractNode.objects.filter(is_fork=True, type='osf.node').annotate(latest_log=Subquery(newest.values('action')[:1])).filter(latest_log='node_forked')
+    AbstractNode = state.get_model("osf", "abstractnode")
+    newest = NodeLog.objects.filter(node=OuterRef("pk")).order_by("-date")
+    nodes = (
+        AbstractNode.objects.filter(is_fork=True, type="osf.node")
+        .annotate(latest_log=Subquery(newest.values("action")[:1]))
+        .filter(latest_log="node_forked")
+    )
     for node in nodes:
         node.last_logged = node.logs.first().date
 
-    bulk_update(nodes, update_fields=['last_logged'])
+    bulk_update(nodes, update_fields=["last_logged"])
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0157_add_storage_usage_flag'),
+        ("osf", "0157_add_storage_usage_flag"),
     ]
 
     operations = [
-        migrations.RunPython(
-            transfer_forked_date, untransfer_forked_date
-        ),
+        migrations.RunPython(transfer_forked_date, untransfer_forked_date),
     ]

@@ -8,12 +8,16 @@ from api.nodes.views import (
     NodeLinkedRegistrationsList,
 )
 
-from api.registrations.views import RegistrationDetail, RegistrationChildrenList, RegistrationList
+from api.registrations.views import (
+    RegistrationDetail,
+    RegistrationChildrenList,
+    RegistrationList,
+)
 from api.users.views import UserNodes, UserRegistrations
 
 
 class BaseSparseMixin(object):
-    view_category = 'sparse'
+    view_category = "sparse"
     serializer_class = None
 
     # overrides NodeList because these endpoints don't allow writing
@@ -52,7 +56,9 @@ class SparseLinkedNodesList(SparseNodeMixin, LinkedNodesList):
     pass
 
 
-class SparseNodeLinkedRegistrationsList(SparseRegistrationMixin, NodeLinkedRegistrationsList):
+class SparseNodeLinkedRegistrationsList(
+    SparseRegistrationMixin, NodeLinkedRegistrationsList
+):
     pass
 
 

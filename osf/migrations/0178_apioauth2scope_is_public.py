@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0177_pagecounter_index'),
+        ("osf", "0177_pagecounter_index"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='apioauth2scope',
-            name='is_public',
+            model_name="apioauth2scope",
+            name="is_public",
             field=models.BooleanField(db_index=True, default=True),
         ),
     ]

@@ -16,11 +16,13 @@ from framework.celery_tasks import handlers as celery_task_handlers
 from framework.django import handlers as django_handlers
 from framework.csrf import handlers as csrf_handlers
 from framework.flask import add_handlers, app
+
 # Import necessary to initialize the root logger
 from framework.logging import logger as root_logger  # noqa
 from framework.postcommit_tasks import handlers as postcommit_handlers
 from framework.sentry import sentry
 from framework.transactions import handlers as transaction_handlers
+
 # Imports necessary to connect signals
 from website.archiver import listeners  # noqa
 from website.mails import listeners  # noqa
@@ -38,11 +40,13 @@ def init_addons(settings, routes=True):
     :param module settings: The settings module.
     :param bool routes: Add each addon's routing rules to the URL map.
     """
-    settings.ADDONS_AVAILABLE = getattr(settings, 'ADDONS_AVAILABLE', [])
-    settings.ADDONS_AVAILABLE_DICT = getattr(settings, 'ADDONS_AVAILABLE_DICT', OrderedDict())
+    settings.ADDONS_AVAILABLE = getattr(settings, "ADDONS_AVAILABLE", [])
+    settings.ADDONS_AVAILABLE_DICT = getattr(
+        settings, "ADDONS_AVAILABLE_DICT", OrderedDict()
+    )
     for addon_name in settings.ADDONS_REQUESTED:
         try:
-            addon = apps.get_app_config('addons_{}'.format(addon_name))
+            addon = apps.get_app_config("addons_{}".format(addon_name))
         except LookupError:
             addon = None
         if addon:
@@ -50,6 +54,7 @@ def init_addons(settings, routes=True):
                 settings.ADDONS_AVAILABLE.append(addon)
             settings.ADDONS_AVAILABLE_DICT[addon.short_name] = addon
     settings.ADDON_CAPABILITIES = render_addon_capabilities(settings.ADDONS_AVAILABLE)
+
 
 def attach_handlers(app, settings):
     """Add callback handlers to ``app`` in the correct order."""
@@ -64,23 +69,32 @@ def attach_handlers(app, settings):
     # NOTE: This must be attached AFTER the TokuMX to avoid calling
     # a commitTransaction (in toku's after_request handler) when no transaction
     # has been created
-    add_handlers(app, {'before_request': framework.sessions.prepare_private_key})
+    add_handlers(app, {"before_request": framework.sessions.prepare_private_key})
     # framework.session's before_request handler must go after
     # prepare_private_key, else view-only links won't work
-    add_handlers(app, {'before_request': framework.sessions.before_request,
-                       'after_request': framework.sessions.after_request})
+    add_handlers(
+        app,
+        {
+            "before_request": framework.sessions.before_request,
+            "after_request": framework.sessions.after_request,
+        },
+    )
 
     return app
 
 
 def setup_django():
     # Django App config
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api.base.settings')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.base.settings")
     django.setup()
 
 
-def init_app(settings_module='website.settings', set_backends=True, routes=True,
-             attach_request_handlers=True):
+def init_app(
+    settings_module="website.settings",
+    set_backends=True,
+    routes=True,
+    attach_request_handlers=True,
+):
     """Initializes the OSF. A sort of pseudo-app factory that allows you to
     bind settings, set up routing, and set storage backends, but only acts on
     a single app instance (rather than creating multiple instances).
@@ -91,7 +105,7 @@ def init_app(settings_module='website.settings', set_backends=True, routes=True,
 
     """
     # Ensure app initialization only takes place once
-    if app.config.get('IS_INITIALIZED', False) is True:
+    if app.config.get("IS_INITIALIZED", False) is True:
         return app
 
     setup_django()
@@ -100,19 +114,22 @@ def init_app(settings_module='website.settings', set_backends=True, routes=True,
     settings = importlib.import_module(settings_module)
 
     init_addons(settings, routes)
-    with open(os.path.join(settings.STATIC_FOLDER, 'built', 'nodeCategories.json'), 'w') as fp:
+    with open(
+        os.path.join(settings.STATIC_FOLDER, "built", "nodeCategories.json"), "w"
+    ) as fp:
         json.dump(settings.NODE_CATEGORY_MAP, fp)
 
     app.debug = settings.DEBUG_MODE
 
     # default config for flask app, however, this does not affect setting cookie using set_cookie()
-    app.config['SESSION_COOKIE_SECURE'] = settings.SESSION_COOKIE_SECURE
-    app.config['SESSION_COOKIE_HTTPONLY'] = settings.SESSION_COOKIE_HTTPONLY
-    app.config['SESSION_COOKIE_SAMESITE'] = settings.SESSION_COOKIE_SAMESITE
+    app.config["SESSION_COOKIE_SECURE"] = settings.SESSION_COOKIE_SECURE
+    app.config["SESSION_COOKIE_HTTPONLY"] = settings.SESSION_COOKIE_HTTPONLY
+    app.config["SESSION_COOKIE_SAMESITE"] = settings.SESSION_COOKIE_SAMESITE
 
     if routes:
         try:
             from website.routes import make_url_map
+
             make_url_map(app)
         except AssertionError:  # Route map has already been created
             pass
@@ -128,7 +145,7 @@ def init_app(settings_module='website.settings', set_backends=True, routes=True,
 
     apply_middlewares(app, settings)
 
-    app.config['IS_INITIALIZED'] = True
+    app.config["IS_INITIALIZED"] = True
     return app
 
 

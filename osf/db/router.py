@@ -8,6 +8,7 @@ class PostgreSQLFailoverRouter(object):
     first one that is not read only. If it finds none that are writable it calls exit() in order to convince docker
     to restart the container.
     """
+
     DSNS = dict()
     CACHED_MASTER = None
 
@@ -27,9 +28,11 @@ class PostgreSQLFailoverRouter(object):
         for name, dsn in self.DSNS.items():
             conn = self._get_conn(dsn)
             cur = conn.cursor()
-            cur.execute('SHOW transaction_read_only;')  # 'on' for slaves, 'off' for masters
+            cur.execute(
+                "SHOW transaction_read_only;"
+            )  # 'on' for slaves, 'off' for masters
             row = cur.fetchone()
-            if row[0] == u'off':
+            if row[0] == u"off":
                 cur.close()
                 conn.close()
                 return name
@@ -42,12 +45,14 @@ class PostgreSQLFailoverRouter(object):
         Builds a list of databases DSNs
         :return: None
         """
-        template = '{protocol}://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
+        template = "{protocol}://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}"
         for name, db in settings.DATABASES.items():
-            if 'postgresql' in db['ENGINE']:
-                db['protocol'] = 'postgres'
+            if "postgresql" in db["ENGINE"]:
+                db["protocol"] = "postgres"
             else:
-                raise Exception('PostgreSQLFailoverRouter only works with PostgreSQL... ... ...')
+                raise Exception(
+                    "PostgreSQLFailoverRouter only works with PostgreSQL... ... ..."
+                )
             self.DSNS[name] = template.format(**db)
 
     def _get_conn(self, dsn):

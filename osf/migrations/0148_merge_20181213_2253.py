@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0147_blacklistedemaildomain'),
-        ('osf', '0147_repoint_preprint_pagecounters'),
+        ("osf", "0147_blacklistedemaildomain"),
+        ("osf", "0147_repoint_preprint_pagecounters"),
     ]
 
-    operations = [
-    ]
+    operations = []

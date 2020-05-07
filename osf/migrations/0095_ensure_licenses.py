@@ -14,7 +14,7 @@ logger = logging.getLogger(__file__)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0094_update_preprintprovider_group_auth'),
+        ("osf", "0094_update_preprintprovider_group_auth"),
     ]
 
     operations = [

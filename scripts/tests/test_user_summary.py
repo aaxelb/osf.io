@@ -29,17 +29,17 @@ class TestUserCount(OsfTestCase):
         u.save()
         # Make one of those 3 a depth user
         for _ in range(LOG_THRESHOLD + 1):
-            NodeLogFactory(action='file_added', user=u)
+            NodeLogFactory(action="file_added", user=u)
 
         # Add old depth user
         u = AuthUserFactory()
         u.is_registered = True
-        u.password = 'wow'
+        u.password = "wow"
         u.date_confirmed = self.a_while_ago
         u.save()
 
         for _ in range(LOG_THRESHOLD + 1):
-            NodeLogFactory(action='file_added', user=u)
+            NodeLogFactory(action="file_added", user=u)
 
         # Add two unconfirmed users
         for _ in range(2):
@@ -59,33 +59,33 @@ class TestUserCount(OsfTestCase):
 
         OSFUser.objects.all().update(date_registered=self.yesterday)
 
-    @mock.patch.object(UserSummary, 'calculate_stickiness')
+    @mock.patch.object(UserSummary, "calculate_stickiness")
     def test_gets_users(self, mock_calculate_stickiness):
-        mock_calculate_stickiness.return_value = .1
+        mock_calculate_stickiness.return_value = 0.1
         data = UserSummary().get_events(self.yesterday.date())[0]
-        assert_equal(data['status']['active'], 4)
-        assert_equal(data['status']['unconfirmed'], 2)
-        assert_equal(data['status']['deactivated'], 2)
-        assert_equal(data['status']['depth'], 2)
-        assert_equal(data['status']['stickiness'], .1)
-        assert_equal(data['status']['new_users_daily'], 3)
-        assert_equal(data['status']['new_users_with_institution_daily'], 1)
-        assert_equal(data['status']['merged'], 0)
+        assert_equal(data["status"]["active"], 4)
+        assert_equal(data["status"]["unconfirmed"], 2)
+        assert_equal(data["status"]["deactivated"], 2)
+        assert_equal(data["status"]["depth"], 2)
+        assert_equal(data["status"]["stickiness"], 0.1)
+        assert_equal(data["status"]["new_users_daily"], 3)
+        assert_equal(data["status"]["new_users_with_institution_daily"], 1)
+        assert_equal(data["status"]["merged"], 0)
 
-    # test_gets_only_users_from_given_date
+        # test_gets_only_users_from_given_date
         data = UserSummary().get_events(self.a_while_ago.date())[0]
-        assert_equal(data['status']['active'], 1)
-        assert_equal(data['status']['unconfirmed'], 0)
-        assert_equal(data['status']['deactivated'], 1)
-        assert_equal(data['status']['depth'], 1)
-        assert_equal(data['status']['stickiness'], .1)
-        assert_equal(data['status']['new_users_daily'], 0)
-        assert_equal(data['status']['new_users_with_institution_daily'], 0)
-        assert_equal(data['status']['merged'], 0)
+        assert_equal(data["status"]["active"], 1)
+        assert_equal(data["status"]["unconfirmed"], 0)
+        assert_equal(data["status"]["deactivated"], 1)
+        assert_equal(data["status"]["depth"], 1)
+        assert_equal(data["status"]["stickiness"], 0.1)
+        assert_equal(data["status"]["new_users_daily"], 0)
+        assert_equal(data["status"]["new_users_with_institution_daily"], 0)
+        assert_equal(data["status"]["merged"], 0)
 
-    # def test_merged_user(self, mock_calculate_stickiness):
-        user = AuthUserFactory(fullname='Annie Lennox')
-        merged_user = AuthUserFactory(fullname='Lisa Stansfield')
+        # def test_merged_user(self, mock_calculate_stickiness):
+        user = AuthUserFactory(fullname="Annie Lennox")
+        merged_user = AuthUserFactory(fullname="Lisa Stansfield")
         user.save()
         merged_user.save()
 
@@ -98,4 +98,4 @@ class TestUserCount(OsfTestCase):
         OSFUser.objects.all().update(date_registered=self.yesterday)
 
         data = UserSummary().get_events(self.yesterday.date())[0]
-        assert_equal(data['status']['merged'], 1)
+        assert_equal(data["status"]["merged"], 1)

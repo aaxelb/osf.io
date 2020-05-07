@@ -9,38 +9,46 @@ import osf.utils.datetime_aware_jsonfield
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0191_migrate_schemas_to_schemablocks'),
+        ("osf", "0191_migrate_schemas_to_schemablocks"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractnode',
-            name='registration_responses',
-            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(blank=True, default=dict, encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder)
+            model_name="abstractnode",
+            name="registration_responses",
+            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(
+                blank=True,
+                default=dict,
+                encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder,
+            ),
         ),
         migrations.AddField(
-            model_name='abstractnode',
-            name='registration_responses_migrated',
+            model_name="abstractnode",
+            name="registration_responses_migrated",
             field=models.NullBooleanField(db_index=True),
         ),
         migrations.AddField(
-            model_name='draftregistration',
-            name='registration_responses',
-            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(blank=True, default=dict, encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder),
+            model_name="draftregistration",
+            name="registration_responses",
+            field=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONField(
+                blank=True,
+                default=dict,
+                encoder=osf.utils.datetime_aware_jsonfield.DateTimeAwareJSONEncoder,
+            ),
         ),
         migrations.AddField(
-            model_name='draftregistration',
-            name='registration_responses_migrated',
+            model_name="draftregistration",
+            name="registration_responses_migrated",
             field=models.NullBooleanField(db_index=True),
         ),
         migrations.AlterField(
-            model_name='abstractnode',
-            name='registration_responses_migrated',
+            model_name="abstractnode",
+            name="registration_responses_migrated",
             field=models.NullBooleanField(db_index=True, default=True),
         ),
         migrations.AlterField(
-            model_name='draftregistration',
-            name='registration_responses_migrated',
+            model_name="draftregistration",
+            name="registration_responses_migrated",
             field=models.NullBooleanField(db_index=True, default=True),
         ),
     ]

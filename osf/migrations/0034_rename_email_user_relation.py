@@ -10,13 +10,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0033_user_emails_to_fk'),
+        ("osf", "0033_user_emails_to_fk"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='email',
-            name='user',
-            field=models.ForeignKey(on_delete=CASCADE, related_name='emails', to=settings.AUTH_USER_MODEL)
+            model_name="email",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=CASCADE, related_name="emails", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

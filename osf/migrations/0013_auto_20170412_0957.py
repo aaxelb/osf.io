@@ -8,14 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0012_auto_20170411_1548'),
+        ("osf", "0012_auto_20170411_1548"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='basefilenode',
-            name='name',
-            field=models.TextField(blank=True, default=''),
+            model_name="basefilenode",
+            name="name",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
     ]

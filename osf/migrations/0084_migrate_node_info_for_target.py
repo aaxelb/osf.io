@@ -10,42 +10,39 @@ logger = logging.getLogger(__name__)
 
 
 def set_basefilenode_target(apps, schema_editor):
-    BaseFileNode = apps.get_model('osf', 'basefilenode')
-    AbstractNode = apps.get_model('osf', 'abstractnode')
+    BaseFileNode = apps.get_model("osf", "basefilenode")
+    AbstractNode = apps.get_model("osf", "abstractnode")
     target_content_type_id = ContentType.objects.get_for_model(AbstractNode).id
 
     BATCHSIZE = 10000
 
-    max_pk = BaseFileNode.objects.aggregate(models.Max('pk'))['pk__max']
+    max_pk = BaseFileNode.objects.aggregate(models.Max("pk"))["pk__max"]
     if max_pk is not None:
         for offset in range(0, max_pk + 1, BATCHSIZE):
             (
-                BaseFileNode.objects
-                .filter(pk__gte=offset)
+                BaseFileNode.objects.filter(pk__gte=offset)
                 .filter(pk__lt=offset + BATCHSIZE)
                 .filter(target_object_id__isnull=True)
                 .filter(target_content_type_id__isnull=True)
                 .update(
                     target_content_type_id=target_content_type_id,
-                    target_object_id=models.F('node_id')
+                    target_object_id=models.F("node_id"),
                 )
             )
             end = offset + BATCHSIZE
-            percent = '{:.1f}%'.format(end / max_pk * 100)
+            percent = "{:.1f}%".format(end / max_pk * 100)
             logger.info(
-                'Updated osf_basefilenode {}-{}/{} ({})'.format(
-                    offset,
-                    end,
-                    max_pk,
-                    percent,
+                "Updated osf_basefilenode {}-{}/{} ({})".format(
+                    offset, end, max_pk, percent,
                 )
             )
 
 
 def reset_basefilenode_target_to_node(*args, **kwargs):
-    sql = 'UPDATE osf_basefilenode SET node_id = target_object_id;'
+    sql = "UPDATE osf_basefilenode SET node_id = target_object_id;"
     with connection.cursor() as cursor:
         cursor.execute(sql)
+
 
 class Migration(migrations.Migration):
 
@@ -53,9 +50,11 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('osf', '0083_add_file_fields_for_target'),
+        ("osf", "0083_add_file_fields_for_target"),
     ]
 
     operations = [
-        migrations.RunPython(set_basefilenode_target, reset_basefilenode_target_to_node),
+        migrations.RunPython(
+            set_basefilenode_target, reset_basefilenode_target_to_node
+        ),
     ]

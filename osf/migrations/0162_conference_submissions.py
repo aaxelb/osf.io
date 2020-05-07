@@ -8,17 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0161_add_spam_fields_to_user'),
+        ("osf", "0161_add_spam_fields_to_user"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='conference',
-            name='submissions',
-            field=models.ManyToManyField(related_name='conferences', to='osf.AbstractNode'),
+            model_name="conference",
+            name="submissions",
+            field=models.ManyToManyField(
+                related_name="conferences", to="osf.AbstractNode"
+            ),
         ),
-        migrations.RemoveField(
-            model_name='conference',
-            name='num_submissions',
-        ),
+        migrations.RemoveField(model_name="conference", name="num_submissions",),
     ]

@@ -5,8 +5,8 @@ from admin.base.settings import KEEN_CREDENTIALS
 
 
 class MetricsView(PermissionRequiredMixin, TemplateView):
-    template_name = 'metrics/osf_metrics.html'
-    permission_required = 'osf.view_metrics'
+    template_name = "metrics/osf_metrics.html"
+    permission_required = "osf.view_metrics"
     raise_exception = True
 
     def get_context_data(self, **kwargs):

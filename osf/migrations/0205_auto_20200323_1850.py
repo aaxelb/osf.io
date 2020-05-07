@@ -8,17 +8,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0204_ensure_schemas'),
+        ("osf", "0204_ensure_schemas"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='institution',
-            options={'permissions': (('view_institution', 'Can view institution details'), ('view_institutional_metrics', 'Can access metrics endpoints for their Institution'))},
+            name="institution",
+            options={
+                "permissions": (
+                    ("view_institution", "Can view institution details"),
+                    (
+                        "view_institutional_metrics",
+                        "Can access metrics endpoints for their Institution",
+                    ),
+                )
+            },
         ),
         migrations.AddField(
-            model_name='osfuser',
-            name='department',
+            model_name="osfuser",
+            name="department",
             field=models.TextField(blank=True, null=True),
         ),
     ]

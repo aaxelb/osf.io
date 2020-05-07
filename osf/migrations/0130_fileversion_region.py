@@ -9,14 +9,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_osfstorage', '0004_storage_region_models'),
-        ('osf', '0129_merge_20180910_1926'),
+        ("addons_osfstorage", "0004_storage_region_models"),
+        ("osf", "0129_merge_20180910_1926"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='fileversion',
-            name='region',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='addons_osfstorage.Region'),
+            model_name="fileversion",
+            name="region",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="addons_osfstorage.Region",
+            ),
         ),
     ]

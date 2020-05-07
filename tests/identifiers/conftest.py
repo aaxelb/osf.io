@@ -5,7 +5,7 @@ from framework.flask import rm_handlers
 from framework.django.handlers import handlers as django_handlers
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(autouse=True, scope="session")
 def app():
     try:
         test_app = init_app(routes=True, set_backends=False)
@@ -16,4 +16,3 @@ def app():
 
     test_app.testing = True
     return test_app
-

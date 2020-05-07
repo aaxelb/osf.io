@@ -22,52 +22,60 @@ class TestPreregLandingPage(OsfTestCase):
         assert_equal(
             landing_page(),
             {
-                'has_projects': False,
-                'has_draft_registrations': False,
-                'campaign_long': 'Prereg Challenge',
-                'campaign_short': 'prereg_challenge',
-                'is_logged_in': False,
-                'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-            }
+                "has_projects": False,
+                "has_draft_registrations": False,
+                "campaign_long": "Prereg Challenge",
+                "campaign_short": "prereg_challenge",
+                "is_logged_in": False,
+                "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                    DOMAIN
+                ),
+            },
         )
 
         with override_switch(name=OSF_PREREGISTRATION, active=True):
             assert_equal(
                 landing_page(),
                 {
-                    'has_projects': False,
-                    'has_draft_registrations': False,
-                    'campaign_long': 'OSF Preregistration',
-                    'campaign_short': 'prereg',
-                    'is_logged_in': False,
-                    'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-                }
+                    "has_projects": False,
+                    "has_draft_registrations": False,
+                    "campaign_long": "OSF Preregistration",
+                    "campaign_short": "prereg",
+                    "is_logged_in": False,
+                    "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                        DOMAIN
+                    ),
+                },
             )
 
     def test_no_projects(self):
         assert_equal(
             landing_page(user=self.user),
             {
-                'has_projects': False,
-                'has_draft_registrations': False,
-                'campaign_long': 'Prereg Challenge',
-                'campaign_short': 'prereg_challenge',
-                'is_logged_in': True,
-                'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-            }
+                "has_projects": False,
+                "has_draft_registrations": False,
+                "campaign_long": "Prereg Challenge",
+                "campaign_short": "prereg_challenge",
+                "is_logged_in": True,
+                "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                    DOMAIN
+                ),
+            },
         )
 
         with override_switch(name=OSF_PREREGISTRATION, active=True):
             assert_equal(
                 landing_page(user=self.user),
                 {
-                    'has_projects': False,
-                    'has_draft_registrations': False,
-                    'campaign_long': 'OSF Preregistration',
-                    'campaign_short': 'prereg',
-                    'is_logged_in': True,
-                    'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-                }
+                    "has_projects": False,
+                    "has_draft_registrations": False,
+                    "campaign_long": "OSF Preregistration",
+                    "campaign_short": "prereg",
+                    "is_logged_in": True,
+                    "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                        DOMAIN
+                    ),
+                },
             )
 
     def test_has_project(self):
@@ -76,30 +84,34 @@ class TestPreregLandingPage(OsfTestCase):
         assert_equal(
             landing_page(user=self.user),
             {
-                'has_projects': True,
-                'has_draft_registrations': False,
-                'campaign_long': 'Prereg Challenge',
-                'campaign_short': 'prereg_challenge',
-                'is_logged_in': True,
-                'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-            }
+                "has_projects": True,
+                "has_draft_registrations": False,
+                "campaign_long": "Prereg Challenge",
+                "campaign_short": "prereg_challenge",
+                "is_logged_in": True,
+                "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                    DOMAIN
+                ),
+            },
         )
 
         with override_switch(name=OSF_PREREGISTRATION, active=True):
             assert_equal(
                 landing_page(user=self.user),
                 {
-                    'has_projects': True,
-                    'has_draft_registrations': False,
-                    'campaign_long': 'OSF Preregistration',
-                    'campaign_short': 'prereg',
-                    'is_logged_in': True,
-                    'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-                }
+                    "has_projects": True,
+                    "has_draft_registrations": False,
+                    "campaign_long": "OSF Preregistration",
+                    "campaign_short": "prereg",
+                    "is_logged_in": True,
+                    "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                        DOMAIN
+                    ),
+                },
             )
 
     def test_has_project_and_draft_registration(self):
-        prereg_schema = RegistrationSchema.objects.get(name='Prereg Challenge')
+        prereg_schema = RegistrationSchema.objects.get(name="Prereg Challenge")
         project = factories.ProjectFactory(creator=self.user)
         factories.DraftRegistrationFactory(
             initiator=self.user,
@@ -110,67 +122,71 @@ class TestPreregLandingPage(OsfTestCase):
         assert_equal(
             landing_page(user=self.user),
             {
-                'has_projects': True,
-                'has_draft_registrations': True,
-                'campaign_long': 'Prereg Challenge',
-                'campaign_short': 'prereg_challenge',
-                'is_logged_in': True,
-                'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-            }
+                "has_projects": True,
+                "has_draft_registrations": True,
+                "campaign_long": "Prereg Challenge",
+                "campaign_short": "prereg_challenge",
+                "is_logged_in": True,
+                "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                    DOMAIN
+                ),
+            },
         )
 
         with override_switch(name=OSF_PREREGISTRATION, active=True):
-            prereg_schema = RegistrationSchema.objects.get(name='OSF Preregistration', schema_version=3)
+            prereg_schema = RegistrationSchema.objects.get(
+                name="OSF Preregistration", schema_version=3
+            )
             factories.DraftRegistrationFactory(
                 initiator=self.user,
                 registration_schema=prereg_schema,
-                branched_from=project
+                branched_from=project,
             )
             assert_equal(
                 landing_page(user=self.user),
                 {
-                    'has_projects': True,
-                    'has_draft_registrations': True,
-                    'campaign_long': 'OSF Preregistration',
-                    'campaign_short': 'prereg',
-                    'is_logged_in': True,
-                    'sign_up_url': '{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F'.format(DOMAIN),
-                }
+                    "has_projects": True,
+                    "has_draft_registrations": True,
+                    "campaign_long": "OSF Preregistration",
+                    "campaign_short": "prereg",
+                    "is_logged_in": True,
+                    "sign_up_url": "{}register/?campaign=prereg&next=http%3A%2F%2Flocalhost%2F".format(
+                        DOMAIN
+                    ),
+                },
             )
 
     def test_drafts_for_user_omits_registered(self):
-        prereg_schema = RegistrationSchema.objects.get(name='Prereg Challenge', schema_version=2)
+        prereg_schema = RegistrationSchema.objects.get(
+            name="Prereg Challenge", schema_version=2
+        )
 
         d1 = factories.DraftRegistrationFactory(
-            initiator=self.user,
-            registration_schema=prereg_schema
+            initiator=self.user, registration_schema=prereg_schema
         )
         d2 = factories.DraftRegistrationFactory(
-            initiator=self.user,
-            registration_schema=prereg_schema
+            initiator=self.user, registration_schema=prereg_schema
         )
         d3 = factories.DraftRegistrationFactory(
-            initiator=self.user,
-            registration_schema=prereg_schema
+            initiator=self.user, registration_schema=prereg_schema
         )
         d1.registered_node = factories.RegistrationFactory()
         d1.save()
-        drafts = drafts_for_user(self.user, 'prereg')
+        drafts = drafts_for_user(self.user, "prereg")
         for d in drafts:
             assert_in(d._id, (d2._id, d3._id))
             assert_not_equal(d._id, d1._id)
 
 
 class TestPreregUtils(OsfTestCase):
-
     def setUp(self):
         super(TestPreregUtils, self).setUp()
 
     def test_get_prereg_schema_returns_prereg_metaschema(self):
         schema = get_prereg_schema()
         assert_is_instance(schema, RegistrationSchema)
-        assert_equal(schema.name, 'Prereg Challenge')
+        assert_equal(schema.name, "Prereg Challenge")
 
     def test_get_prereg_schema_raises_error_for_invalid_campaign(self):
         with assert_raises(ValueError):
-            get_prereg_schema(campaign='invalid')
+            get_prereg_schema(campaign="invalid")

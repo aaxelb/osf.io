@@ -13,9 +13,9 @@ from addons.box.models import UserSettings
 
 
 class BoxAccountFactory(ExternalAccountFactory):
-    provider = 'box'
-    provider_id = Sequence(lambda n: 'id-{0}'.format(n))
-    oauth_key = Sequence(lambda n: 'key-{0}'.format(n))
+    provider = "box"
+    provider_id = Sequence(lambda n: "id-{0}".format(n))
+    oauth_key = Sequence(lambda n: "key-{0}".format(n))
     expires_at = timezone.now() + relativedelta(seconds=3600)
 
 

@@ -9,13 +9,13 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_wiki', '0002_auto_20170323_1534'),
+        ("addons_wiki", "0002_auto_20170323_1534"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='nodewikipage',
-            name='date',
+            model_name="nodewikipage",
+            name="date",
             field=osf.utils.fields.NonNaiveDateTimeField(auto_now_add=True),
         ),
     ]

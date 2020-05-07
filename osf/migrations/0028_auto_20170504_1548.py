@@ -8,12 +8,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0027_auto_20170428_1435'),
+        ("osf", "0027_auto_20170428_1435"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='subject',
-            options={'base_manager_name': 'objects'},
+            name="subject", options={"base_manager_name": "objects"},
         ),
     ]

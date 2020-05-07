@@ -10,11 +10,13 @@ register = template.Library()
 def reverse_node(value):
     if isinstance(value, Node):
         value = value._id
-    return reverse('nodes:node', kwargs={'guid': value})
+    return reverse("nodes:node", kwargs={"guid": value})
+
 
 @register.filter
 def reverse_preprint(value):
-    return reverse('preprints:preprint', kwargs={'guid': value})
+    return reverse("preprints:preprint", kwargs={"guid": value})
+
 
 @register.filter
 def reverse_user(user_id):
@@ -22,8 +24,9 @@ def reverse_user(user_id):
         user = OSFUser.objects.get(id=user_id)
     else:
         user = OSFUser.load(user_id)
-    return reverse('users:user', kwargs={'guid': user._id})
+    return reverse("users:user", kwargs={"guid": user._id})
+
 
 @register.filter
 def reverse_osf_group(value):
-    return reverse('osf_groups:osf_group', kwargs={'id': value})
+    return reverse("osf_groups:osf_group", kwargs={"id": value})

@@ -9,17 +9,34 @@ from website import settings
 from osf.utils.tokens import handlers
 from osf.exceptions import TokenHandlerNotFound
 
+
 class TokenHandler(object):
 
     HANDLERS = {
-        'approve_registration_approval': functools.partial(handlers.sanction_handler, 'registration', 'approve'),
-        'reject_registration_approval': functools.partial(handlers.sanction_handler, 'registration', 'reject'),
-        'approve_embargo': functools.partial(handlers.sanction_handler, 'embargo', 'approve'),
-        'reject_embargo': functools.partial(handlers.sanction_handler, 'embargo', 'reject'),
-        'approve_embargo_termination_approval': functools.partial(handlers.sanction_handler, 'embargo_termination_approval', 'approve'),
-        'reject_embargo_termination_approval': functools.partial(handlers.sanction_handler, 'embargo_termination_approval', 'reject'),
-        'approve_retraction': functools.partial(handlers.sanction_handler, 'retraction', 'approve'),
-        'reject_retraction': functools.partial(handlers.sanction_handler, 'retraction', 'reject')
+        "approve_registration_approval": functools.partial(
+            handlers.sanction_handler, "registration", "approve"
+        ),
+        "reject_registration_approval": functools.partial(
+            handlers.sanction_handler, "registration", "reject"
+        ),
+        "approve_embargo": functools.partial(
+            handlers.sanction_handler, "embargo", "approve"
+        ),
+        "reject_embargo": functools.partial(
+            handlers.sanction_handler, "embargo", "reject"
+        ),
+        "approve_embargo_termination_approval": functools.partial(
+            handlers.sanction_handler, "embargo_termination_approval", "approve"
+        ),
+        "reject_embargo_termination_approval": functools.partial(
+            handlers.sanction_handler, "embargo_termination_approval", "reject"
+        ),
+        "approve_retraction": functools.partial(
+            handlers.sanction_handler, "retraction", "approve"
+        ),
+        "reject_retraction": functools.partial(
+            handlers.sanction_handler, "retraction", "reject"
+        ),
     }
 
     def __init__(self, encoded_token=None, payload=None):
@@ -34,10 +51,7 @@ class TokenHandler(object):
         except jwt.DecodeError as e:
             raise HTTPError(
                 http_status.HTTP_400_BAD_REQUEST,
-                data={
-                    'message_short': 'Bad request',
-                    'message_long': str(e)
-                }
+                data={"message_short": "Bad request", "message_long": str(e)},
             )
         return cls(encoded_token=encoded_token, payload=payload)
 
@@ -47,7 +61,7 @@ class TokenHandler(object):
         return cls(encoded_token=encoded_token, payload=payload)
 
     def to_response(self):
-        action = self.payload.get('action', None)
+        action = self.payload.get("action", None)
         handler = self.HANDLERS.get(action)
         if handler:
             return handler(self.payload, self.encoded_token)
@@ -66,7 +80,7 @@ def process_token_or_pass(func):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        encoded_token = request.args.get('token')
+        encoded_token = request.args.get("token")
         if encoded_token:
             handler = TokenHandler.from_string(encoded_token)
             try:
@@ -75,26 +89,26 @@ def process_token_or_pass(func):
                 raise HTTPError(
                     http_status.HTTP_400_BAD_REQUEST,
                     data={
-                        'message_short': 'Invalid Token',
-                        'message_long': 'No token handler for action: {} found'.format(e.action)
-                    }
+                        "message_short": "Invalid Token",
+                        "message_long": "No token handler for action: {} found".format(
+                            e.action
+                        ),
+                    },
                 )
             if res:
                 return res
         return func(*args, **kwargs)
+
     return wrapper
 
 
 def encode(payload):
     return jwt.encode(
-        payload,
-        settings.JWT_SECRET,
-        algorithm=settings.JWT_ALGORITHM
+        payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
     ).decode()
 
 
 def decode(encoded_token):
     return jwt.decode(
-        encoded_token,
-        settings.JWT_SECRET,
-        algorithms=[settings.JWT_ALGORITHM])
+        encoded_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+    )

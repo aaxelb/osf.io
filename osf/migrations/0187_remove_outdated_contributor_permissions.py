@@ -8,32 +8,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0186_make_pagecounter_fields_nonnull'),
+        ("osf", "0186_make_pagecounter_fields_nonnull"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='contributor',
-            name='admin',
-        ),
-        migrations.RemoveField(
-            model_name='contributor',
-            name='read',
-        ),
-        migrations.RemoveField(
-            model_name='contributor',
-            name='write',
-        ),
-        migrations.RemoveField(
-            model_name='institutionalcontributor',
-            name='admin',
-        ),
-        migrations.RemoveField(
-            model_name='institutionalcontributor',
-            name='read',
-        ),
-        migrations.RemoveField(
-            model_name='institutionalcontributor',
-            name='write',
-        ),
+        migrations.RemoveField(model_name="contributor", name="admin",),
+        migrations.RemoveField(model_name="contributor", name="read",),
+        migrations.RemoveField(model_name="contributor", name="write",),
+        migrations.RemoveField(model_name="institutionalcontributor", name="admin",),
+        migrations.RemoveField(model_name="institutionalcontributor", name="read",),
+        migrations.RemoveField(model_name="institutionalcontributor", name="write",),
     ]

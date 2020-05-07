@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0076_action_rename'),
+        ("osf", "0076_action_rename"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintprovider',
-            name='facebook_app_id',
+            model_name="preprintprovider",
+            name="facebook_app_id",
             field=models.BigIntegerField(blank=True, null=True),
         ),
     ]

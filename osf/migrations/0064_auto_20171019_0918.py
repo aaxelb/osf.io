@@ -8,13 +8,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0063_merge_20171012_1215'),
+        ("osf", "0063_merge_20171012_1215"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='notificationdigest',
-            name='message',
-            field=models.TextField(),
+            model_name="notificationdigest", name="message", field=models.TextField(),
         ),
     ]

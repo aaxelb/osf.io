@@ -13,53 +13,50 @@ from website.settings import WATERBUTLER_URL
 
 logger = logging.getLogger(__file__)
 
-osfstorage_config = apps.get_app_config('addons_osfstorage')
+osfstorage_config = apps.get_app_config("addons_osfstorage")
 
 
 def add_osfstorage_addon(apps, *args):
-    OSFUser = apps.get_model('osf', 'OSFUser')
-    Region = apps.get_model('addons_osfstorage', 'Region')
-    OsfStorageUserSettings = apps.get_model('addons_osfstorage', 'UserSettings')
+    OSFUser = apps.get_model("osf", "OSFUser")
+    Region = apps.get_model("addons_osfstorage", "Region")
+    OsfStorageUserSettings = apps.get_model("addons_osfstorage", "UserSettings")
 
     default_region, created = Region.objects.get_or_create(
         _id=DEFAULT_REGION_ID,
         name=DEFAULT_REGION_NAME,
         waterbutler_credentials=osfstorage_config.WATERBUTLER_CREDENTIALS,
         waterbutler_settings=osfstorage_config.WATERBUTLER_SETTINGS,
-        waterbutler_url=WATERBUTLER_URL
+        waterbutler_url=WATERBUTLER_URL,
     )
 
     if created:
-        logger.info('Created default region: {}'.format(DEFAULT_REGION_NAME))
+        logger.info("Created default region: {}".format(DEFAULT_REGION_NAME))
 
     total_users = OSFUser.objects.all().count()
     users_done = 0
-    paginator = Paginator(OSFUser.objects.all().order_by('pk'), 1000)
+    paginator = Paginator(OSFUser.objects.all().order_by("pk"), 1000)
     for page_num in paginator.page_range:
         page = paginator.page(page_num)
 
         user_settings_to_update = []
         for user in page:
             new_user_settings = OsfStorageUserSettings(
-                owner=user,
-                default_region=default_region
+                owner=user, default_region=default_region
             )
             user_settings_to_update.append(new_user_settings)
             users_done += 1
 
         OsfStorageUserSettings.objects.bulk_create(user_settings_to_update)
-        logger.info('Created {}/{} UserSettings'.format(users_done, total_users))
+        logger.info("Created {}/{} UserSettings".format(users_done, total_users))
 
-    logger.info('Created UserSettings for {} users'.format(total_users))
+    logger.info("Created UserSettings for {} users".format(total_users))
 
 
 def remove_osfstorage_addon(apps, *args):
-    Region = apps.get_model('addons_osfstorage', 'Region')
+    Region = apps.get_model("addons_osfstorage", "Region")
     OsfStorageUserSettings = osfstorage_config.user_settings
 
-    region = Region.objects.filter(
-        name=DEFAULT_REGION_NAME
-    )
+    region = Region.objects.filter(name=DEFAULT_REGION_NAME)
 
     if region:
         region.get().delete()
@@ -70,8 +67,8 @@ def remove_osfstorage_addon(apps, *args):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_osfstorage', '0004_storage_region_models'),
-        ('osf', '0098_merge_20180416_1807'),
+        ("addons_osfstorage", "0004_storage_region_models"),
+        ("osf", "0098_merge_20180416_1807"),
     ]
 
     operations = [

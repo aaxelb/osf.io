@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0001_initial'),
+        ("osf", "0001_initial"),
     ]
 
     operations = [
@@ -17,10 +17,11 @@ class Migration(migrations.Migration):
                 """
                 CREATE INDEX lowercase_tag_index ON osf_tag (lower(name), system);
                 """
-            ], [
+            ],
+            [
                 """
                 DROP INDEX IF EXISTS lowercase_tag_index RESTRICT;
                 """
-            ]
+            ],
         )
     ]

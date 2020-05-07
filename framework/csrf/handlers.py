@@ -23,7 +23,7 @@ def _get_token():
 def before_request():
     # Reuse token if already set
     csrf_token = _get_token()
-    if not csrf_token or g.get('csrf_cookie_needs_reset', False):
+    if not csrf_token or g.get("csrf_cookie_needs_reset", False):
         csrf_token = _get_new_csrf_token()
     # Store csrf_token on g so that it can be used in
     # server-rendered forms
@@ -52,6 +52,6 @@ def after_request(resp):
 
 
 handlers = {
-    'before_request': before_request,
-    'after_request': after_request,
+    "before_request": before_request,
+    "after_request": after_request,
 }

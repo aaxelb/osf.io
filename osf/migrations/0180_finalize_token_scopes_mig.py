@@ -8,17 +8,14 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0179_apioauth2personaltoken_scopes_temp'),
+        ("osf", "0179_apioauth2personaltoken_scopes_temp"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='apioauth2personaltoken',
-            name='scopes',
-        ),
+        migrations.RemoveField(model_name="apioauth2personaltoken", name="scopes",),
         migrations.RenameField(
-            model_name='apioauth2personaltoken',
-            old_name='scopes_temp',
-            new_name='scopes',
+            model_name="apioauth2personaltoken",
+            old_name="scopes_temp",
+            new_name="scopes",
         ),
     ]

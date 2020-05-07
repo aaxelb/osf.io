@@ -10,21 +10,23 @@ from addons.base.exceptions import HookError
 
 from addons.github.api import GitHubClient
 
-MESSAGE_BASE = 'via the Open Science Framework'
+MESSAGE_BASE = "via the Open Science Framework"
 MESSAGES = {
-    'add': 'Added {0}'.format(MESSAGE_BASE),
-    'move': 'Moved {0}'.format(MESSAGE_BASE),
-    'copy': 'Copied {0}'.format(MESSAGE_BASE),
-    'update': 'Updated {0}'.format(MESSAGE_BASE),
-    'delete': 'Deleted {0}'.format(MESSAGE_BASE),
+    "add": "Added {0}".format(MESSAGE_BASE),
+    "move": "Moved {0}".format(MESSAGE_BASE),
+    "copy": "Copied {0}".format(MESSAGE_BASE),
+    "update": "Updated {0}".format(MESSAGE_BASE),
+    "delete": "Deleted {0}".format(MESSAGE_BASE),
 }
 
 
 def make_hook_secret():
-    return str(uuid.uuid4()).replace('-', '')
+    return str(uuid.uuid4()).replace("-", "")
 
 
-HOOK_SIGNATURE_KEY = 'X-Hub-Signature'
+HOOK_SIGNATURE_KEY = "X-Hub-Signature"
+
+
 def verify_hook_signature(node_settings, data, headers):
     """Verify hook signature.
     :param GithubNodeSettings node_settings:
@@ -33,19 +35,17 @@ def verify_hook_signature(node_settings, data, headers):
     :raises: HookError if signature is missing or invalid
     """
     if node_settings.hook_secret is None:
-        raise HookError('No secret key')
+        raise HookError("No secret key")
     digest = hmac.new(
-        node_settings.hook_secret.encode('utf-8'),
-        data,
-        digestmod=hashlib.sha1
+        node_settings.hook_secret.encode("utf-8"), data, digestmod=hashlib.sha1
     ).hexdigest()
-    signature = headers.get(HOOK_SIGNATURE_KEY, '').replace('sha1=', '')
+    signature = headers.get(HOOK_SIGNATURE_KEY, "").replace("sha1=", "")
     if digest != signature:
-        raise HookError('Invalid signature')
+        raise HookError("Invalid signature")
 
 
 def get_path(kwargs, required=True):
-    path = kwargs.get('path')
+    path = kwargs.get("path")
     if path:
         return unquote_plus(path)
     elif required:
@@ -74,15 +74,12 @@ def get_refs(addon, branch=None, sha=None, connection=None):
         branch = repo.default_branch
     # Get registered branches if provided
     registered_branches = (
-        [Branch.from_json(b) for b in addon.registration_data.get('branches', [])]
+        [Branch.from_json(b) for b in addon.registration_data.get("branches", [])]
         if addon.owner.is_registration
         else []
     )
 
-    registered_branch_names = [
-        each.name
-        for each in registered_branches
-    ]
+    registered_branch_names = [each.name for each in registered_branches]
     # Fail if registered and branch not in registration data
     if registered_branches and branch not in registered_branch_names:
         raise HTTPError(http_status.HTTP_400_BAD_REQUEST)
@@ -105,30 +102,24 @@ def check_permissions(node_settings, auth, connection, branch, sha=None, repo=No
 
     has_auth = bool(user_settings and user_settings.has_auth)
     if has_auth:
-        repo = repo or connection.repo(
-            node_settings.user, node_settings.repo
-        )
+        repo = repo or connection.repo(node_settings.user, node_settings.repo)
 
-        has_access = (
-            repo is not None and (
-                repo.permissions and repo.permissions['push']
-            )
+        has_access = repo is not None and (
+            repo.permissions and repo.permissions["push"]
         )
 
     if sha:
-        branches = connection.branches(
-            node_settings.user, node_settings.repo, branch
-        )
+        branches = connection.branches(node_settings.user, node_settings.repo, branch)
         # TODO Will I ever return false?
         is_head = next((True for branch in branches if sha == branch.commit.sha), None)
     else:
         is_head = True
 
     can_edit = (
-        node_settings.owner.can_edit(auth) and
-        not node_settings.owner.is_registration and
-        has_access and
-        is_head
+        node_settings.owner.can_edit(auth)
+        and not node_settings.owner.is_registration
+        and has_access
+        and is_head
     )
 
     return can_edit

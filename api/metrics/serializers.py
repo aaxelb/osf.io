@@ -7,4 +7,4 @@ class PreprintMetricSerializer(BaseAPISerializer):
     query = ser.DictField()
 
     class Meta:
-        type_ = 'preprint_metrics'
+        type_ = "preprint_metrics"

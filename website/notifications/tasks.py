@@ -14,7 +14,7 @@ from website import mails, settings
 from website.notifications.utils import NotificationsDict
 
 
-@celery_app.task(name='website.notifications.tasks.send_users_email', max_retries=0)
+@celery_app.task(name="website.notifications.tasks.send_users_email", max_retries=0)
 def send_users_email(send_type):
     """Send pending emails.
 
@@ -31,22 +31,25 @@ def _send_global_and_node_emails(send_type):
     """
     grouped_emails = get_users_emails(send_type)
     for group in grouped_emails:
-        user = OSFUser.load(group['user_id'])
+        user = OSFUser.load(group["user_id"])
         if not user:
             log_exception()
             continue
-        info = group['info']
-        notification_ids = [message['_id'] for message in info]
+        info = group["info"]
+        notification_ids = [message["_id"] for message in info]
         sorted_messages = group_by_node(info)
         if sorted_messages:
             if not user.is_disabled:
                 # If there's only one node in digest we can show it's preferences link in the template.
-                notification_nodes = list(sorted_messages['children'].keys())
-                node = AbstractNode.load(notification_nodes[0]) if len(
-                    notification_nodes) == 1 else None
+                notification_nodes = list(sorted_messages["children"].keys())
+                node = (
+                    AbstractNode.load(notification_nodes[0])
+                    if len(notification_nodes) == 1
+                    else None
+                )
                 mails.send_mail(
                     to_addr=user.username,
-                    mimetype='html',
+                    mimetype="html",
                     can_change_node_preferences=bool(node),
                     node=node,
                     mail=mails.DIGEST,
@@ -62,22 +65,26 @@ def _send_reviews_moderator_emails(send_type):
     """
     grouped_emails = get_moderators_emails(send_type)
     for group in grouped_emails:
-        user = OSFUser.load(group['user_id'])
-        info = group['info']
-        notification_ids = [message['_id'] for message in info]
+        user = OSFUser.load(group["user_id"])
+        info = group["info"]
+        notification_ids = [message["_id"] for message in info]
         if not user.is_disabled:
-            provider = AbstractProvider.objects.get(id=group['provider_id'])
+            provider = AbstractProvider.objects.get(id=group["provider_id"])
             mails.send_mail(
                 to_addr=user.username,
-                mimetype='html',
+                mimetype="html",
                 mail=mails.DIGEST_REVIEWS_MODERATORS,
                 name=user.fullname,
                 message=info,
                 provider_name=provider.name,
-                reviews_submissions_url='{}reviews/preprints/{}'.format(settings.DOMAIN, provider._id),
-                notification_settings_url='{}reviews/preprints/{}/notifications'.format(settings.DOMAIN, provider._id),
+                reviews_submissions_url="{}reviews/preprints/{}".format(
+                    settings.DOMAIN, provider._id
+                ),
+                notification_settings_url="{}reviews/preprints/{}/notifications".format(
+                    settings.DOMAIN, provider._id
+                ),
                 is_reviews_moderator_notification=True,
-                is_admin=provider.get_group(ADMIN).user_set.filter(id=user.id).exists()
+                is_admin=provider.get_group(ADMIN).user_set.filter(id=user.id).exists(),
             )
         remove_notifications(email_notification_ids=notification_ids)
 
@@ -117,7 +124,7 @@ def get_moderators_emails(send_type):
         """
 
     with connection.cursor() as cursor:
-        cursor.execute(sql, [send_type, ])
+        cursor.execute(sql, [send_type,])
         return itertools.chain.from_iterable(cursor.fetchall())
 
 
@@ -164,7 +171,7 @@ def get_users_emails(send_type):
     """
 
     with connection.cursor() as cursor:
-        cursor.execute(sql, [send_type, ])
+        cursor.execute(sql, [send_type,])
         return itertools.chain.from_iterable(cursor.fetchall())
 
 
@@ -176,7 +183,7 @@ def group_by_node(notifications, limit=15):
     """
     emails = NotificationsDict()
     for notification in notifications[:15]:
-        emails.add_message(notification['node_lineage'], notification['message'])
+        emails.add_message(notification["node_lineage"], notification["message"])
     return emails
 
 

@@ -9,9 +9,9 @@ from osf.utils.migrations import DeleteWaffleSwitches
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0151_auto_20181215_1911'),
+        ("osf", "0151_auto_20181215_1911"),
     ]
 
     operations = [
-        DeleteWaffleSwitches(['disable_datacite_dois', 'ezid_switch']),
+        DeleteWaffleSwitches(["disable_datacite_dois", "ezid_switch"]),
     ]

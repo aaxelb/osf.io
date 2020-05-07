@@ -9,13 +9,13 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0100_set_access_request_enabled'),
+        ("osf", "0100_set_access_request_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='osfuser',
-            name='accepted_terms_of_service',
+            model_name="osfuser",
+            name="accepted_terms_of_service",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
     ]

@@ -3,9 +3,8 @@ import pytest
 from api.base.settings.defaults import API_BASE
 from api_tests.subjects.mixins import SubjectsListMixin
 from osf.utils.permissions import WRITE, READ
-from osf_tests.factories import (
-    DraftRegistrationFactory,
-)
+from osf_tests.factories import DraftRegistrationFactory
+
 
 class TestDraftRegistrationSubjectsList(SubjectsListMixin):
     @pytest.fixture()
@@ -20,4 +19,4 @@ class TestDraftRegistrationSubjectsList(SubjectsListMixin):
     @pytest.fixture()
     def url(self, resource):
         # Overrides SubjectsListMixin
-        return '/{}draft_registrations/{}/subjects/'.format(API_BASE, resource._id)
+        return "/{}draft_registrations/{}/subjects/".format(API_BASE, resource._id)

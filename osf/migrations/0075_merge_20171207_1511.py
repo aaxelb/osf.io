@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0074_parse_citation_styles'),
-        ('osf', '0074_auto_20171207_1331'),
+        ("osf", "0074_parse_citation_styles"),
+        ("osf", "0074_auto_20171207_1331"),
     ]
 
-    operations = [
-    ]
+    operations = []

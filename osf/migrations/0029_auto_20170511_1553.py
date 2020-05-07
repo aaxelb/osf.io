@@ -9,18 +9,26 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0028_auto_20170504_1548'),
+        ("osf", "0028_auto_20170504_1548"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='preprintprovider',
-            name='default_license',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='default_license', to='osf.NodeLicense'),
+            model_name="preprintprovider",
+            name="default_license",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="default_license",
+                to="osf.NodeLicense",
+            ),
         ),
         migrations.AlterField(
-            model_name='preprintprovider',
-            name='licenses_acceptable',
-            field=models.ManyToManyField(blank=True, related_name='licenses_acceptable', to='osf.NodeLicense'),
+            model_name="preprintprovider",
+            name="licenses_acceptable",
+            field=models.ManyToManyField(
+                blank=True, related_name="licenses_acceptable", to="osf.NodeLicense"
+            ),
         ),
     ]

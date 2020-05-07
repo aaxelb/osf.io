@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0016_preprintprovider_domain_redirect_enabled'),
+        ("osf", "0016_preprintprovider_domain_redirect_enabled"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='preprintprovider',
-            name='domain',
-            field=models.URLField(blank=True, default=b'', null=True),
+            model_name="preprintprovider",
+            name="domain",
+            field=models.URLField(blank=True, default=b"", null=True),
         ),
     ]

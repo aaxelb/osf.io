@@ -3,5 +3,5 @@
 these settings.
 """
 # Get an app key and secret at http://dev.mendeley.com/
-MENDELEY_CLIENT_ID = 'changeme'
-MENDELEY_CLIENT_SECRET = 'changeme'
+MENDELEY_CLIENT_ID = "changeme"
+MENDELEY_CLIENT_SECRET = "changeme"

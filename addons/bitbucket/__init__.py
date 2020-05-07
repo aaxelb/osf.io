@@ -1,1 +1,1 @@
-default_app_config = 'addons.bitbucket.apps.BitbucketAddonConfig'
+default_app_config = "addons.bitbucket.apps.BitbucketAddonConfig"

@@ -28,6 +28,7 @@ from api.nodes.permissions import ContributorOrPublic, AdminDeletePermissions
 from api.subjects.views import SubjectRelationshipBaseView, BaseResourceSubjectsList
 from osf.models import DraftRegistrationContributor
 
+
 class DraftRegistrationMixin(DraftMixin):
     """
     Old DraftMixin was built under the assumption that a node was provided from the start.
@@ -54,8 +55,8 @@ class DraftRegistrationList(NodeDraftRegistrationsList):
         base_permissions.TokenHasScope,
     )
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-list'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-list"
 
     # overrides NodeDraftRegistrationList
     def get_serializer_class(self):
@@ -78,8 +79,8 @@ class DraftRegistrationDetail(NodeDraftRegistrationDetail, DraftRegistrationMixi
         base_permissions.TokenHasScope,
     )
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-detail'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-detail"
 
     # overrides NodeDraftRegistrationDetail
     def get_serializer_class(self):
@@ -93,25 +94,30 @@ class DraftInstitutionsList(NodeInstitutionsList, DraftRegistrationMixin):
         base_permissions.TokenHasScope,
     )
 
-    required_read_scopes = [CoreScopes.INSTITUTION_READ, CoreScopes.DRAFT_REGISTRATIONS_READ]
+    required_read_scopes = [
+        CoreScopes.INSTITUTION_READ,
+        CoreScopes.DRAFT_REGISTRATIONS_READ,
+    ]
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-institutions'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-institutions"
 
     # Overrides NodeInstitutionsList
     def get_resource(self):
         return self.get_draft()
 
 
-class DraftInstitutionsRelationship(NodeInstitutionsRelationship, DraftRegistrationMixin):
+class DraftInstitutionsRelationship(
+    NodeInstitutionsRelationship, DraftRegistrationMixin
+):
     permission_classes = (
         ContributorOrPublic,
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
     )
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-relationships-institutions'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-relationships-institutions"
 
     # Overrides NodeInstitutionsRelationship
     def get_resource(self):
@@ -127,8 +133,8 @@ class DraftSubjectsList(BaseResourceSubjectsList, DraftRegistrationMixin):
 
     required_read_scopes = [CoreScopes.DRAFT_REGISTRATIONS_READ]
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-subjects'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-subjects"
 
     def get_resource(self):
         # Overrides BaseResourceSubjectsList
@@ -145,10 +151,10 @@ class DraftSubjectsRelationship(SubjectRelationshipBaseView, DraftRegistrationMi
     required_read_scopes = [CoreScopes.DRAFT_REGISTRATIONS_READ]
     required_write_scopes = [CoreScopes.DRAFT_REGISTRATIONS_WRITE]
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-relationships-subjects'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-relationships-subjects"
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     def get_resource(self, check_object_permissions=True):
         # Overrides SubjectRelationshipBaseView
@@ -167,20 +173,20 @@ class DraftContributorsList(NodeContributorsList, DraftRegistrationMixin):
     required_read_scopes = [CoreScopes.DRAFT_REGISTRATIONS_READ]
     required_write_scopes = [CoreScopes.DRAFT_REGISTRATIONS_WRITE]
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-contributors'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-contributors"
     serializer_class = DraftRegistrationContributorsSerializer
 
     def get_default_queryset(self):
         # Overrides NodeContributorsList
         draft = self.get_draft()
-        return draft.draftregistrationcontributor_set.all().include('user__guids')
+        return draft.draftregistrationcontributor_set.all().include("user__guids")
 
     # overrides NodeContributorsList
     def get_serializer_class(self):
-        if self.request.method in ('PUT', 'PATCH', 'DELETE'):
+        if self.request.method in ("PUT", "PATCH", "DELETE"):
             return DraftRegistrationContributorDetailSerializer
-        elif self.request.method == 'POST':
+        elif self.request.method == "POST":
             return DraftRegistrationContributorsCreateSerializer
         else:
             return DraftRegistrationContributorsSerializer
@@ -191,8 +197,8 @@ class DraftContributorsList(NodeContributorsList, DraftRegistrationMixin):
     # Overrides NodeContributorsList
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['resource'] = self.get_resource()
-        context['default_email'] = 'draft_registration'
+        context["resource"] = self.get_resource()
+        context["default_email"] = "draft_registration"
         return context
 
 
@@ -203,8 +209,8 @@ class DraftContributorDetail(NodeContributorDetail, DraftRegistrationMixin):
         base_permissions.TokenHasScope,
     )
 
-    view_category = 'draft_registrations'
-    view_name = 'draft-registration-contributor-detail'
+    view_category = "draft_registrations"
+    view_name = "draft-registration-contributor-detail"
     serializer_class = DraftRegistrationContributorDetailSerializer
 
     required_read_scopes = [CoreScopes.DRAFT_CONTRIBUTORS_READ]
@@ -222,10 +228,12 @@ class DraftContributorDetail(NodeContributorDetail, DraftRegistrationMixin):
         try:
             return draft_registration.draftregistrationcontributor_set.get(user=user)
         except DraftRegistrationContributor.DoesNotExist:
-            raise exceptions.NotFound('{} cannot be found in the list of contributors.'.format(user))
+            raise exceptions.NotFound(
+                "{} cannot be found in the list of contributors.".format(user)
+            )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['resource'] = self.get_draft()
-        context['default_email'] = 'draft'
+        context["resource"] = self.get_draft()
+        context["default_email"] = "draft"
         return context

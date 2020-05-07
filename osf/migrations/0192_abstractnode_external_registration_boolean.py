@@ -8,17 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0191_abstractnode_external_registered_date'),
+        ("osf", "0191_abstractnode_external_registered_date"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='abstractnode',
-            name='external_registered_date',
+            model_name="abstractnode", name="external_registered_date",
         ),
         migrations.AddField(
-            model_name='abstractnode',
-            name='external_registration',
+            model_name="abstractnode",
+            name="external_registration",
             field=models.NullBooleanField(default=False),
         ),
     ]

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0105_merge_20180525_1529'),
+        ("osf", "0105_merge_20180525_1529"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='citationstyle',
-            name='parent_style',
+            model_name="citationstyle",
+            name="parent_style",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

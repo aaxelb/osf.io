@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0094_update_preprintprovider_group_auth'),
+        ("osf", "0094_update_preprintprovider_group_auth"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='abstractprovider',
-            name='allow_commenting',
+            model_name="abstractprovider",
+            name="allow_commenting",
             field=models.BooleanField(default=False),
         ),
     ]

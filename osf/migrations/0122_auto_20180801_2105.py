@@ -8,13 +8,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-        ('osf', '0121_merge_20180801_1458'),
+        ("contenttypes", "0002_remove_content_type_name"),
+        ("osf", "0121_merge_20180801_1458"),
     ]
 
     operations = [
         migrations.AlterIndexTogether(
-            name='basefilenode',
-            index_together=set([('target_content_type', 'target_object_id')]),
+            name="basefilenode",
+            index_together=set([("target_content_type", "target_object_id")]),
         ),
     ]

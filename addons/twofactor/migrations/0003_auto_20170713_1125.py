@@ -11,19 +11,25 @@ import django_extensions.db.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_twofactor', '0002_usersettings_owner'),
+        ("addons_twofactor", "0002_usersettings_owner"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='usersettings',
-            name='created',
-            field=django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, default=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=pytz.utc), verbose_name='created'),
+            model_name="usersettings",
+            name="created",
+            field=django_extensions.db.fields.CreationDateTimeField(
+                auto_now_add=True,
+                default=datetime.datetime(1970, 1, 1, 0, 0, tzinfo=pytz.utc),
+                verbose_name="created",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='usersettings',
-            name='modified',
-            field=django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified'),
+            model_name="usersettings",
+            name="modified",
+            field=django_extensions.db.fields.ModificationDateTimeField(
+                auto_now=True, verbose_name="modified"
+            ),
         ),
     ]

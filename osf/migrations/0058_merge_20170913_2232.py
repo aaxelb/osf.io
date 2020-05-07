@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0057_order_fileversion_by_date_created'),
-        ('osf', '0054_add_file_version_indices'),
+        ("osf", "0057_order_fileversion_by_date_created"),
+        ("osf", "0054_add_file_version_indices"),
     ]
 
-    operations = [
-    ]
+    operations = []

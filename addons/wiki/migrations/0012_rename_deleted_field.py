@@ -9,18 +9,16 @@ import osf.utils.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_wiki', '0011_auto_20180415_1649'),
+        ("addons_wiki", "0011_auto_20180415_1649"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='nodesettings',
-            new_name='is_deleted',
-            old_name='deleted',
+            model_name="nodesettings", new_name="is_deleted", old_name="deleted",
         ),
         migrations.AddField(
-            model_name='nodesettings',
-            name='deleted',
+            model_name="nodesettings",
+            name="deleted",
             field=osf.utils.fields.NonNaiveDateTimeField(blank=True, null=True),
         ),
     ]

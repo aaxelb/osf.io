@@ -9,7 +9,7 @@ from osf.utils.migrations import ensure_schemas
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0171_add_registration_files_count'),
+        ("osf", "0171_add_registration_files_count"),
     ]
 
     operations = [

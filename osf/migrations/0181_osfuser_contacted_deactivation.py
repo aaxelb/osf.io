@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osf', '0180_finalize_token_scopes_mig'),
+        ("osf", "0180_finalize_token_scopes_mig"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='osfuser',
-            name='contacted_deactivation',
+            model_name="osfuser",
+            name="contacted_deactivation",
             field=models.BooleanField(default=False),
         ),
     ]

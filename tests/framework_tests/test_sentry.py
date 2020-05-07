@@ -21,52 +21,46 @@ def set_sentry(status):
             enabled, sentry.enabled = sentry.enabled, status
             func(*args, **kwargs)
             sentry.enabled = enabled
+
         return wrapped
+
     return wrapper
 
 
 with_sentry = set_sentry(True)
 without_sentry = set_sentry(False)
 
+
 @with_sentry
-@mock.patch('framework.sentry.sentry.captureException')
+@mock.patch("framework.sentry.sentry.captureException")
 def test_log_no_request_context(mock_capture):
     sentry.log_exception()
-    mock_capture.assert_called_with(extra={'session': {}})
+    mock_capture.assert_called_with(extra={"session": {}})
 
 
 class TestSentry(OsfTestCase):
-
     @with_sentry
-    @mock.patch('framework.sentry.sentry.captureException')
+    @mock.patch("framework.sentry.sentry.captureException")
     def test_log_not_logged_in(self, mock_capture):
         session_record = Session()
         set_session(session_record)
         sentry.log_exception()
-        mock_capture.assert_called_with(
-            extra={
-                'session': {},
-            },
-        )
+        mock_capture.assert_called_with(extra={"session": {},},)
 
     @with_sentry
-    @mock.patch('framework.sentry.sentry.captureException')
+    @mock.patch("framework.sentry.sentry.captureException")
     def test_log_logged_in(self, mock_capture):
         user = UserFactory()
         session_record = Session()
-        session_record.data['auth_user_id'] = user._id
+        session_record.data["auth_user_id"] = user._id
         set_session(session_record)
         sentry.log_exception()
         mock_capture.assert_called_with(
-            extra={
-                'session': {
-                    'auth_user_id': user._id,
-                },
-            },
+            extra={"session": {"auth_user_id": user._id,},},
         )
 
     @without_sentry
-    @mock.patch('framework.sentry.sentry.captureException')
+    @mock.patch("framework.sentry.sentry.captureException")
     def test_log_not_enabled(self, mock_capture):
         sentry.log_exception()
         assert_false(mock_capture.called)

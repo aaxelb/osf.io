@@ -8,9 +8,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('addons_zotero', '0003_auto_20170713_1125'),
-        ('addons_zotero', '0003_nodesettings_library_id'),
+        ("addons_zotero", "0003_auto_20170713_1125"),
+        ("addons_zotero", "0003_nodesettings_library_id"),
     ]
 
-    operations = [
-    ]
+    operations = []

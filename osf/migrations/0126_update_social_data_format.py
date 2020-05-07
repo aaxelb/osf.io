@@ -11,15 +11,10 @@ from django.db import migrations, connection
 logger = logging.getLogger(__name__)
 
 
-FIELDS_TO_MIGRATE = [
-    'github',
-    'linkedIn',
-    'twitter'
-]
+FIELDS_TO_MIGRATE = ["github", "linkedIn", "twitter"]
 
 
 class Migration(migrations.Migration):
-
     def update_social_fields(state, schema):
         for field in FIELDS_TO_MIGRATE:
             sql = """
@@ -33,16 +28,20 @@ class Migration(migrations.Migration):
                                 END
                     )::jsonb
                 WHERE osf_osfuser.social ? '{0}';
-            """.format(field)
+            """.format(
+                field
+            )
             with connection.cursor() as cursor:
-                logger.info('Setting social fields for {}...'.format(field))
+                logger.info("Setting social fields for {}...".format(field))
                 cursor.execute(sql)
 
     def reset_social_fields(state, schema):
-        OSFUser = state.get_model('osf', 'osfuser')
-        users_with_social = OSFUser.objects.filter(social__has_any_keys=FIELDS_TO_MIGRATE)
+        OSFUser = state.get_model("osf", "osfuser")
+        users_with_social = OSFUser.objects.filter(
+            social__has_any_keys=FIELDS_TO_MIGRATE
+        )
         users_to_update = users_with_social.count()
-        logger.info('Updating social fields for {} users'.format(users_to_update))
+        logger.info("Updating social fields for {} users".format(users_to_update))
         progress_bar = tqdm(total=users_to_update or 100)
 
         users_updated = 0
@@ -51,7 +50,9 @@ class Migration(migrations.Migration):
             for key, value in user.social.items():
                 if key in FIELDS_TO_MIGRATE:
                     if len(value) > 1:
-                        raise ValueError('Current social list field has more than one value, cannot reset to just one value.')
+                        raise ValueError(
+                            "Current social list field has more than one value, cannot reset to just one value."
+                        )
                     old_social[key] = value[0]
                 else:
                     old_social[key] = value
@@ -61,12 +62,10 @@ class Migration(migrations.Migration):
             progress_bar.update(users_updated)
 
         progress_bar.close()
-        logger.info('Updated social field for {} users'.format(users_updated))
+        logger.info("Updated social field for {} users".format(users_updated))
 
     dependencies = [
-        ('osf', '0125_merge_20180824_1856'),
+        ("osf", "0125_merge_20180824_1856"),
     ]
 
-    operations = [
-        migrations.RunPython(update_social_fields, reset_social_fields)
-    ]
+    operations = [migrations.RunPython(update_social_fields, reset_social_fields)]

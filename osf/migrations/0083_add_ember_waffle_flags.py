@@ -5,36 +5,39 @@ from waffle.models import Flag
 from django.db import migrations
 
 EMBER_WAFFLE_PAGES = [
-    'create_draft_registration',
-    'dashboard',
-    'edit_draft_registration',
-    'file_detail',
-    'home',
-    'meeting_detail',
-    'meetings',
-    'my_projects',
-    'project_analytics',
-    'project_contributors',
-    'project_detail',
-    'project_files',
-    'project_forks',
-    'project_registrations',
-    'project_settings',
-    'project_wiki',
-    'registration_form_detail',
-    'search',
-    'support',
-    'user_profile',
-    'user_settings'
+    "create_draft_registration",
+    "dashboard",
+    "edit_draft_registration",
+    "file_detail",
+    "home",
+    "meeting_detail",
+    "meetings",
+    "my_projects",
+    "project_analytics",
+    "project_contributors",
+    "project_detail",
+    "project_files",
+    "project_forks",
+    "project_registrations",
+    "project_settings",
+    "project_wiki",
+    "registration_form_detail",
+    "search",
+    "support",
+    "user_profile",
+    "user_settings",
 ]
+
 
 def reverse_func(state, schema):
     pages = [format_ember_waffle_flag_name(page) for page in EMBER_WAFFLE_PAGES]
     Flag.objects.filter(name__in=pages).delete()
     return
 
+
 def format_ember_waffle_flag_name(page):
-    return '{}{}{}'.format('ember_', page, '_page')
+    return "{}{}{}".format("ember_", page, "_page")
+
 
 def add_ember_waffle_flags(state, schema):
     """
@@ -46,15 +49,16 @@ def add_ember_waffle_flags(state, schema):
     making the flag False for everyone.  Flag settings can be changed in the Django admin app.
     """
     for page in EMBER_WAFFLE_PAGES:
-        Flag.objects.get_or_create(name=format_ember_waffle_flag_name(page), everyone=False)
+        Flag.objects.get_or_create(
+            name=format_ember_waffle_flag_name(page), everyone=False
+        )
     return
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('waffle', '0002_auto_20161201_0958'),
+        ("waffle", "0002_auto_20161201_0958"),
     ]
 
-    operations = [
-        migrations.RunPython(add_ember_waffle_flags, reverse_func)
-    ]
+    operations = [migrations.RunPython(add_ember_waffle_flags, reverse_func)]

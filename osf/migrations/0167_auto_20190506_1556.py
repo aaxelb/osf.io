@@ -8,7 +8,7 @@ from osf.utils.migrations import AddWaffleFlags
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('osf', '0166_merge_20190429_1632'),
+        ("osf", "0166_merge_20190429_1632"),
     ]
 
     operations = [

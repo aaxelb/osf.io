@@ -5,7 +5,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from api.base.views import JSONAPIBaseView
 from api.base.filters import ListFilterMixin
 from api.base.pagination import NoMaxPageSizePagination
-from api.base.parsers import JSONAPIRelationshipParser, JSONAPIRelationshipParserForRegularJSON
+from api.base.parsers import (
+    JSONAPIRelationshipParser,
+    JSONAPIRelationshipParserForRegularJSON,
+)
 from api.base import permissions as base_permissions
 from api.subjects.serializers import SubjectSerializer, SubjectsRelationshipSerializer
 from api.taxonomies.utils import optimize_subject_query
@@ -17,7 +20,8 @@ class SubjectMixin(object):
     """Mixin with convenience methods for retrieving the current subject based on the
     current URL. By default, fetches the current subject based on the subject_id kwarg.
     """
-    subject_lookup_url_kwarg = 'subject_id'
+
+    subject_lookup_url_kwarg = "subject_id"
 
     def get_subject(self, check_object_permissions=True):
         subject_id = self.kwargs[self.subject_lookup_url_kwarg]
@@ -40,10 +44,10 @@ class BaseResourceSubjectsList(JSONAPIBaseView, generics.ListAPIView, ListFilter
     required_write_scopes = [CoreScopes.NULL]
     serializer_class = SubjectSerializer
     model = Subject
-    view_category = ''
-    view_name = ''
+    view_category = ""
+    view_name = ""
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     def get_resource(self):
         raise NotImplementedError()
@@ -76,8 +80,12 @@ class SubjectRelationshipBaseView(JSONAPIBaseView, generics.RetrieveUpdateAPIVie
         subjects not listed, meaning a data: [] payload deletes all the subjects.
 
     """
+
     serializer_class = SubjectsRelationshipSerializer
-    parser_classes = (JSONAPIRelationshipParser, JSONAPIRelationshipParserForRegularJSON, )
+    parser_classes = (
+        JSONAPIRelationshipParser,
+        JSONAPIRelationshipParserForRegularJSON,
+    )
 
     def get_resource(self, check_object_permissions=True):
         raise NotImplementedError()
@@ -85,8 +93,8 @@ class SubjectRelationshipBaseView(JSONAPIBaseView, generics.RetrieveUpdateAPIVie
     def get_object(self):
         resource = self.get_resource(check_object_permissions=False)
         obj = {
-            'data': resource.subjects.all(),
-            'self': resource,
+            "data": resource.subjects.all(),
+            "self": resource,
         }
         self.check_object_permissions(self.request, obj)
         return obj
@@ -102,10 +110,10 @@ class SubjectList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
     required_write_scopes = [CoreScopes.NULL]
     serializer_class = SubjectSerializer
     pagination_class = NoMaxPageSizePagination
-    view_category = 'subjects'
-    view_name = 'subject-list'
+    view_category = "subjects"
+    view_name = "subject-list"
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     def get_default_queryset(self):
         return optimize_subject_query(Subject.objects.all())
@@ -115,23 +123,24 @@ class SubjectList(JSONAPIBaseView, generics.ListAPIView, ListFilterMixin):
 
     # overrides FilterMixin
     def postprocess_query_param(self, key, field_name, operation):
-        if field_name == 'parent':
-            if operation['value'] not in (list(), tuple()):
-                operation['source_field_name'] = 'parent___id'
+        if field_name == "parent":
+            if operation["value"] not in (list(), tuple()):
+                operation["source_field_name"] = "parent___id"
             else:
-                if len(operation['value']) > 1:
-                    operation['source_field_name'] = 'parent___id__in'
-                elif len(operation['value']) == 1:
-                    operation['source_field_name'] == 'parent___id'
-                    operation['value'] = operation['value'][0]
+                if len(operation["value"]) > 1:
+                    operation["source_field_name"] = "parent___id__in"
+                elif len(operation["value"]) == 1:
+                    operation["source_field_name"] == "parent___id"
+                    operation["value"] = operation["value"][0]
                 else:
-                    operation['source_field_name'] = 'parent__isnull'
-                    operation['value'] = True
+                    operation["source_field_name"] = "parent__isnull"
+                    operation["value"] = True
 
 
 class SubjectDetail(JSONAPIBaseView, generics.RetrieveAPIView, SubjectMixin):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/subjects_read).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -141,16 +150,19 @@ class SubjectDetail(JSONAPIBaseView, generics.RetrieveAPIView, SubjectMixin):
     required_read_scopes = [CoreScopes.ALWAYS_PUBLIC]
     required_write_scopes = [CoreScopes.NULL]
 
-    view_category = 'subjects'
-    view_name = 'subject-detail'
+    view_category = "subjects"
+    view_name = "subject-detail"
 
     def get_object(self):
         return self.get_subject()
 
 
-class SubjectChildrenList(JSONAPIBaseView, generics.ListAPIView, SubjectMixin, ListFilterMixin):
+class SubjectChildrenList(
+    JSONAPIBaseView, generics.ListAPIView, SubjectMixin, ListFilterMixin
+):
     """The documentation for this endpoint can be found [here](https://developer.osf.io/#operation/subject_children_list).
     """
+
     permission_classes = (
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
@@ -160,10 +172,10 @@ class SubjectChildrenList(JSONAPIBaseView, generics.ListAPIView, SubjectMixin, L
     required_write_scopes = [CoreScopes.NULL]
     serializer_class = SubjectSerializer
     pagination_class = NoMaxPageSizePagination
-    view_category = 'subjects'
-    view_name = 'subject-children'
+    view_category = "subjects"
+    view_name = "subject-children"
 
-    ordering = ('-id',)
+    ordering = ("-id",)
 
     def get_default_queryset(self):
         subject = self.get_subject()
