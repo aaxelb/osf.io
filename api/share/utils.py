@@ -52,26 +52,22 @@ def format_user(user):
         }
     )
 
-    person.attrs['identifiers'] = [GraphNode('agentidentifier', agent=person, uri='mailto:{}'.format(uri)) for uri in user.emails.values_list('address', flat=True)]
     person.attrs['identifiers'].append(GraphNode('agentidentifier', agent=person, uri=user.absolute_url))
 
     if user.external_identity.get('ORCID') and list(user.external_identity['ORCID'].values())[0] == 'VERIFIED':
         person.attrs['identifiers'].append(GraphNode('agentidentifier', agent=person, uri=list(user.external_identity['ORCID'].keys())[0]))
-
-    if user.is_registered:
-        person.attrs['identifiers'].append(GraphNode('agentidentifier', agent=person, uri=user.profile_image_url()))
 
     person.attrs['related_agents'] = [GraphNode('isaffiliatedwith', subject=person, related=GraphNode('institution', name=institution.name)) for institution in user.affiliated_institutions.all()]
 
     return person
 
 
-def format_contributor(preprint, user, bibliographic, index):
+def format_bibliographic_contributor(work_node, user, index):
     return GraphNode(
-        'creator' if bibliographic else 'contributor',
+        'creator',
         agent=format_user(user),
-        order_cited=index if bibliographic else None,
-        creative_work=preprint,
+        order_cited=index,
+        creative_work=work_node,
         cited_as=user.fullname,
     )
 
@@ -126,7 +122,7 @@ def serialize_share_data(resource, old_subjects=None):
     if isinstance(resource, Preprint):
         serializer = format_preprint
     elif isinstance(resource, Node):
-        serializer = format_node
+        serializer = format_osf_node
     elif isinstance(resource, Registration):
         serializer = format_registration
     else:
@@ -194,7 +190,7 @@ def format_preprint(preprint, old_subjects=None):
     ]
     preprint_graph.attrs['subjects'] = current_subjects + deleted_subjects
 
-    to_visit.extend(format_contributor(preprint_graph, user, preprint.get_visible(user), i) for i, user in enumerate(preprint.contributors))
+    to_visit.extend(format_bibliographic_contributor(preprint_graph, user, i) for i, user in enumerate(preprint.visible_contributors))
 
     visited = set()
     to_visit.extend(preprint_graph.get_related())
@@ -210,67 +206,64 @@ def format_preprint(preprint, old_subjects=None):
 
     return [node.serialize() for node in visited]
 
+def format_node_lineage(child_osf_node, child_graph_node):
+    parent_osf_node = child_osf_node.parent_node
+    if parent_osf_node:
+        parent_graph_node = GraphNode('registration')
+        return [
+            parent_graph_node,
+            GraphNode('workidentifier', creative_work=parent_graph_node, uri=urljoin(settings.DOMAIN, parent_osf_node.url)),
+            GraphNode('ispartof', subject=child_graph_node, related=parent_graph_node),
+            *format_node_lineage(parent_osf_node, parent_graph_node)
+        ]
+    return []
 
-def format_node(node, *args, **kwargs):
-    is_qa = is_qa_resource(node)
+def format_registration(registration):
+    return format_osf_node(registration, additional_attrs={
+        'date_published': registration.registered_date.isoformat() if registration.registered_date else None,
+        'registration_type': registration.registered_schema.first().name if registration.registered_schema.exists() else None,
+        'justification': registration.retraction.justification if registration.retraction else None,
+        'withdrawn': registration.is_retracted,
+    })
 
-    if node.provider:
-        share_publish_type = node.provider.share_publish_type
+
+def format_osf_node(osf_node, additional_attrs=None):
+    if osf_node.provider:
+        share_publish_type = osf_node.provider.share_publish_type
     else:
         share_publish_type = 'project'
 
-    return [
-        {
-            '@id': '_:123',
-            '@type': 'workidentifier',
-            'creative_work': {'@id': '_:789', '@type': 'project'},
-            'uri': '{}{}/'.format(settings.DOMAIN, node._id),
-        }, {
-            '@id': '_:789',
-            '@type': share_publish_type,
-            'is_deleted': not node.is_public or node.is_deleted or node.is_spammy or is_qa,
-        },
-    ]
-
-
-def format_registration(registration, *args, **kwargs):
-    is_qa = is_qa_resource(registration)
-
-    registration_graph = GraphNode(
-        registration.provider.share_publish_type, **{
-            'title': registration.title,
-            'description': registration.description or '',
-            'is_deleted': not registration.is_public or registration.is_deleted or is_qa,
-            'date_published': registration.registered_date.isoformat() if registration.registered_date else None,
-            'registration_type': registration.registered_schema.first().name if registration.registered_schema.exists() else None,
-            'justification': registration.retraction.justification if registration.retraction else None,
-            'withdrawn': registration.is_retracted,
+    graph_node = GraphNode(
+        share_publish_type, **{
+            'title': osf_node.title,
+            'description': osf_node.description or '',
+            'is_deleted': (
+                not osf_node.is_public
+                or osf_node.is_deleted
+                or osf_node.is_spammy,
+                or is_qa_resource(osf_node)
+            ),
+            **(additional_attrs or {}),
         }
     )
 
     to_visit = [
-        registration_graph,
-        GraphNode('workidentifier', creative_work=registration_graph, uri=urljoin(settings.DOMAIN, registration.url)),
+        graph_node,
+        GraphNode('workidentifier', creative_work=graph_node, uri=urljoin(settings.DOMAIN, osf_node.url)),
     ]
 
-    registration_graph.attrs['tags'] = [
-        GraphNode('throughtags', creative_work=registration_graph, tag=GraphNode('tag', name=tag._id))
-        for tag in registration.tags.all() or [] if tag._id
+    graph_node.attrs['tags'] = [
+        GraphNode('throughtags', creative_work=graph_node, tag=GraphNode('tag', name=tag._id))
+        for tag in osf_node.tags.all() or [] if tag._id
     ]
 
-    to_visit.extend(format_contributor(registration_graph, user, bool(user._id in registration.visible_contributor_ids), i) for i, user in enumerate(registration.contributors))
-    to_visit.extend(GraphNode('AgentWorkRelation', creative_work=registration_graph, agent=GraphNode('institution', name=institution.name)) for institution in registration.affiliated_institutions.all())
+    to_visit.extend(format_bibliographic_contributor(graph_node, user, i) for i, user in enumerate(osf_node.visible_contributors))
+    to_visit.extend(GraphNode('AgentWorkRelation', creative_work=graph_node, agent=GraphNode('institution', name=institution.name)) for institution in osf_node.affiliated_institutions.all())
 
-    if registration.parent_node:
-        parent = GraphNode('registration')
-        to_visit.extend([
-            parent,
-            GraphNode('workidentifier', creative_work=parent, uri=urljoin(settings.DOMAIN, registration.parent_node.url)),
-            GraphNode('ispartof', subject=registration_graph, related=parent),
-        ])
+    to_visit.extend(format_node_lineage(osf_node, graph_node))
 
     visited = set()
-    to_visit.extend(registration_graph.get_related())
+    to_visit.extend(graph_node.get_related())
 
     while True:
         if not to_visit:
