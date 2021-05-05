@@ -237,7 +237,7 @@ def serialize_preprint(preprint, old_subjects=None):
             'title': preprint.title,
             'description': preprint.description or '',
             'is_deleted': (
-                (not preprint.verified_publishable and not preprint.is_retracted)
+                not preprint.verified_publishable
                 or preprint.is_spam
                 or is_qa_resource(preprint)
             ),
