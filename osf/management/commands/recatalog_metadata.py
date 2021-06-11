@@ -3,19 +3,30 @@
 import logging
 
 from django.core.management.base import BaseCommand
-from osf.models import AbstractProvider, Registration, Preprint, Node
+from django.db.models import Q
+
+from osf.models import AbstractProvider, Institution, Registration, Preprint, Node
 from api.share.utils import update_share
 
 logger = logging.getLogger(__name__)
 
 
-def recatalog_chunk(provided_model, providers, start_id, chunk_size):
+def recatalog_chunk(provided_model, provider_qs, institution_qs, start_id, chunk_size):
     items = provided_model.objects.filter(
         id__gte=start_id,
     ).order_by('id')
 
-    if providers is not None:
-        items = items.filter(provider__in=providers)
+    if provider_qs is not None:
+        items = items.filter(provider__in=provider_qs)
+
+    if institution_qs is not None:
+        # easy: filter to items directly affiliated via `affiliated_institutions` m2m
+        # harder: filter to items that have a *contributor* affiliated
+        directly_or_indirectly_affiliated = (
+            Q(affiliated_institutions__in=institution_qs)
+            | Q(_contributors__affiliated_institutions__in=institution_qs)
+        )
+        items = items.filter(directly_or_indirectly_affiliated)
 
     item_chunk = list(items[:chunk_size])
     last_id = None
@@ -35,18 +46,24 @@ def recatalog_chunk(provided_model, providers, start_id, chunk_size):
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        provider_group = parser.add_mutually_exclusive_group(required=True)
-        provider_group.add_argument(
+        filter_group = parser.add_mutually_exclusive_group(required=True)
+        filter_group.add_argument(
             '--providers',
             type=str,
             nargs='+',
             help='recatalog metadata for items from specific providers (by `_id`)',
         )
-        provider_group.add_argument(
+        filter_group.add_argument(
             '--all-providers',
             '-a',
             action='store_true',
             help='recatalog metadata for items from all providers',
+        )
+        filter_group.add_argument(
+            '--institution',
+            type=str,
+            nargs='+',
+            help='recatalog metadata for items affiliated with a specific institution',
         )
 
         type_group = parser.add_mutually_exclusive_group(required=True)
@@ -86,19 +103,24 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        pls_all_providers = options['all_providers']
+        provider_ids = options['providers']
+        institution_id = options['institution']
+
         pls_recatalog_preprints = options['preprints']
         pls_recatalog_registrations = options['registrations']
         pls_recatalog_projects = options['projects']
+
         start_id = options['start_id']
         chunk_size = options['chunk_size']
         chunk_count = options['chunk_count']
 
-        if pls_all_providers:
-            providers = None  # `None` means "don't filter by provider"
-        else:
-            provider_ids = options['providers']
-            providers = AbstractProvider.objects.filter(_id__in=provider_ids)
+        provider_qs = None  # `None` means "don't filter by provider"
+        if provider_ids:
+            provider_qs = AbstractProvider.objects.filter(_id__in=provider_ids)
+
+        institution_qs = None
+        if institution_id:
+            institution_qs = Institution.objects.filter(_id=institution_id)
 
         provided_model = None
         if pls_recatalog_preprints:
@@ -109,7 +131,7 @@ class Command(BaseCommand):
             provided_model = Node
 
         for _ in range(chunk_count):
-            last_id = recatalog_chunk(provided_model, providers, start_id, chunk_size)
+            last_id = recatalog_chunk(provided_model, provider_qs, institution_qs, start_id, chunk_size)
             if last_id is None:
                 logger.info('All done!')
                 return
