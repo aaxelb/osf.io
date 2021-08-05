@@ -2072,6 +2072,9 @@ class SpamOverrideMixin(SpamMixin):
             return False
         if user.spam_status == SpamStatus.HAM:
             return False
+        # ingroup: either implement as auto-ham or add another check here
+        if (not user.is_spam) and user.is_assumed_ham():
+            return False
         if getattr(self, 'provider', False) and self.provider.reviews_workflow == Workflows.PRE_MODERATION.value:
             return False
         host = ''

@@ -171,6 +171,10 @@ class SpamMixin(models.Model):
         if save:
             self.save()
 
+    # ingroup: override to set criteria for assumed ham
+    def is_assumed_ham(self):
+        return False
+
     def confirm_spam(self, save=False, train_akismet=True):
         # not all mixins will implement check spam pre-req, only submit spam when it was incorrectly flagged
         if (
@@ -199,6 +203,8 @@ class SpamMixin(models.Model):
 
     def do_check_spam(self, author, author_email, content, request_headers, update=True):
         if self.spam_status == SpamStatus.HAM:
+            return False
+        if (not self.is_spam) and self.is_assumed_ham():
             return False
         if self.is_spammy:
             return True

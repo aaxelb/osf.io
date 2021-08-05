@@ -525,6 +525,7 @@ class UserSettingsUpdateSerializer(UserSettingsSerializer):
         if not two_factor_addon:
             raise exceptions.ValidationError(detail='Two-factor authentication is not enabled.')
         if two_factor_addon.verify_code(value):
+            # ingroup: autoham? consider moving two_factor_addon manipulation to model layer
             two_factor_addon.is_confirmed = True
         else:
             raise exceptions.PermissionDenied(detail='The two-factor verification code you provided is invalid.')

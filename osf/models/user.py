@@ -1379,6 +1379,8 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
         """Confirm the email address associated with the token"""
         email = self.get_unconfirmed_email_for_token(token)
 
+        # ingroup: autoham by email
+
         # If this email is confirmed on another account, abort
         try:
             if check_select_for_update():
@@ -1441,6 +1443,28 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
             node.confirm_ham(save=save, train_akismet=False)
         for preprint in self.preprints.filter(logs__action=PreprintLog.CONFIRM_SPAM):
             preprint.confirm_ham(save=save, train_akismet=False)
+
+    def is_assumed_ham(self):
+        # TODO replace hard-coded '.edu' with some admin config
+        has_trusted_email_domain = self.emails.filter(address__endswith='.edu').exists()
+        if has_trusted_email_domain:
+            return True
+
+        twofactor_addon = self.get_addon('twofactor')
+        has_twofactor_enabled = bool(twofactor_addon and twofactor_addon.is_confirmed)
+        if has_twofactor_enabled:
+            return True
+
+        # HACK: ideally would duck-type (or something) to avoid import
+        from addons.osfstorage.models import BaseStorageAddon
+        has_storage_addon = any(
+            isinstance(addon, BaseStorageAddon)
+            for addon in self.get_addons()
+        )
+        if has_storage_addon:
+            return True
+
+        return False
 
     def update_search(self):
         from website.search.search import update_user

@@ -1,0 +1,18 @@
+(note: we've been calling this "verified accounts" but i'm calling it "in group"
+to avoid confusion with the nearby concepts of "verified emails" and "verified twofactor")
+
+a few ingroup paths:
+
+- store in-group as a model field or system tag, update when a criterion changes
+    pro: easy lookup/filter; less cpu time if criteria changes are uncommon
+    con: easy for state to unsync if we miss anything; data migration
+
+- autoham -- we already have a mechanism for skipping spam checks, we call it ham.
+    whenever a criterion changes, check whether this puts the user into an ingroup
+    pro: use existing concept instead of adding more
+    con: can't tell if made ham automatically; easy to unsync if we miss something
+
+- add method e.g. `user.is_assumed_ham()`, re-evaluate each time checked for spam
+    pro: easy to try out (already partly implemented); nothing to get out of sync
+    con: not searchable; more cpu for users who create a lot of content
+

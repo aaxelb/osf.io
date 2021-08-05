@@ -269,6 +269,12 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>User is assumed ham</td>
+                    <td>
+                        {{ user.is_assumed_ham }}
+                    </td>
+                </tr>
+                <tr>
                     <td>SPAM Status</td>
                     <td>{% include "nodes/spam_status.html" with resource=user %}</td>
                 </tr>
