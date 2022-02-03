@@ -521,7 +521,7 @@ services:
   morningwhale:
     build: http://github.com/aaxelb/morningwhale.git#main
     command: python manage.py runserver 0.0.0.0:8666
-    ports:
-      - 8666:8666
+    environment:
+      ELASTICSEARCH_HOST: elasticsearch6:9200
     depends_on:
       - elasticsearch6
