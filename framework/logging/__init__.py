@@ -27,6 +27,12 @@ else:
 
 handler.setFormatter(formatter)
 
+mw_handler = logging.handlers.HTTPHandler(
+    host='morningwhale:8666',
+    url='/v0/logged-event/',
+)
+
 logger = logging.getLogger()
 logger.addHandler(handler)
+logger.addHandler(mw_handler)
 logger.setLevel(settings.LOG_LEVEL)

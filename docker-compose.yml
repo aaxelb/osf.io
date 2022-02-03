@@ -467,6 +467,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - morningwhale
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:
@@ -488,6 +489,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - morningwhale
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:
@@ -515,3 +517,13 @@ services:
     stdin_open: true
     volumes:
       - /srv
+
+  morningwhale:
+    build:
+      context: ../morningwhale
+      dockerfile: ../morningwhale/Dockerfile
+    command: python manage.py runserver 0.0.0.0:8666
+    ports:
+      - 8666:8666
+    depends_on:
+      - elasticsearch6
