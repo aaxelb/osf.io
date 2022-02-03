@@ -17,16 +17,3 @@ class AppConfig(BaseAppConfig):
             update_permission_groups,
             dispatch_uid='osf.apps.update_permissions_groups'
         )
-        from framework.logging import logger
-        logger.addHandler(MetricLogHandler())
-
-
-class MetricLogHandler(logging.Handler):
-    def emit(self, record):
-        from osf.metrics import LogEvent
-        LogEvent.record(
-            func_name=record.funcName,
-            log_level=record.levelname,
-            log_message_unformatted=record.msg,
-            source_ref=f'{record.pathname}:{record.lineno}',
-        )

@@ -122,6 +122,16 @@ def init_app(settings_module='website.settings', set_backends=True, routes=True,
 
     if app.debug:
         logger.info("Sentry disabled; Flask's debug mode enabled")
+
+        # TODO unhaxify
+        import waffle
+        from osf import features
+        if waffle.switch_is_active(features.ELASTICSEARCH_METRICS):
+            log_metric_handler = logging.handlers.HTTPHandler(
+                host='api:8000',
+                url='/v2/metrics/local_logs/',
+            )
+            root_logger.addHandler(log_metric_handler)
     else:
         sentry.init_app(app)
         logger.info("Sentry enabled; Flask's debug mode disabled")

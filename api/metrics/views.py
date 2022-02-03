@@ -1,6 +1,6 @@
 import json
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.exceptions import ValidationError
 from rest_framework import permissions as drf_permissions
 from rest_framework.generics import GenericAPIView
@@ -8,7 +8,7 @@ from elasticsearch.exceptions import NotFoundError, RequestError
 
 from framework.auth.oauth_scopes import CoreScopes
 from api.base.permissions import TokenHasScope
-from osf.metrics import PreprintDownload, PreprintView, RegistriesModerationMetrics
+from osf.metrics import PreprintDownload, PreprintView, RegistriesModerationMetrics, LogEvent
 from api.metrics.permissions import IsPreprintMetricsUser, IsRawMetricsUser, IsRegistriesModerationMetricsUser
 from api.metrics.serializers import PreprintMetricSerializer, RawMetricsSerializer
 from api.metrics.utils import parse_datetimes
@@ -218,3 +218,19 @@ class RegistriesModerationMetricsView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse(RegistriesModerationMetrics.get_registries_info())
+
+
+async def local_log_event(request):
+    log_record = request.GET
+
+    source_lineno = log_record.get('lineno')
+    source_filepath = log_record.get('pathname')
+
+    LogEvent.record(
+        func_name=log_record.get('funcName'),
+        log_level=log_record.get('levelname'),
+        log_message_unformatted=log_record.get('msg'),
+        source_ref=f'{source_filepath}:{source_lineno}',
+    )
+
+    return HttpResponse(201, 'did it')

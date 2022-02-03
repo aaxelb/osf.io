@@ -318,7 +318,7 @@ HASHIDS_SALT = 'pinkhimalayan'
 # django-elasticsearch-metrics
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': os.environ.get('ELASTIC6_URI', '127.0.0.1:9201'),
+        'hosts': os.environ.get('ELASTIC6_URI', 'elasticsearch6:9201'),
         'retry_on_timeout': True,
     },
 }

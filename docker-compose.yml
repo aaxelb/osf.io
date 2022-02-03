@@ -418,6 +418,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - elasticsearch6
     environment:
       C_FORCE_ROOT: 1
       DJANGO_SETTINGS_MODULE: api.base.settings
@@ -446,6 +447,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - elasticsearch6
     env_file:
       - .docker-compose.env
     stdin_open: true
@@ -467,6 +469,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - elasticsearch6
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:
@@ -488,6 +491,7 @@ services:
       - postgres
       - rabbitmq
       - elasticsearch
+      - elasticsearch6
     environment:
       DJANGO_SETTINGS_MODULE: api.base.settings
     env_file:
