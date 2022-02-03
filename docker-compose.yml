@@ -519,9 +519,7 @@ services:
       - /srv
 
   morningwhale:
-    build:
-      context: ../morningwhale
-      dockerfile: ../morningwhale/Dockerfile
+    build: http://github.com/aaxelb/morningwhale.git#main
     command: python manage.py runserver 0.0.0.0:8666
     ports:
       - 8666:8666
