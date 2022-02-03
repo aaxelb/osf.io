@@ -80,6 +80,7 @@ class MetricMixin(object):
 
     # Overrides Document.search to only search relevant
     # indices, determined from `after`
+    # TODO consider adding feature to django-elasticsearch-metrics instead of overriding
     @classmethod
     def search(cls, using=None, index=None, after=None, before=None, *args, **kwargs):
         if not index and (before or after):
@@ -532,3 +533,13 @@ class RegistriesModerationMetrics(MetricMixin, metrics.Metric):
                 }
             }
         }).execute().aggregations['providers'].to_dict()
+
+
+class LogEvent(metrics.Metric):
+    func_name = metrics.Keyword()
+    log_level = metrics.Keyword()
+    log_message_unformatted = metrics.Keyword()
+    source_ref = metrics.Text(analyzer='simple')
+
+    class Meta:
+        source = metrics.MetaField(enabled=True)
