@@ -18,6 +18,7 @@ from framework.csrf import handlers as csrf_handlers
 from framework.flask import add_handlers, app
 # Import necessary to initialize the root logger
 from framework.logging import logger as root_logger  # noqa
+from framework.logging import SafeHttpHandler
 from framework.postcommit_tasks import handlers as postcommit_handlers
 from framework.sentry import sentry
 from framework.transactions import handlers as transaction_handlers
@@ -127,7 +128,7 @@ def init_app(settings_module='website.settings', set_backends=True, routes=True,
         import waffle
         from osf import features
         if waffle.switch_is_active(features.ELASTICSEARCH_METRICS):
-            log_metric_handler = logging.handlers.HTTPHandler(
+            log_metric_handler = SafeHttpHandler(
                 host='api:8000',
                 url='/v2/metrics/local_logs/',
             )

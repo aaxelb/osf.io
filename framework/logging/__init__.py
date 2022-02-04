@@ -30,3 +30,11 @@ handler.setFormatter(formatter)
 logger = logging.getLogger()
 logger.addHandler(handler)
 logger.setLevel(settings.LOG_LEVEL)
+
+
+class SafeHttpHandler(logging.handlers.HTTPHandler):
+    def emit(self, log_record):
+        try:
+            super().emit(log_record)
+        except Exception:
+            pass  # TODO something better?

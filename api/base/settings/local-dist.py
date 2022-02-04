@@ -20,7 +20,7 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'SHOW_TOOLBAR_CALLBACK': lambda _: True,
     }
-    ALLOWED_HOSTS.append('localhost')
+    ALLOWED_HOSTS.extend(['localhost', 'api'])
 
     # django-silk
     INSTALLED_APPS += ('silk',)
