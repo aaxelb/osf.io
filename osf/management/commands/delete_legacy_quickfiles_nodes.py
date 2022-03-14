@@ -4,11 +4,13 @@ from django.utils import timezone
 from django.core.management.base import BaseCommand
 from framework.celery_tasks import app as celery_app, utils
 
+from osf.management.utils import one_at_a_time
 from osf.models import QuickFilesNode, Node
 logger = logging.getLogger(__name__)
 
 
 @celery_app.task(name='osf.management.commands.delete_legacy_quickfiles_nodes')
+@one_at_a_time('delete_legacy_quickfiles_nodes')
 def delete_quickfiles(batch_size=1000, dry_run=False):
     """
     This is a periodic command to sunset our Quickfiles feature and can be safely deleted after
