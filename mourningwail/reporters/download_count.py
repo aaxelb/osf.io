@@ -1,0 +1,19 @@
+from osf.models import PageCounter
+from mourningwail.metrics.reports import DownloadCountReportV0
+from ._base import DailyReporter
+
+
+class DownloadCountReporter(DailyReporter):
+    def report(self, date):
+        download_count = int(PageCounter.get_all_downloads_on_date(date) or 0)
+        return [
+            DownloadCountReportV0(daily_file_downloads=download_count),
+        ]
+
+    def keen_events_from_report(self, report):
+        event = {
+            'files': {
+                'total': report.daily_file_downloads,
+            },
+        }
+        return {'download_count_summary': [event]}
