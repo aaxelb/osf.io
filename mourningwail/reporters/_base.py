@@ -1,0 +1,82 @@
+from collections import defaultdict, deque
+from datetime import datetime, timedelta
+import logging
+import pytz
+
+from django.utils import timezone
+
+from website.settings import KEEN as keen_settings
+from keen.client import KeenClient
+
+from mourningwail.exceptions import WrongYesterday
+
+
+logger = logging.getLogger(__name__)
+
+
+class DailyReporter:
+    def report(self, report_date):
+        """build reports for the given date
+
+        return an iterable of DailyReport (unsaved)
+        """
+        raise NotImplementedError(f'{self.__name__} must implement `report`')
+
+    def keen_events_from_report(self, report):
+        """given one of this reporter's own reports, build equivalent keen events
+        (for back-compat; to be deleted once we don't need keen anymore)
+
+        return a mapping from keen collection name to iterable of events
+        e.g. {'my_keen_collection': [event1, event2, ...]}
+        """
+        raise NotImplementedError(f'{self.__name__} should probably implement keen_events_from_report')
+
+    def run_and_record_for_yesterday(self, *, verify_yesterday=None, also_send_to_keen=False):
+        yesterday = (timezone.now() - timedelta(days=1)).date()
+
+        if verify_yesterday is not None:
+            agreed_on_yesterday = (verify_yesterday == yesterday)
+            if not agreed_on_yesterday:
+                raise WrongYesterday(verify_yesterday, my_yesterday=yesterday)
+        return self.run_and_record_for_date(
+            report_date=yesterday,
+            also_send_to_keen=also_send_to_keen,
+        )
+
+    def run_and_record_for_date(self, report_date, *, also_send_to_keen=False):
+        reports = self.report(report_date)
+
+        # expecting each reporter to spit out only a handful of reports per day;
+        # not bothering with bulk-create
+        for report in reports:
+            report.save()
+
+        if also_send_to_keen:
+            self.send_to_keen(reports)
+
+    def send_to_keen(self, reports):
+        keen_project = keen_settings['private']['project_id']
+        write_key = keen_settings['private']['write_key']
+        if not (keen_project and write_key):
+            logger.warning(f'keen not configured; not sending events for {self.__class__.__name__}')
+            return
+
+        keen_events_by_collection = defaultdict(deque)
+        for report in reports:
+            keen_event_timestamp = datetime(
+                report.report_date.year,
+                report.report_date.month,
+                report.report_date.day,
+                tzinfo=pytz.utc,
+            )
+
+            for collection_name, keen_events in self.keen_events_from_report(report):
+                for event in keen_events:
+                    event['keen'] = {'timestamp': keen_event_timestamp}
+                keen_events_by_collection[collection_name].extend(keen_events)
+
+        client = KeenClient(
+            project_id=keen_project,
+            write_key=write_key,
+        )
+        client.add_events(keen_events_by_collection)
