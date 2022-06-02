@@ -91,6 +91,7 @@ INSTALLED_APPS = (
 
     # OSF
     'osf',
+    'mourningwail',
 
     # Addons
     'addons.osfstorage',
