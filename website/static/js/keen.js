@@ -6,7 +6,9 @@ var md5 = require('js-md5');
 var Raven = require('raven-js');
 var Cookie = require('js-cookie');
 var lodashGet = require('lodash.get');
+var lodash = require('lodash');
 var keenTracking = require('keen-tracking');
+var $osf = require('js/osfHelpers');
 
 var KeenTracker = (function() {
 
@@ -116,32 +118,19 @@ var KeenTracker = (function() {
         });
     }
 
-    function _trackCustomEvents(client, events) {
-        if (client === null) {
-            return;
-        }
-        client.recordEvents(events, function (err, res) {
-            if (err) {
-                // If google analytics is inaccessible keen will throw errors
-                var adBlockError = document.getElementsByTagName('iframe').item(0) === null;
-                var uselessError = 'An error occurred!' === err;
-                if(!adBlockError || !uselessError) {
-                    Raven.captureMessage('Error sending Keen data for multiple events: <' + err + '>', {
-                        extra: {payload: events}
-                    });
-                }
-            } else {
-                for (var collection in res) {
-                    var results = res[collection];
-                    for (var idx in results) {
-                        if (!results[idx].success) {
-                            Raven.captureMessage('Error sending Keen data to ' + collection + '.', {
-                                extra: {payload: events[collection][idx]}
-                            });
-                        }
-                    }
-                }
-            }
+    function _mwLogPageView() {
+        const url = new URL('/_/mw/event/keenstyle_page_visit/', contextVars.apiV2Domain);
+
+        $osf.ajaxJSON('POST', url.toString(), {
+            isCors: true,
+            data: {
+                collection: collection,
+                eventData: lodash.defaults(eventData, _defaultPrivateKeenPayload()),
+            },
+        }).done(function(response) {
+            console.debug('eventSINGULAR: success, events were sent!', response);
+        }).fail(function(error) {
+            console.debug('eventSINGULAR: error, plump fluff!', error);
         });
     }
 
@@ -218,6 +207,8 @@ var KeenTracker = (function() {
             };
 
             self.trackPageView = function () {
+                _mwLogPageView();
+
                 var self = this;
                 var guid;
                 if (lodashGet(window, 'contextVars.node.isPublic', false) &&
@@ -235,15 +226,9 @@ var KeenTracker = (function() {
             self.trackPrivateEvent = function(collection, event) {
                 return _trackCustomEvent(self._privateClient, collection, event);
             };
-            self.trackPrivateEvents = function(events) {
-                return _trackCustomEvents(self._privateClient, events);
-            };
 
             self.trackPublicEvent = function(collection, event) {
                 return _trackCustomEvent(self._publicClient, collection, event);
-            };
-            self.trackPublicEvents = function(events) {
-                return _trackCustomEvents(self._publicClient, events);
             };
         }
     }

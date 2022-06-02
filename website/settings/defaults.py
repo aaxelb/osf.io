@@ -405,14 +405,10 @@ class CeleryConfig:
         'framework.celery_tasks',
         'scripts.osfstorage.usage_audit',
         'scripts.stuck_registration_audit',
-        'scripts.analytics.tasks',
         'scripts.populate_new_and_noteworthy_projects',
         'scripts.populate_popular_projects_and_registrations',
         'website.search.elastic_search',
         'scripts.generate_sitemap',
-        'scripts.analytics.run_keen_summaries',
-        'scripts.analytics.run_keen_snapshots',
-        'scripts.analytics.run_keen_events',
         'scripts.clear_sessions',
         'osf.management.commands.delete_withdrawn_or_failed_registration_files',
         'osf.management.commands.check_crossref_dois',
@@ -425,7 +421,8 @@ class CeleryConfig:
         'osf.management.commands.sync_collection_provider_indices',
         'osf.management.commands.sync_datacite_doi_metadata',
         'osf.management.commands.update_institution_project_counts',
-        'osf.management.commands.populate_branched_from'
+        'osf.management.commands.populate_branched_from',
+        'mourningwail.tasks',
     }
 
     med_pri_modules = {
@@ -504,9 +501,6 @@ class CeleryConfig:
         'scripts.triggered_mails',
         'scripts.clear_sessions',
         'scripts.send_queued_mails',
-        'scripts.analytics.run_keen_summaries',
-        'scripts.analytics.run_keen_snapshots',
-        'scripts.analytics.run_keen_events',
         'scripts.generate_sitemap',
         'scripts.premigrate_created_modified',
         'scripts.add_missing_identifiers_to_preprints',
@@ -522,7 +516,8 @@ class CeleryConfig:
         'osf.management.commands.approve_pending_schema_responses',
         'osf.management.commands.delete_legacy_quickfiles_nodes',
         'osf.management.commands.fix_quickfiles_waterbutler_logs',
-        'api.providers.tasks'
+        'api.providers.tasks',
+        'mourningwail.tasks',
     )
 
     # Modules that need metrics and release requirements
@@ -616,19 +611,10 @@ class CeleryConfig:
                 'schedule': crontab(minute=45, hour=7, day_of_month=3),  # Third day of month 2:45 a.m.
                 'kwargs': {'dry_run': False}
             },
-            'run_keen_summaries': {
-                'task': 'scripts.analytics.run_keen_summaries',
+            'daily_reporters_go': {
+                'task': 'mourningwail.tasks.daily_reporters_go',
                 'schedule': crontab(minute=0, hour=6),  # Daily 1:00 a.m.
-                'kwargs': {'yesterday': True}
-            },
-            # 'run_keen_snapshots': {
-            #     'task': 'scripts.analytics.run_keen_snapshots',
-            #     'schedule': crontab(minute=0, hour=8),  # Daily 3:00 a.m.
-            # },
-            'run_keen_events': {
-                'task': 'scripts.analytics.run_keen_events',
-                'schedule': crontab(minute=0, hour=9),  # Daily 4:00 a.m.
-                'kwargs': {'yesterday': True}
+                'kwargs': {'also_send_to_keen': True},
             },
             # 'data_storage_usage': {
             #   'task': 'management.commands.data_storage_usage',

@@ -115,6 +115,9 @@ INSTALLED_APPS = (
     'addons.twofactor',
     'addons.wiki',
     'addons.zotero',
+
+    # metrics
+    'mourningwail',
 )
 
 # local development using https
