@@ -6,27 +6,21 @@ import json
 
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse, JsonResponse
-from rest_framework.views import APIView
-
-from api.nodes.permissions import ContributorOrPublic
 
 from mourningwail.metrics.events import PageVisitEvent
 from mourningwail.metrics import reports
 from mourningwail.node_analytics import get_node_analytics
 
 
-class NodeAnalytics(APIView):
-    permission_classes = (
-        ContributorOrPublic,  # TODO-quest: check this
-    )
-
-    view_category = 'mourningwail'
-    view_name = 'node-analytics'
-
-    def get(self, request, node_guid, timespan):
-        return JsonResponse(
-            get_node_analytics(node_guid, timespan)
-        )
+@require_GET
+def node_analytics_query(request, node_guid, timespan):
+    return JsonResponse({
+        'data': {
+            'id': node_guid,
+            'type': 'node-analytics',
+            'attributes': get_node_analytics(node_guid, timespan),
+        },
+    })
 
 
 @require_POST
@@ -58,11 +52,15 @@ VIEWABLE_REPORTS = {
 
 
 def serialize_report(report):
-    # TODO-quest: explicit decoupling
+    # TODO-quest: consider detangling representation in elasticsearch from this serialization
     report_as_dict = report.to_dict()
     return {
-        **report_as_dict,
-        'report_date': report_as_dict['report_date'].date().isoformat(),
+        'id': report.id,
+        'type': 'report',
+        'attributes': {
+            **report_as_dict,
+            'report_date': report_as_dict['report_date'].date().isoformat(),
+        },
     }
 
 
@@ -73,7 +71,7 @@ MAX_REPORTS = 1000
 #@permission_required('osf.view_metrics')
 def get_report_names(request):
     return JsonResponse({
-        'viewable_reports': list(VIEWABLE_REPORTS.keys()),
+        'report_names': list(VIEWABLE_REPORTS.keys()),
     })
 
 
@@ -96,9 +94,12 @@ def get_recent_reports(request, report_name):
     )
 
     search_response = search_recent.execute()
-    return JsonResponse(
-        {'reports': [serialize_report(hit) for hit in search_response]}
-    )
+    return JsonResponse({
+        'data': [
+            serialize_report(hit)
+            for hit in search_response
+        ],
+    })
 
 
 @require_GET
@@ -120,4 +121,6 @@ def get_latest_report(request, report_name):
         return HttpResponse(status=404, content=f'no "{report_name}" reports found')
     latest_report = search_response.hits[0]
 
-    return JsonResponse(serialize_report(latest_report))
+    return JsonResponse({
+        'data': serialize_report(latest_report),
+    })
