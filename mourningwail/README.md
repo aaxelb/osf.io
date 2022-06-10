@@ -21,12 +21,16 @@ each `DailyReporter` generates a `DailyReport` for a given date (most often yest
 may query/analyze past `MeteredEvent` and `DailyReport`,
 may also observe data other ways
 
+### `mourningwail.management.commands`
+`fake_reports`: for filling a local database with random data
+`run_daily_reports`: calls `mourningwail.tasks.daily_reporters_go`
+
 ### `mourningwail.tasks`
 `daily_reporters_go` has each `DailyReporter` do their thing
 for yesterday, then stores the results
 
 ### `mourningwail.urls`
-entry point for inclusion in another django app (see `../api/base/urls.py`)
+up for inclusion in another django app (see `../api/base/urls.py`)
 
 - `/report/*` (read-only): for viewing `DailyReport`
 - `/event/*` (write-only): for storing `MeteredEvent`
@@ -34,9 +38,17 @@ entry point for inclusion in another django app (see `../api/base/urls.py`)
 
 ### `mourningwail.views`
 - store `MeteredEvent` (but not directly view them)
-- view `DailyReport` (latest one or recent n)
+- view `DailyReporter` names
+- view latest `DailyReport` from a given `DailyReporter` name
 - query `MeteredEvent` (only static-coded for now)
 
 
 ## possible future work
-
+- make it community-friendly, sharable code
+    - separably installable django addon (or python package?)
+- expose reports in agreement with "COUNTER" (http://projectcounter.org)
+- lean into parallel between COUNTER and OAI-PMH
+    - start to compose a "general repository protocol" of existing open protocols with good constraints
+    - OAI-PMH exposes items from a community, each on equal footing
+    - COUNTER exposes a community's enthusiasm, how they have focused their attention
+    - lean on open web standards for accessible web interface: embrace the simple semantics of HTTP methods and HTML tags
