@@ -1,11 +1,11 @@
 from datetime import timedelta
 import logging
 
-from django.conf import settings
 from django.utils import timezone
 
 from osf.models import OSFUser, AbstractNode
 from framework.database import paginated
+from website import settings
 from mourningwail.metrics.reports import AddonUsageReportV0
 from ._base import DailyReporter
 
