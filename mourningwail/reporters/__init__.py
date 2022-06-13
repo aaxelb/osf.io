@@ -1,5 +1,5 @@
 # from .active_users import ActiveUserReporter
-from .addon_usage import AddonUsageReporter
+# from .addon_usage import AddonUsageReporter
 from .download_count import DownloadCountReporter
 from .institution_summary import InstitutionSummaryReporter
 from .new_user_domain import NewUserDomainReporter
@@ -11,7 +11,7 @@ from .user_count import UserCountReporter
 
 DAILY_REPORTERS = (
     # ActiveUserReporter,
-    AddonUsageReporter,
+    # AddonUsageReporter,
     DownloadCountReporter,
     InstitutionSummaryReporter,
     NewUserDomainReporter,
