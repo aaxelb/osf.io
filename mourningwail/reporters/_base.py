@@ -70,7 +70,7 @@ class DailyReporter:
                 tzinfo=pytz.utc,
             )
 
-            for collection_name, keen_events in self.keen_events_from_report(report):
+            for collection_name, keen_events in self.keen_events_from_report(report).items():
                 for event in keen_events:
                     event['keen'] = {'timestamp': keen_event_timestamp}
                 keen_events_by_collection[collection_name].extend(keen_events)
