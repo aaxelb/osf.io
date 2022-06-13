@@ -41,6 +41,7 @@ class InstitutionSummaryReporter(DailyReporter):
             )
 
             report = InstitutionSummaryReportV0(
+                report_date=date,
                 institution_id=institution._id,
                 institution_name=institution.name,
                 users=RunningTotal(

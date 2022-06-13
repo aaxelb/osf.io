@@ -33,6 +33,7 @@ class OsfstorageFileCountReporter(DailyReporter):
         daily_query = Q(created__date=date)
 
         report = OsfstorageFileCountReportV0(
+            report_date=date,
             total=file_qs.count(),
             public=file_qs.filter(public_query).count(),
             private=file_qs.filter(private_query).count(),

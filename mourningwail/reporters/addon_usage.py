@@ -100,6 +100,7 @@ class AddonUsageReporter(DailyReporter):
 
             reports.append(
                 AddonUsageReportV0(
+                    report_date=date,
                     addon_shortname=short_name,
                     users_enabled_count=usage_counts['enabled'],
                     users_authorized_count=usage_counts['authorized'],

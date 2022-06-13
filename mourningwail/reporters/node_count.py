@@ -31,6 +31,7 @@ class NodeCountReporter(DailyReporter):
         exclude_spam = ~Q(spam_status__in=[SpamStatus.SPAM, SpamStatus.FLAGGED])
 
         report = NodeSummaryReportV0(
+            report_date=date,
             # Nodes - the number of projects and components
             nodes=NodeRunningTotals(
                 total=node_qs.count(),

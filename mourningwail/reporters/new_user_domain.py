@@ -21,7 +21,11 @@ class NewUserDomainReporter(DailyReporter):
             for email in new_user_emails
         )
         return [
-            NewUserDomainReportV1(domain_name=domain_name, new_user_count=count)
+            NewUserDomainReportV1(
+                report_date=date,
+                domain_name=domain_name,
+                new_user_count=count,
+            )
             for domain_name, count in domain_names
         ]
 
