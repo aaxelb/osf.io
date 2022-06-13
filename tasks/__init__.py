@@ -327,6 +327,7 @@ def test_module(ctx, module=None, numprocesses=None, nocapture=False, params=Non
 
 OSF_TESTS = [
     'osf_tests',
+    'mourningwail/tests',
 ]
 
 WEBSITE_TESTS = [
