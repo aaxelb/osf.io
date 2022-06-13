@@ -23,7 +23,7 @@ may also observe data other ways
 
 ### `mourningwail.management.commands`
 `fake_reports`: for filling a local database with random data
-`run_daily_reports`: calls `mourningwail.tasks.daily_reporters_go`
+`daily_reporters_go`: calls `mourningwail.tasks.daily_reporters_go`
 
 ### `mourningwail.tasks`
 `daily_reporters_go` has each `DailyReporter` do their thing
