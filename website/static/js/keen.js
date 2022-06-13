@@ -117,14 +117,13 @@ var KeenTracker = (function() {
         });
     }
 
-    function _mwLogPageView() {
-        const url = new URL('/_/mw/event/keenstyle_page_visit/', contextVars.apiV2Domain);
+    function _mwLogPageView(eventData) {
+        const url = new URL('/_/mw/event/keenstyle_page_visit/', window.contextVars.apiV2Domain);
 
         $osf.ajaxJSON('POST', url.toString(), {
             isCors: true,
             data: {
-                collection: collection,
-                eventData: Object.assign(_defaultPrivateKeenPayload(), eventData),
+                eventData,
             },
         }).done(function(response) {
             console.debug('eventSINGULAR: success, events were sent!', response);
@@ -206,7 +205,7 @@ var KeenTracker = (function() {
             };
 
             self.trackPageView = function () {
-                _mwLogPageView();
+                _mwLogPageView(_defaultPrivateKeenPayload());
 
                 var self = this;
                 var guid;
