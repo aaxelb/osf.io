@@ -1,4 +1,4 @@
-from collections import defaultdict, deque
+from collections import defaultdict
 from datetime import datetime, timedelta
 import logging
 import pytz
@@ -61,7 +61,7 @@ class DailyReporter:
             logger.warning(f'keen not configured; not sending events for {self.__class__.__name__}')
             return
 
-        keen_events_by_collection = defaultdict(deque)
+        keen_events_by_collection = defaultdict(list)
         for report in reports:
             keen_event_timestamp = datetime(
                 report.report_date.year,
