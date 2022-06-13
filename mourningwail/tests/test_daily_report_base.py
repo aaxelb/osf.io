@@ -1,10 +1,9 @@
 from datetime import date
-from django.test import SimpleTestCase, TestCase
+from django.test import SimpleTestCase
 from elasticsearch_metrics import metrics
 
 from mourningwail.exceptions import ReportInvalid
 from mourningwail.metrics._base import DailyReport
-from mourningwail.reporters import DAILY_REPORTERS
 
 
 class TestDailyReportKey(SimpleTestCase):
@@ -45,11 +44,3 @@ class TestDailyReportKey(SimpleTestCase):
         expected_message = 'UniqueByDateAndField.duf MUST have a string value'
         with self.assertRaisesMessage(ReportInvalid, expected_message):
             UniqueByDateAndField(report_date=today).get_report_key()
-
-
-class TestReportersDoSomething(TestCase):
-    def test_for_smoke(self):
-        today = date.today()
-        for Reporter in DAILY_REPORTERS:
-            report = Reporter().report(today)
-            assert report.report_date == today
