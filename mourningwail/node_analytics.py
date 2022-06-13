@@ -36,8 +36,8 @@ MW_AGGREGATIONS = {
     },
     'popular-pages': {
         'terms': {
-            'field': 'path_n_title',  # TODO-quest build composite field with copy_to mapping?
-            'exclude': '.*/project/.*',  # TODO-quest verify this works
+            'field': 'path_n_title',
+            'exclude': '.*/project/.*',
             'size': 10,
         },
     },

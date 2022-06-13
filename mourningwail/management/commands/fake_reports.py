@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from random import randint
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from mourningwail.metrics import (
@@ -53,6 +54,8 @@ def fake_preprint_counts(days_back):
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
+        if not settings.DEBUG:
+            raise NotImplementedError('fake_reports requires DEBUG mode')
         fake_user_counts(1000)
         fake_preprint_counts(1000)
         # TODO-quest: more reports

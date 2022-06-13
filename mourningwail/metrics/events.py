@@ -10,7 +10,7 @@ class PageVisitEvent(MeteredEvent):
     referer_url = metrics.Keyword()
     page_url = metrics.Keyword()
     page_title = metrics.Keyword()
-    page_public = metrics.Keyword()
+    page_public = metrics.Boolean()
     session_id = metrics.Keyword()
     node_guid = metrics.Keyword()
 
