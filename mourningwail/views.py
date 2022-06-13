@@ -25,16 +25,21 @@ def node_analytics_query(request, node_guid, timespan):
 
 @require_POST
 def log_keenstyle_page_visit(request):
-    # TODO-quest: explain/reference where assumed structure of this json is defined/described/built
+    # request body expected to be `{eventData: {...}}`,
+    # where `{...}` is similar to what's constructed by
+    # `_defaultKeenPayload` in website/static/js/keen.js
     request_bod = json.loads(request.body)
     keen_eventdata = request_bod['eventData']
 
     # TODO-quest: check for obvious fakery
 
+    pagedata = keen_eventdata.get('page', {})
+
     PageVisitEvent.record(
         referer_url=keen_eventdata.get('referrer', {}).get('url'),
-        page_url=keen_eventdata.get('page', {}).get('url'),
-        page_title=keen_eventdata.get('page', {}).get('title'),
+        page_url=pagedata.get('url'),
+        page_title=pagedata.get('title'),
+        page_public=pagedata.get('meta', {}).get('public'),
         session_id=keen_eventdata.get('anon', {}).get('id'),
         node_guid=keen_eventdata.get('node', {}).get('id'),
         keenstyle_event_info=keen_eventdata,
@@ -68,7 +73,6 @@ MAX_REPORTS = 1000
 
 
 @require_GET
-#@permission_required('osf.view_metrics')
 def get_report_names(request):
     return JsonResponse({
         'report_names': list(VIEWABLE_REPORTS.keys()),
@@ -76,7 +80,6 @@ def get_report_names(request):
 
 
 @require_GET
-#@permission_required('osf.view_metrics')
 def get_recent_reports(request, report_name):
     try:
         report_class = VIEWABLE_REPORTS[report_name]
@@ -103,7 +106,6 @@ def get_recent_reports(request, report_name):
 
 
 @require_GET
-#@permission_required('osf.view_metrics')
 def get_latest_report(request, report_name):
     try:
         report_class = VIEWABLE_REPORTS[report_name]

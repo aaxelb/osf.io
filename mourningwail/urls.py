@@ -13,5 +13,5 @@ urlpatterns = [
 
     url(r'^event/keenstyle_page_visit/$', views.log_keenstyle_page_visit, name='keenstyle-page-visit'),
 
-    url(r'^query/node_analytics/(?P<node_guid>[a-z0-9]+)/(?P<timespan>week|fortnight|month)/$', views.NodeAnalytics.as_view(), name=views.NodeAnalytics.view_name),
+    url(r'^query/node_analytics/(?P<node_guid>[a-z0-9]+)/(?P<timespan>week|fortnight|month)/$', views.node_analytics_query, name='query-node-analytics'),
 ]

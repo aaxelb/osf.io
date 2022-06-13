@@ -67,9 +67,14 @@ def build_timespan_filter(timespan: MwTimespan):
 
 def build_query_payload(node_guid: str, timespan: MwTimespan):
     return {
-        'filter': {
-            'term': {'node_guid': node_guid},
-            'range': build_timespan_filter(timespan),
+        'query': {
+            'bool': {
+                'filter': [
+                    {'term': {'node_guid': node_guid}},
+                    {'term': {'page_public': True}},
+                    {'range': build_timespan_filter(timespan)},
+                ],
+            },
         },
         'size': 0,  # tell elasticsearch not to return any pagevisit events, just the aggregations
         'aggs': MW_AGGREGATIONS,
