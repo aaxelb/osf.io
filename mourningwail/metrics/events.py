@@ -42,13 +42,13 @@ class PageVisitEvent(MeteredEvent):
         )
 
 
-class FileDownloadEvent(MeteredEvent):
-    file_guid = metrics.Keyword()
-
-
-class SystemLogEvent(MeteredEvent):
-    pass  # TODO-quest
-
-
-class UiInteractionEvent(MeteredEvent):
-    pass  # TODO-quest
+# class FileDownloadEvent(MeteredEvent):
+#     file_guid = metrics.Keyword()
+#
+#
+# class SystemLogEvent(MeteredEvent):
+#     pass  # TODO-quest
+#
+#
+# class UiInteractionEvent(MeteredEvent):
+#     pass  # TODO-quest

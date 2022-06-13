@@ -1,8 +1,8 @@
 from .events import (
-    FileDownloadEvent,
+    # FileDownloadEvent,
     PageVisitEvent,
-    SystemLogEvent,
-    UiInteractionEvent,
+    # SystemLogEvent,
+    # UiInteractionEvent,
 )
 from .reports import (
     AddonUsageReportV0,
@@ -17,10 +17,10 @@ from .reports import (
 
 
 METERED_EVENTS = (
-    FileDownloadEvent,
+    # FileDownloadEvent,
     PageVisitEvent,
-    SystemLogEvent,
-    UiInteractionEvent,
+    # SystemLogEvent,
+    # UiInteractionEvent,
 )
 DAILY_REPORTS = (
     AddonUsageReportV0,
