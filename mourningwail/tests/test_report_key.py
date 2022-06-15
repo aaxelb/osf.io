@@ -7,7 +7,7 @@ from mourningwail.metrics._base import DailyReport
 
 
 class TestDailyReportKey(SimpleTestCase):
-    def test_default(self):
+    def test_with_just_date(self):
         # only one of this type of report per day
         class UniqueByDate(DailyReport):
             blah = metrics.Keyword()
