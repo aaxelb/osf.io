@@ -5,8 +5,8 @@ from elasticsearch_metrics import metrics
 from mourningwail.exceptions import ReportInvalid
 
 
-class MeteredEvent(metrics.Metric):
-    """MeteredEvent (abstract base for event-based metrics in mourningwail.events)
+class EventRecord(metrics.Metric):
+    """EventRecord (abstract base for event-based metrics in mourningwail.events)
 
     Something happened! Let's quickly take note of it and move on,
     then come back later to query/analyze/investigate.
@@ -21,9 +21,9 @@ class MeteredEvent(metrics.Metric):
 class DailyReport(metrics.Metric):
     """DailyReport (abstract base for the report-based metrics in mourningwail.reports)
 
-    There's something we'd like to know about every so often,
-    so let's regularly run a report and stash the results here
-    (then come back later to query/analyze/investigate)
+    We've found some specific way to query/analyze/investigate
+    that we'd would like to observe into the future,
+    so let's regularly run a report and stash the results here.
     """
     DAILY_UNIQUE_FIELD = None  # set in subclasses that expect multiple reports per day
 
@@ -40,7 +40,7 @@ class DailyReport(metrics.Metric):
             key_parts.append(duf_value)
 
         plain_key = '--'.join(key_parts)
-        # hash the key to get an opaque id
+        # hash the key for an opaque id
         return blake2s(bytes(plain_key, encoding='utf')).hexdigest()
 
     def save(self, **kwargs):

@@ -1,7 +1,7 @@
 from enum import Enum
 import logging
 
-from mourningwail.metrics.events import PageVisitEvent
+from mourningwail.metrics.events import PageViewRecord
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ MW_AGGREGATIONS = {
     },
     'popular-pages': {
         'terms': {
-            'field': 'path_n_title',
+            'field': 'page_path',
             'exclude': '.*/project/.*',
             'size': 10,
         },
@@ -82,7 +82,7 @@ def build_query_payload(node_guid: str, timespan: MwTimespan):
 
 
 def get_node_analytics(node_guid: str, timespan: str):
-    analytics_search = PageVisitEvent.search().update_from_dict(
+    analytics_search = PageViewRecord.search().update_from_dict(
         build_query_payload(node_guid, MwTimespan(timespan))
     )
     logger.warn(analytics_search.to_dict())

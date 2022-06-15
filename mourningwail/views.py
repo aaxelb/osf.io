@@ -7,7 +7,7 @@ import json
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse, JsonResponse
 
-from mourningwail.metrics.events import PageVisitEvent
+from mourningwail.metrics.events import PageViewRecord
 from mourningwail.metrics import reports
 from mourningwail.node_analytics import get_node_analytics
 
@@ -24,8 +24,8 @@ def node_analytics_query(request, node_guid, timespan):
 
 
 @require_POST
-def log_keenstyle_page_visit(request):
-    # request body expected to be `{eventData: {...}}`,
+def post_keenstyle_pageview(request):
+    # request body expected to be json `{eventData: {...}}`,
     # where `{...}` is similar to what's constructed by
     # `_defaultKeenPayload` in website/static/js/keen.js
     request_bod = json.loads(request.body)
@@ -35,7 +35,7 @@ def log_keenstyle_page_visit(request):
 
     pagedata = keen_eventdata.get('page', {})
 
-    PageVisitEvent.record(
+    PageViewRecord.record(
         referer_url=keen_eventdata.get('referrer', {}).get('url'),
         page_url=pagedata.get('url'),
         page_title=pagedata.get('title'),
@@ -60,7 +60,7 @@ def serialize_report(report):
     # TODO-quest: consider detangling representation in elasticsearch from this serialization
     report_as_dict = report.to_dict()
     return {
-        'id': report.id,
+        'id': report.meta.id,
         'type': 'report',
         'attributes': {
             **report_as_dict,
