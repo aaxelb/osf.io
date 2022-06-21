@@ -117,18 +117,19 @@ var KeenTracker = (function() {
         });
     }
 
-    function _mwLogPageView(eventData) {
-        const url = new URL('/_/mw/event/keenstyle_page_visit/', window.contextVars.apiV2Domain);
+    function _mwLogPageview(eventData) {
+        const url = new URL('/_/mw/event/keenstyle_pageview/', window.contextVars.apiV2Domain);
 
         $osf.ajaxJSON('POST', url.toString(), {
             isCors: true,
-            data: {
-                eventData,
-            },
-        }).done(function(response) {
-            console.debug('eventSINGULAR: success, events were sent!', response);
+            data: {eventData},
         }).fail(function(error) {
-            console.debug('eventSINGULAR: error, plump fluff!', error);
+            Raven.captureMessage('Error saving pageview record', {
+                extra: {
+                    payload: {eventData},
+                    url,
+                }
+            });
         });
     }
 
@@ -205,7 +206,7 @@ var KeenTracker = (function() {
             };
 
             self.trackPageView = function () {
-                _mwLogPageView(_defaultPrivateKeenPayload());
+                _mwLogPageview(_defaultPrivateKeenPayload());
 
                 var self = this;
                 var guid;

@@ -5,7 +5,7 @@ from elasticsearch_metrics import metrics
 from mourningwail.metrics._base import EventRecord
 
 
-class PageViewRecord(EventRecord):
+class PageviewRecord(EventRecord):
     # fields that should be provided by the client
     referer_url = metrics.Keyword()
     page_url = metrics.Keyword()
@@ -25,8 +25,6 @@ class PageViewRecord(EventRecord):
     @classmethod
     def record(cls, *, timestamp=None, **kwargs):
         timestamp = timestamp or timezone.now()
-        path = kwargs.get('page_path')
-        title = kwargs.get('page_title')
         referer_url = kwargs.get('referer_url')
         page_url = kwargs.get('page_url')
 

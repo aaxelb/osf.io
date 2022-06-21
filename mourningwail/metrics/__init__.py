@@ -1,6 +1,6 @@
 from .events import (
     # FileDownloadEvent,
-    PageVisitEvent,
+    PageviewEvent,
     # SystemLogEvent,
     # UiInteractionEvent,
 )
@@ -18,7 +18,7 @@ from .reports import (
 
 METERED_EVENTS = (
     # FileDownloadEvent,
-    PageVisitEvent,
+    PageviewEvent,
     # SystemLogEvent,
     # UiInteractionEvent,
 )

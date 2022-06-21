@@ -7,7 +7,7 @@ import json
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse, JsonResponse
 
-from mourningwail.metrics.events import PageViewRecord
+from mourningwail.metrics.events import PageviewRecord
 from mourningwail.metrics import reports
 from mourningwail.node_analytics import get_node_analytics
 
@@ -30,18 +30,15 @@ def post_keenstyle_pageview(request):
     # `_defaultKeenPayload` in website/static/js/keen.js
     request_bod = json.loads(request.body)
     keen_eventdata = request_bod['eventData']
-
-    # TODO-quest: check for obvious fakery
-
     pagedata = keen_eventdata.get('page', {})
 
-    PageViewRecord.record(
-        referer_url=keen_eventdata.get('referrer', {}).get('url'),
+    PageviewRecord.record(
         page_url=pagedata.get('url'),
         page_title=pagedata.get('title'),
         page_public=pagedata.get('meta', {}).get('public'),
         session_id=keen_eventdata.get('anon', {}).get('id'),
         node_guid=keen_eventdata.get('node', {}).get('id'),
+        referer_url=keen_eventdata.get('referrer', {}).get('url'),
         keenstyle_event_info=keen_eventdata,
     )
     return HttpResponse(status=201)
@@ -57,7 +54,6 @@ VIEWABLE_REPORTS = {
 
 
 def serialize_report(report):
-    # TODO-quest: consider detangling representation in elasticsearch from this serialization
     report_as_dict = report.to_dict()
     return {
         'id': report.meta.id,
@@ -86,7 +82,6 @@ def get_recent_reports(request, report_name):
     except KeyError:
         return HttpResponse(status=404, content=f'unknown report: "{report_name}"')
 
-    # TODO-quest: start/end daterange?
     days_back = request.GET.get('days_back', 13)
 
     search_recent = (

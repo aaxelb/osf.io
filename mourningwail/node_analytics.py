@@ -1,7 +1,7 @@
 from enum import Enum
 import logging
 
-from mourningwail.metrics.events import PageViewRecord
+from mourningwail.metrics.events import PageviewRecord
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ MW_AGGREGATIONS = {
         'date_histogram': {
             'field': 'timestamp',
             'interval': 'day',
-            'format': 'YYYY-MM-DD',
+            'format': 'YYYY-MM-dd',
         },
     },
     'time-of-day': {
@@ -65,7 +65,7 @@ def build_timespan_filter(timespan: MwTimespan):
     raise NotImplementedError
 
 
-def build_query_payload(node_guid: str, timespan: MwTimespan):
+def build_pageview_query(node_guid: str, timespan: MwTimespan):
     return {
         'query': {
             'bool': {
@@ -76,14 +76,14 @@ def build_query_payload(node_guid: str, timespan: MwTimespan):
                 ],
             },
         },
-        'size': 0,  # tell elasticsearch not to return any pagevisit events, just the aggregations
+        'size': 0,  # tell elasticsearch not to return any pageview events, just the aggregations
         'aggs': MW_AGGREGATIONS,
     }
 
 
 def get_node_analytics(node_guid: str, timespan: str):
-    analytics_search = PageViewRecord.search().update_from_dict(
-        build_query_payload(node_guid, MwTimespan(timespan))
+    analytics_search = PageviewRecord.search().update_from_dict(
+        build_pageview_query(node_guid, MwTimespan(timespan))
     )
     logger.warn(analytics_search.to_dict())
     analytics_results = analytics_search.execute()
