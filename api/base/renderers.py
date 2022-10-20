@@ -31,6 +31,13 @@ class JSONAPIRenderer(JSONRendererWithESISupport):
             data.setdefault('meta', {}).update(meta_dict)
         return super(JSONAPIRenderer, self).render(data, accepted_media_type, renderer_context)
 
+class JSONLDRenderer(JSONRenderer):
+    format = 'json-ld'
+    media_type = 'application/ld+json'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        print(f'#### data\n{data}\n#### endata')
+
 
 class BrowsableAPIRendererNoForms(BrowsableAPIRenderer):
     """
