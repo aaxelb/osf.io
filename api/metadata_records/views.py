@@ -6,7 +6,7 @@ from framework.auth.oauth_scopes import CoreScopes
 from api.base import permissions as base_permissions
 from api.base.views import JSONAPIBaseView
 
-from .gather import MetadataGatherer
+from .gather import gather_guid_graph
 # from .serializers import MetadataRecordSerializer
 
 
@@ -52,7 +52,7 @@ class GuidMetadataDownload(JSONAPIBaseView):
     view_name = 'metadata-record-download'
 
     def get(self, request, guid_id, **kwargs):
-        graph = MetadataGatherer(guid_id).gather()
+        graph = gather_guid_graph(guid_id, sparse=False)
         return HttpResponse(
             graph.serialize(format='json-ld', auto_compact=True),
             headers={

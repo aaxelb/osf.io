@@ -12,6 +12,7 @@ from osf.exceptions import (
     NoSuchPIDValidatorError
 )
 from website.settings import (
+    DOI_URL_PREFIX,
     PID_VALIDATION_ENABLED,
     PID_VALIDATION_ENDPOINTS,
 )
@@ -42,6 +43,10 @@ class PIDValidator(abc.ABC):
 
     @abc.abstractmethod
     def validate(self, pid_value):
+        pass
+
+    @abc.abstractmethod
+    def to_irl(self, pid_value):
         pass
 
 
@@ -81,6 +86,9 @@ class DOIValidator(PIDValidator):
             pid_exception = InvalidPIDError
 
         raise pid_exception(pid_value=doi_value, pid_category='DOI')
+
+    def to_irl(self, doi_value):
+        return urljoin(DOI_URL_PREFIX, doi_value)
 
 
 def normalize_identifier(pid_value):
