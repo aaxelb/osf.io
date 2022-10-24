@@ -51,11 +51,11 @@ class GuidMetadataDownload(JSONAPIBaseView):
     view_category = 'metadata-records'
     view_name = 'metadata-record-download'
 
-    def get(self, request, guid_id, **kwargs):
+    def get(self, request, guid_id, serializer_name, **kwargs):
         graph = gather_guid_graph(guid_id, sparse=False)
         return HttpResponse(
-            graph.serialize(format='json-ld', auto_compact=True),
+            graph.serialize(format=serializer_name, auto_compact=True),
             headers={
-                'Content-Type': 'application/ld+json',
+                'Content-Type': 'text/plain',
             },
         )
