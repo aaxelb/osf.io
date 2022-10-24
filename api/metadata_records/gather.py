@@ -42,6 +42,13 @@ def guid_from_irl(irl):
     return None
 
 
+def checksum_urn(checksum_algorithm, checksum_hex):
+    # TODO: register "checksum" urn namespace with iana i guess
+    #       (using iana's "hash function textual names" registry)
+    urn = f'urn:checksum:{checksum_algorithm}:{checksum_hex}'
+    return rdflib.URIRef(urn)
+
+
 def gather_guid_graph(guid_id, sparse=True):
     guids_visited = set()
     guids_to_visit = {guid_id}
@@ -79,7 +86,7 @@ class MetadataGatherer:
             self._gather_disciplines(),
             self._gather_parts(),
             self._gather_related(),
-            self._gather_versions(),
+            self._gather_file_versions(),
             self._gather_agents(),
         )
         for triple in all_triples:
@@ -88,7 +95,10 @@ class MetadataGatherer:
                 yield clean_triple
 
     def _gather_type(self):
-        # TODO: when to use rdf:type ("A") vs dct:type?
+        # TODO: use rdf classes built from osf-map shapes
+        # osf:resourcetypegeneral
+
+        # TODO: map types explicitly, don't expose class names
         yield (A, OSF[self.subject.__class__.__name__])
 
         if isinstance(self.subject, models.AbstractNode):
@@ -96,9 +106,6 @@ class MetadataGatherer:
         category = getattr(self.subject, 'category', None)
         if category:
             yield (DCT.type, OSF[category])
-        # TODO:
-        # more types
-        # osf:resourcetypegeneral
 
     def _gather_simple_properties(self):
         return (
@@ -205,23 +212,24 @@ class MetadataGatherer:
                 yield (artifact_irl, DCT.description, outcome_artifact.description)
         # TODO: what do with title/description/tags/etc on osf.models.Outcome?
 
-    def _gather_versions(self):
+    def _gather_file_versions(self):
         try:
-            last_version = self.subject.versions.last()
+            versions = self.subject.versions.all()
             # TODO: past versions, dct:hasVersion
         except AttributeError:
-            pass
-        else:
-            if last_version:
-                yield (DCT.extent, last_version.size)
-                yield (DCT.format, last_version.content_type)
-            checksums = self.subject._hashes or {}
+            checksums = getattr(self.subject, '_hashes', {})
             for checksum_algorithm, checksum_value in checksums.items():
-                checksum_ref = rdflib.BNode()
-                yield (OSF.checksum, checksum_ref)
-                yield (checksum_ref, A, OSF.Checksum)
-                yield (checksum_ref, OSF.checksum_algorithm, checksum_algorithm)
-                yield (checksum_ref, OSF.checksum_value, checksum_value)
+                yield (OSF.has_content, checksum_urn(checksum_algorithm, checksum_value))
+        else:
+            for version in versions:
+                version_ref = rdflib.BNode()
+                yield (DCT.hasVersion, version_ref)
+                yield (version_ref, OSF.version_number, version.identifier)
+                yield (version_ref, OSF.has_content, checksum_urn('sha256', version.location_hash))
+                yield (version_ref, DCT.format, version.content_type)
+                yield (version_ref, DCT.created, version.created)
+                # TODO: dct:extent definition recommends megabytes (should it be a string with unit?)
+                yield (version_ref, DCT.extent, version.size)
 
     def _gather_agents(self):
         for osf_user in getattr(self.subject, 'visible_contributors', ()):
@@ -241,11 +249,11 @@ class MetadataGatherer:
         if len(triple) == 2:  # allow implicit subject
             triple = (self.subject_irl, *triple)
         if len(triple) != 3:
-            raise ValueError(f'{self.__class__}._clean_triple: triple not a triple (got {triple})')
+            raise ValueError(f'{self.__class__.__name__}._clean_triple: triple not a triple (got {triple})')
         if any((v is None or v == '') for v in triple):
             return None  # politely skipple this triple
-
         subj, pred, obj = triple
+        # unless already rdf'd, assume each triple's object is a literal
         if not isinstance(obj, rdflib.term.Identifier):
             obj = rdflib.Literal(obj)
         return (subj, pred, obj)

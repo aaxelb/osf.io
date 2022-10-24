@@ -1,3 +1,9 @@
+## content address
+reference a specific data manifestation by a content-addressed URN
+
+example! `urn:checksum/sha256/<hex-encoded-sha256-digest>`
+
+## some connections
 ```mermaid
 graph LR;
     subgraph open-vocab
@@ -7,13 +13,12 @@ graph LR;
     subgraph open-tech
         dctap --- shacl
         json-ld --- rdf --- shacl
-        ocfl
-        bagit
+        ocfl --- strong-checksum --- bagit
     end
     dctap --- dublin-core
     datacite-schema --- bagit
 
-    subgraph osf:betta-metadata
+    subgraph osf:betta-meta
         osf:metadata-profile --- osf:guid-record --- osf:object-browser
         osf:object-browser --- osf:emerging-vocab --- osf:guid-record
     end
@@ -28,6 +33,7 @@ graph LR;
     osf:guid-record --- json-ld
     osf:guid-record --- osf:hash-addressed-osfstorage
     osf:hash-addressed-osfstorage --- ocfl
+    osf:hash-addressed-osfstorage --- strong-checksum
     osf:metadata-profile --- datacite-schema
     osf:metadata-profile --- dctap
     osf:metadata-profile --- shacl
