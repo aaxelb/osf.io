@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 import logging
 
 from django.core.management.base import BaseCommand
@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from framework import sentry
 from framework.celery_tasks import app as celery_app
+from osf.management.utils import date_fromisoformat
 from osf.metrics.reporters import DAILY_REPORTERS
 from website.app import init_app
 
@@ -45,9 +46,10 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--date',
-            type=date,
+            type=date_fromisoformat,
             help='also send reports to keen',
         )
+
     def handle(self, *args, **options):
         errors = daily_reporters_go(
             report_date=options.get('date'),

@@ -66,6 +66,13 @@ services:
       - elasticsearch6_data_vol:/usr/share/elasticsearch/data
     stdin_open: true
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.3.2
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: 'http://elasticsearch6:9200'
+
   postgres:
     image: postgres:9.6
     command:
