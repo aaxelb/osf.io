@@ -41,6 +41,16 @@ volumes:
     external: false
   osf_admin_bower_components_vol:
     external: false
+  share_postgres_data_vol:
+    external: false
+  share_elasticsearch_data_vol:
+    external: false
+  share_rabbitmq_vol:
+    external: false
+  share_frontend_dist_vol:
+    external: false
+  share_requirements_vol:
+    external: false
 
 services:
 
@@ -516,3 +526,117 @@ services:
     stdin_open: true
     volumes:
       - /srv
+
+  ##########################
+  # Metadata trove (SHARE) #
+  ##########################
+  #
+  #  share_elasticsearch:
+  #    image: elasticsearch:5.4
+  #    ports:
+  #      - 9203:9200
+  #    environment:
+  #      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+  #    volumes:
+  #      - share_elasticsearch_data_vol:/usr/share/elasticsearch/data
+  #    stdin_open: true
+  #
+  #  share_rabbitmq:
+  #    image: rabbitmq:management
+  #    ports:
+  #      - 5673:5672
+  #      - 15673:15672
+  #    volumes:
+  #      - share_rabbitmq_vol:/var/lib/rabbitmq
+  #    stdin_open: true
+  #
+  #  share_postgres:
+  #    image: postgres:10
+  #    command:
+  #      - /bin/bash
+  #      - -c
+  #      - echo "$$POSTGRES_INITDB" > /docker-entrypoint-initdb.d/commands.sh &&
+  #        chmod +x /docker-entrypoint-initdb.d/commands.sh &&
+  #        /docker-entrypoint.sh postgres
+  #    ports:
+  #      - 5433:5432
+  #    environment:
+  #      POSTGRES_DB: share
+  #      POSTGRES_HOST_AUTH_METHOD: trust
+  #      POSTGRES_INITDB: |
+  #        sed -i -e 's/max_connections.*/max_connections = 5000/' /var/lib/postgresql/data/postgresql.conf
+  #        sed -i -e 's/#log_min_duration_statement = .*/log_min_duration_statement = 0/' /var/lib/postgresql/data/postgresql.conf
+  #    volumes:
+  #      - share_postgres_data_vol:/var/lib/postgresql/data/
+  #    stdin_open: true
+  #
+  #  share_requirements:
+  #    image: quay.io/centerforopenscience/share:develop
+  #    command:
+  #      - /bin/bash
+  #      - -c
+  #      - apt-get update &&
+  #        apt-get install -y gcc &&
+  #        pip install -r requirements.txt -r dev-requirements.txt &&
+  #        (python3 -m compileall /usr/local/lib/python3.9 || true) &&
+  #        rm -Rf /python3.9/* &&
+  #        apt-get remove -y gcc &&
+  #        cp -Rf -p /usr/local/lib/python3.9 / &&
+  #        python3 setup.py develop
+  #    restart: 'no'
+  #    volumes:
+  #      - share_requirements_vol:/python3.9
+  #
+  #  share_frontend:
+  #    image: quay.io/centerforopenscience/share-web:develop-local
+  #    command: yarn start
+  #    ports:
+  #      - 4204:4200
+  #    volumes:
+  #      - share_frontend_dist_vol:/code/dist
+  #    stdin_open: true
+  #
+  #  share_worker:
+  #    image: quay.io/centerforopenscience/share:develop
+  #    command: /usr/local/bin/celery --app project worker --uid daemon -l INFO
+  #    depends_on:
+  #      - share_postgres
+  #      - share_rabbitmq
+  #      - share_backend
+  #      - share_elasticsearch
+  #      - share_indexer
+  #    volumes:
+  #      - share_requirements_vol:/usr/local/lib/python3.9
+  #    env_file:
+  #      - .docker-compose.share.env
+  #    stdin_open: true
+  #
+  #  share_backend:
+  #    image: quay.io/centerforopenscience/share:develop
+  #    command: python manage.py runserver 0.0.0.0:8000
+  #    ports:
+  #      - 8003:8000
+  #    depends_on:
+  #      - share_postgres
+  #      - share_rabbitmq
+  #      - share_elasticsearch
+  #      - share_frontend
+  #    volumes:
+  #      - share_requirements_vol:/usr/local/lib/python3.9
+  #    env_file:
+  #      - .docker-compose.share.env
+  #    stdin_open: true
+  #
+  #  share_indexer:
+  #    image: quay.io/centerforopenscience/share:develop
+  #    command: sharectl search daemon
+  #    depends_on:
+  #      - share_postgres
+  #      - share_rabbitmq
+  #      - share_elasticsearch
+  #    volumes:
+  #      - share_requirements_vol:/usr/local/lib/python3.9
+  #    env_file:
+  #      - .docker-compose.share.env
+  #    stdin_open: true
+  #

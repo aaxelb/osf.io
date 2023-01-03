@@ -1,4 +1,4 @@
-from .gather import gather_guid_metadata
+from .gather import gather_description
 
 
-__all__ = ('gather_guid_metadata',)
+__all__ = ('gather_description',)

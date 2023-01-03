@@ -1,5 +1,7 @@
 import datetime
 import itertools
+import typing
+
 import rdflib
 
 from django.contrib.contenttypes.models import ContentType
@@ -12,7 +14,7 @@ from osf.utils import workflows as osfworkflows
 from website import settings as website_settings
 
 
-__all__ = ('gather_guid_metadata', 'gather_deep_metadata',)
+__all__ = ('gather_description', 'gather_description_set',)
 
 
 OSF = rdfutils.OSF
@@ -20,15 +22,35 @@ DCT = rdflib.DCTERMS
 A = rdflib.RDF.type
 
 
-def gather_guid_metadata(guid) -> rdflib.Graph:
-    rdf_graph = rdfutils.contextualized_graph()
-    gatherer = MetadataGatherer(guid)
-    for triple in gatherer.gather_triples():
-        rdf_graph.add(triple)
-    return rdf_graph
+class ItemDescription(typing.NamedTuple):
+    osfguid: osfdb.Guid
+    rdfgraph: rdflib.Graph
+
+    @classmethod
+    def gather_for(cls, osfguid):
+        description = cls(osfguid)
+        for triple in MetadataGatherer(osfguid).gather_triples():
+            description.rdfgraph.add(triple)
+        return description
+
+    def __init__(self, osfguid, rdfgraph=None):
+        if rdfgraph is None:
+            rdfgraph = rdfutils.contextualized_graph()
+        return super().__init__(osfguid, rdfgraph)
+
+    def referenced_items(self) -> typing.Iterable[osfdb.Guid]:
+        for triple_obj in self.rdfgraph.objects():
+            if isinstance(triple_obj, rdflib.URIRef) and triple_obj.startswith(website_settings.DOMAIN):
+                yield triple_obj
 
 
-def gather_deep_metadata(guid: str, max_guids: int = 1) -> rdflib.Graph:
+class FocusedDescriptionSet:
+    def __init__(self, focus_osfguid):
+        self.focus_osfguid = focus_osfguid
+        self.item_descriptions = {}
+
+
+def gather_description_set(guid: str, max_guids: int = 1) -> rdflib.Graph:
     """gather metadata about the guid's referent and related guid-items
 
     @param guid: osf guid (the five-ish character string)
