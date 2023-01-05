@@ -1,7 +1,7 @@
 import pytest
 
 from api.base.settings.defaults import API_BASE
-from api_tests.nodes.views.test_node_bibliographic_contributors_list import TestNodeBibliographicContributors
+from api_tests.nodes.views import test_node_bibliographic_contributors_list as parent_tests
 from osf_tests.factories import (
     RegistrationFactory,
     ProjectFactory
@@ -10,7 +10,7 @@ from osf.utils.permissions import READ, WRITE
 
 
 @pytest.mark.django_db
-class TestRegistrationBibliographicContributors(TestNodeBibliographicContributors):
+class TestRegistrationBibliographicContributors(parent_tests.TestNodeBibliographicContributors):
 
     @pytest.fixture()
     def project(self, admin_contributor_bib, write_contributor_non_bib, read_contributor_bib):

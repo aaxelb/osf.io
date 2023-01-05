@@ -6,8 +6,8 @@ from framework.exceptions import PermissionsError
 from osf.exceptions import UserNotAffiliatedError, DraftRegistrationStateError, NodeStateError
 from osf.models import RegistrationSchema, DraftRegistration, DraftRegistrationContributor, NodeLicense, Node, NodeLog
 from osf.utils.permissions import ADMIN, READ, WRITE
-from osf_tests.test_node import TestNodeEditableFieldsMixin, TestTagging, TestNodeSubjects
-from osf_tests.test_node_license import TestNodeLicenses
+from osf_tests import test_node as parent_node_tests
+from osf_tests import test_node_license as parent_license_tests
 from django.utils import timezone
 
 from website import settings
@@ -326,7 +326,7 @@ class TestDraftRegistrations:
         assert draft.can_view(Auth(non_contrib)) is False
 
 
-class TestSetDraftRegistrationEditableFields(TestNodeEditableFieldsMixin):
+class TestSetDraftRegistrationEditableFields(parent_node_tests.TestNodeEditableFieldsMixin):
     @pytest.fixture()
     def resource(self, project):
         return factories.DraftRegistrationFactory(branched_from=project, title='That Was Then', description='A description')
@@ -627,7 +627,7 @@ class TestDraftRegistrationAffiliatedInstitutions:
             draft_registration.add_affiliated_institution(inst1, user=user)
 
 
-class TestDraftRegistrationTagging(TestTagging):
+class TestDraftRegistrationTagging(parent_node_tests.TestTagging):
     @pytest.fixture()
     def node(self, user):
         # Overrides "node" resource on tag test, to make it a draft registration instead
@@ -635,7 +635,7 @@ class TestDraftRegistrationTagging(TestTagging):
         return factories.DraftRegistrationFactory(branched_from=project)
 
 
-class TestDraftRegistrationLicenses(TestNodeLicenses):
+class TestDraftRegistrationLicenses(parent_license_tests.TestNodeLicenses):
     @pytest.fixture()
     def node(self, draft_registration, node_license, user):
         # Overrides "node" resource to make it a draft registration instead
@@ -648,7 +648,7 @@ class TestDraftRegistrationLicenses(TestNodeLicenses):
         return draft_registration
 
 
-class TestDraftRegistrationSubjects(TestNodeSubjects):
+class TestDraftRegistrationSubjects(parent_node_tests.TestNodeSubjects):
     @pytest.fixture()
     def project(self, draft_registration):
         # Overrides "project" resource to make it a draft registration instead

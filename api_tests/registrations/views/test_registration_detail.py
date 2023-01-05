@@ -32,7 +32,7 @@ from osf_tests.factories import (
 )
 from osf_tests.utils import get_default_test_schema
 
-from api_tests.nodes.views.test_node_detail import TestNodeUpdateLicense
+from api_tests.nodes.views import test_node_detail as parent_tests
 from tests.utils import assert_latest_log
 from api_tests.utils import create_test_file
 
@@ -1088,7 +1088,7 @@ class TestRegistrationTags:
         assert res.json['errors'][0]['detail'] == 'Cannot remove tags of withdrawn registrations.'
 
 
-class TestUpdateRegistrationLicense(TestNodeUpdateLicense):
+class TestUpdateRegistrationLicense(parent_tests.TestNodeUpdateLicense):
     @pytest.fixture()
     def node(self, user_admin_contrib, user_write_contrib, user_read_contrib):
         node = RegistrationFactory(creator=user_admin_contrib, is_public=False)

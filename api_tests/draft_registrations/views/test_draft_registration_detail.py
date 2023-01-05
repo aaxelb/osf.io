@@ -1,12 +1,7 @@
 import pytest
 
 from api.base.settings.defaults import API_BASE
-from api_tests.nodes.views.test_node_draft_registration_detail import (
-    TestDraftRegistrationDetail,
-    TestDraftRegistrationUpdate,
-    TestDraftRegistrationPatch,
-    TestDraftRegistrationDelete,
-)
+from api_tests.nodes.views import test_node_draft_registration_detail as parent_tests
 from osf.models import DraftNode, Node, NodeLicense, RegistrationSchema
 from osf.utils.permissions import ADMIN, READ, WRITE
 from osf_tests.factories import (
@@ -19,7 +14,7 @@ from osf_tests.factories import (
 
 
 @pytest.mark.django_db
-class TestDraftRegistrationDetailEndpoint(TestDraftRegistrationDetail):
+class TestDraftRegistrationDetailEndpoint(parent_tests.TestDraftRegistrationDetail):
     @pytest.fixture()
     def url_draft_registrations(self, project_public, draft_registration):
         return '/{}draft_registrations/{}/'.format(
@@ -244,7 +239,7 @@ class TestUpdateEditableFieldsTestCase:
 
 
 @pytest.mark.django_db
-class TestDraftRegistrationUpdateWithNode(TestDraftRegistrationUpdate, TestUpdateEditableFieldsTestCase):
+class TestDraftRegistrationUpdateWithNode(parent_tests.TestDraftRegistrationUpdate, TestUpdateEditableFieldsTestCase):
     @pytest.fixture()
     def url_draft_registrations(self, project_public, draft_registration):
         return '/{}draft_registrations/{}/'.format(
@@ -471,7 +466,7 @@ class TestDraftRegistrationUpdateWithNode(TestDraftRegistrationUpdate, TestUpdat
 
 
 @pytest.mark.django_db
-class TestDraftRegistrationUpdateWithDraftNode(TestDraftRegistrationUpdate):
+class TestDraftRegistrationUpdateWithDraftNode(parent_tests.TestDraftRegistrationUpdate):
     @pytest.fixture()
     def url_draft_registrations(self, project_public, draft_registration):
         return '/{}draft_registrations/{}/'.format(
@@ -512,7 +507,7 @@ class TestDraftRegistrationUpdateWithDraftNode(TestDraftRegistrationUpdate):
         }
 
 
-class TestDraftRegistrationPatchNew(TestDraftRegistrationPatch):
+class TestDraftRegistrationPatchNew(parent_tests.TestDraftRegistrationPatch):
     @pytest.fixture()
     def url_draft_registrations(self, project_public, draft_registration):
         # Overrides TestDraftRegistrationPatch
@@ -548,7 +543,7 @@ class TestDraftRegistrationPatchNew(TestDraftRegistrationPatch):
         assert data['attributes']['registration_metadata'] == payload['data']['attributes']['registration_metadata']
 
 
-class TestDraftRegistrationDelete(TestDraftRegistrationDelete):
+class TestDraftRegistrationDelete(parent_tests.TestDraftRegistrationDelete):
     @pytest.fixture()
     def url_draft_registrations(self, project_public, draft_registration):
         # Overrides TestDraftRegistrationDelete

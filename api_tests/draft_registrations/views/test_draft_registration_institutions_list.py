@@ -1,7 +1,7 @@
 import pytest
 
 from api.base.settings.defaults import API_BASE
-from api_tests.nodes.views.test_node_institutions_list import TestNodeInstitutionList
+from api_tests.nodes.views import test_node_institutions_list as parent_tests
 from osf_tests.factories import DraftRegistrationFactory, AuthUserFactory
 
 
@@ -15,7 +15,7 @@ def user_two():
 
 
 @pytest.mark.django_db
-class TestDraftRegistrationInstitutionList(TestNodeInstitutionList):
+class TestDraftRegistrationInstitutionList(parent_tests.TestNodeInstitutionList):
 
     @pytest.fixture()
     def node_one(self, institution, user):

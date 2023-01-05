@@ -1,7 +1,7 @@
 import pytest
 
 from osf_tests.factories import RegistrationFactory, AuthUserFactory
-from api_tests.nodes.views.test_node_institutions_list import TestNodeInstitutionList
+from api_tests.nodes.views import test_node_institutions_list as parent_tests
 
 @pytest.fixture()
 def user():
@@ -13,7 +13,7 @@ def user_two():
 
 
 @pytest.mark.django_db
-class TestRegistrationInstitutionList(TestNodeInstitutionList):
+class TestRegistrationInstitutionList(parent_tests.TestNodeInstitutionList):
 
     @pytest.fixture()
     def node_one(self, institution):

@@ -1,7 +1,7 @@
 import pytest
 
 from api.base.settings.defaults import API_BASE
-from api_tests.nodes.views.test_node_relationship_institutions import TestNodeRelationshipInstitutions
+from api_tests.nodes.views import test_node_relationship_institutions as parent_tests
 from osf_tests.factories import (
     AuthUserFactory,
     RegistrationFactory,
@@ -10,7 +10,7 @@ from osf.utils import permissions
 
 
 @pytest.mark.django_db
-class TestRegistrationRelationshipInstitutions(TestNodeRelationshipInstitutions):
+class TestRegistrationRelationshipInstitutions(parent_tests.TestNodeRelationshipInstitutions):
 
     @pytest.fixture()
     def node(self, user, write_contrib, read_contrib):
