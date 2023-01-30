@@ -29,6 +29,7 @@ from osf.utils.outcomes import ArtifactTypes
 ##### BEGIN "public" api #####
 
 class SerializedMetadataFile(typing.NamedTuple):
+    focus_iri: str
     mediatype: str
     filename: str
     serialized_metadata: str
@@ -51,6 +52,7 @@ def pls_gather_metadata_file(osf_item, format_key, serializer_config=None) -> Se
         osfguid = osfdb.base.coerce_guid(osf_item, create_if_needed=True)
         basket = pls_gather_item_metadata(osfguid.referent)
         return SerializedMetadataFile(
+            basket.focus.iri,
             serializer.mediatype,
             serializer.filename(osfguid._id),
             serializer.serialize(basket),
