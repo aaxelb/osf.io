@@ -7,7 +7,7 @@ import re
 from datacite import DataCiteMDSClient
 from django.core.exceptions import ImproperlyConfigured
 
-from osf.metadata.tools import pls_gather_metadata_as_primitive
+from osf.metadata.tools import pls_gather_metadata_as_dict
 from website.identifiers.clients.base import AbstractIdentifierClient
 from website import settings
 
@@ -32,7 +32,7 @@ class DataCiteClient(AbstractIdentifierClient):
     def build_metadata(self, node, doi_value=None, as_xml=True):
         """Return the formatted datacite metadata XML as a string.
         """
-        return pls_gather_metadata_as_primitive(
+        return pls_gather_metadata_as_dict(
             osf_item=node,
             format_key=('datacite-xml' if as_xml else 'datacite-json'),
             serializer_config={
