@@ -125,7 +125,7 @@ class TestDataCiteClient:
             identifier=IdentifierFactory(category='doi'), artifact_type=ArtifactTypes.MATERIALS, finalized=True
         )
 
-        metadata_dict = datacite_client.build_metadata(registration, as_xml=False)
+        metadata_dict = datacite_client.build_metadata(registration)
 
         # Artifact entries first, ordered by type, followed by article doi
         expected_relationships = [
@@ -166,7 +166,7 @@ class TestDataCiteClient:
             identifier=identifier, artifact_type=ArtifactTypes.MATERIALS, finalized=True
         )
 
-        metadata_dict = datacite_client.build_metadata(registration, as_xml=False)
+        metadata_dict = datacite_client.build_metadata(registration)
 
         expected_relationships = [
             {
@@ -198,7 +198,7 @@ class TestDataCiteClient:
             deleted=timezone.now()
         )
 
-        metadata_dict = datacite_client.build_metadata(registration, as_xml=False)
+        metadata_dict = datacite_client.build_metadata(registration)
 
         expected_relationships = [
             {

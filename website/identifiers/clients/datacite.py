@@ -7,7 +7,7 @@ import re
 from datacite import DataCiteMDSClient
 from django.core.exceptions import ImproperlyConfigured
 
-from osf.metadata.tools import pls_gather_metadata_as_dict
+from osf.metadata.tools import pls_gather_metadata_file
 from website.identifiers.clients.base import AbstractIdentifierClient
 from website import settings
 
@@ -29,17 +29,6 @@ class DataCiteClient(AbstractIdentifierClient):
             prefix=getattr(node.provider, 'doi_prefix', None) or settings.DATACITE_PREFIX
         )
 
-    def build_metadata(self, node, doi_value=None, as_xml=True):
-        """Return the formatted datacite metadata XML as a string.
-        """
-        return pls_gather_metadata_as_dict(
-            osf_item=node,
-            format_key=('datacite-xml' if as_xml else 'datacite-json'),
-            serializer_config={
-                'doi_value': doi_value or self._get_doi_value(node),
-            },
-        )
-
     def build_doi(self, object):
         return settings.DOI_FORMAT.format(
             prefix=getattr(object.provider, 'doi_prefix', None) or settings.DATACITE_PREFIX,
@@ -53,18 +42,22 @@ class DataCiteClient(AbstractIdentifierClient):
         if category != 'doi':
             raise NotImplementedError('Creating an identifier with category {} is not supported'.format(category))
         doi_value = doi_value or self._get_doi_value(node)
-        metadata = self.build_metadata(node, doi_value=doi_value)
-
+        metadata_file = pls_gather_metadata_file(
+            osf_item=node,
+            format_key='datacite-xml',
+            serializer_config={
+                'doi_value': doi_value,
+            },
+        )
         if settings.DATACITE_ENABLED:
-            resp = self._client.metadata_post(metadata)
+            resp = self._client.metadata_post(metadata_file.serialized_metadata)
             # Typical response: 'OK (10.70102/FK2osf.io/cq695)' to doi 10.70102/FK2osf.io/cq695
             doi = re.match(r'OK \((?P<doi>[a-zA-Z0-9 .\/]{0,})\)', resp).groupdict()['doi']
             self._client.doi_post(doi, node.absolute_url)
-            return {'doi': doi, 'metadata': metadata}
+            return {'doi': doi, 'metadata': metadata_file.serialized_metadata}
         else:
             logger.info('TEST ENV: DOI built but not minted')
-
-        return {'doi': doi_value, 'metadata': metadata}
+        return {'doi': doi_value, 'metadata': metadata_file.serialized_metadata}
 
     def update_identifier(self, node, category, doi_value=None):
         if category != 'doi':
