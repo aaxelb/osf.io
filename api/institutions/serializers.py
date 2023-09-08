@@ -36,7 +36,7 @@ class InstitutionSerializer(JSONAPISerializer):
     assets = ser.SerializerMethodField(read_only=True)
     links = LinksField({
         'self': 'get_api_url',
-        'html': 'get_absolute_html_url',
+        'html': 'get_html_iri',
     })
 
     nodes = RelationshipField(
@@ -74,6 +74,9 @@ class InstitutionSerializer(JSONAPISerializer):
 
     def get_absolute_url(self, obj):
         return obj.absolute_api_v2_url
+
+    def get_html_iri(self, obj):
+        return obj.absolute_url
 
     def get_assets(self, obj):
         return {

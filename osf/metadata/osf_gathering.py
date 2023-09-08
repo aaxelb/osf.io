@@ -958,16 +958,11 @@ def gather_registration_type(focus):
 def gather_publisher(focus):
     provider = getattr(focus.dbmodel, 'provider', None)
     if isinstance(provider, osfdb.AbstractProvider):
-        if isinstance(provider, osfdb.PreprintProvider):
-            provider_path_prefix = 'preprints'
-        elif isinstance(provider, osfdb.RegistrationProvider):
-            provider_path_prefix = 'registries'
-        elif isinstance(provider, osfdb.CollectionProvider):
-            provider_path_prefix = 'collections'
-        else:
-            raise ValueError(f'unknown provider type: {type(provider)} (for provider {provider})')
-        provider_iri = OSFIO[f'{provider_path_prefix}/{provider._id}']
-        yield from _publisher_tripleset(iri=provider_iri, name=provider.name, url=provider.domain)
+        yield from _publisher_tripleset(
+            iri=rdflib.URIRef(provider.get_html_iri()),
+            name=provider.name,
+            url=provider.domain,
+        )
     else:
         yield from _publisher_tripleset(
             iri=rdflib.URIRef(OSFIO.rstrip('/')),

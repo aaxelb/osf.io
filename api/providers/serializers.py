@@ -43,6 +43,7 @@ class ProviderSerializer(JSONAPISerializer):
     links = LinksField({
         'self': 'get_absolute_url',
         'external_url': 'get_external_url',
+        'html': 'get_html_iri',
     })
 
     subjects = TypedRelationshipField(
@@ -90,6 +91,9 @@ class ProviderSerializer(JSONAPISerializer):
 
     def get_external_url(self, obj):
         return obj.external_url
+
+    def get_html_iri(self, obj):
+        return obj.get_html_iri()
 
     def get_assets(self, obj):
         return {asset.name: asset.file.url for asset in obj.asset_files.all()} or None
@@ -183,6 +187,7 @@ class RegistrationProviderSerializer(ProviderSerializer):
     links = LinksField({
         'self': 'get_absolute_url',
         'external_url': 'get_external_url',
+        'html': 'get_html_iri',
     })
 
 
@@ -220,6 +225,7 @@ class PreprintProviderSerializer(MetricsSerializerMixin, ProviderSerializer):
         'self': 'get_absolute_url',
         'preprints': 'get_preprints_url',
         'external_url': 'get_external_url',
+        'html': 'get_html_iri',
     })
 
     preprints = ReviewableCountsRelationshipField(
