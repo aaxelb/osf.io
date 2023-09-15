@@ -63,10 +63,19 @@ class SubjectSerializer(JSONAPISerializer):
 
     links = LinksField({
         'self': 'get_absolute_url',
+        'iri': 'get_iri',
     })
 
     def get_absolute_url(self, obj):
         return obj.absolute_api_v2_subject_url
+
+    def get_iri(self, obj):
+        _iri_obj = (
+            obj.bepress_subject
+            if obj.bepress_subject and (obj.text == obj.bepress_subject.text)
+            else obj
+        )
+        return _iri_obj.absolute_api_v2_subject_url
 
     def get_children_count(self, obj):
         return obj.children_count if hasattr(obj, 'children_count') else obj.child_count
