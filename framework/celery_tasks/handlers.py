@@ -3,6 +3,7 @@ import threading
 import functools
 
 from celery import group
+from django.db import transaction
 from flask import has_app_context
 
 from api.base.api_globals import api_globals
@@ -58,14 +59,14 @@ def enqueue_task(signature):
 
 def _enqueue_task(signature):
     """If working in a request context, push task signature to thread-local
-    queue to run after request is complete; else run signature immediately.
+    queue to run after request is complete; else enqueue task to run after commit.
     :param signature: Celery task signature
     """
     if (
         not has_app_context() and
         getattr(api_globals, 'request', None) is None
     ):  # Not in a request context
-        signature.apply()
+        transaction.on_commit(signature.apply_async)
     else:
         if signature not in queue():
             queue().append(signature)
