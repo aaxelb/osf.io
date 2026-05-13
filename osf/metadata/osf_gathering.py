@@ -127,7 +127,9 @@ OSF_OBJECT = {
     OSF.isPartOfCollection: None,
     OSF.funder: None,
     OSF.hasFunding: None,
-    OSF.contains: OSF_FILE_REFERENCE,
+    # omit file refs from default metadata record
+    # (file records still have the reverse osf:isContainedBy)
+    # OSF.contains: OSF_FILE_REFERENCE,
     OSF.hasRoot: OSF_OBJECT_REFERENCE,
     OSF.keyword: None,
     OSF.dateWithdrawn: None,
