@@ -17,6 +17,7 @@ from osf.external.spam import tasks as spam_tasks
 from website import settings as website_settings
 from osf.management.commands.populate_notification_types import populate_notification_types
 from osf import features
+from tests.utils import capture_notifications
 
 
 def pytest_configure(config):
@@ -343,5 +344,11 @@ def mock_gravy_valet_get_verified_links():
 
 
 @pytest.fixture(autouse=True)
-def load_notification_types(db, *args, **kwargs):
-    populate_notification_types(*args, **kwargs)
+def _auto_capture_notifications():
+    with capture_notifications(allow_none=True):
+        yield
+
+
+@pytest.fixture
+def load_notification_types(db):
+    populate_notification_types()
